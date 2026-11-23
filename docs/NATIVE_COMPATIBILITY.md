@@ -1,3 +1,5 @@
+> **LỊCH SỬ** — Tài liệu này mô tả M0 native (Expo) đã bị thay thế bởi hướng Web/PWA (D-018). Giữ lại để tham khảo; ma trận Safari sẽ nằm ở `docs/WEB_COMPATIBILITY.md` (M0-PWA).
+
 # Ma trận tương thích native (M0)
 
 Ngày kiểm tra: 2026-11-23. Môi trường kiểm tra: container Linux x86_64 (không có macOS/Xcode/iPhone), mạng chỉ cho phép npm/CocoaPods CDN/Docker registry.

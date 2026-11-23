@@ -1,12 +1,12 @@
 # Mandarin AI — Master Product Requirements Document
 
-Version: 1.3 | Date: 2026-11-23 | Status: Product requirements approved; M0 in progress
+Version: 2.0 | Date: 2026-11-23 | Status: Product requirements approved; platform changed to Web/PWA (D-018); M0-PWA planning
 
-> v1.3 aligns this PRD with the owner decisions recorded in `docs/DECISIONS.md` (D-001 … D-013). Where wording differs, `docs/DECISIONS.md` is authoritative.
+> v1.3 aligned this PRD with owner decisions D-001 … D-013. v2.0 changes the delivery platform from a React Native/Expo iOS app to a Next.js web app + PWA optimised for Safari on iPhone (D-018 … D-027). **All 11 functional domains are kept.** Where wording differs, `docs/DECISIONS.md` is authoritative.
 
 ## 1. Product definition
 
-Mandarin AI is an iOS-first Chinese learning application for Vietnamese-speaking learners. Android is a planned platform using the same React Native codebase. The product starts with learner-imported HSK 3.0 teaching PDFs after the app is built; future textbooks must be addable without code changes. The learning experience is powered by a personal vocabulary dictionary, spaced-repetition reviews, handwriting games, listening and speaking practice, and explanations of Hanzi evolution grounded in verifiable historical sources.
+Mandarin AI is a mobile-first Chinese learning web application (installable PWA) for Vietnamese-speaking learners. The primary target is Safari on iPhone, used in the browser or added to the Home Screen; Android browsers and desktop use the same codebase. No App Store, TestFlight or native build is required. The product starts with learner-imported HSK 3.0 teaching PDFs after the app is built; future textbooks must be addable without code changes. The learning experience is powered by a personal vocabulary dictionary, spaced-repetition reviews, handwriting games, listening and speaking practice, and explanations of Hanzi evolution grounded in verifiable historical sources.
 
 ### Goals
 - Enable users to study daily from personally entered words and imported textbooks.
@@ -19,7 +19,8 @@ Mandarin AI is an iOS-first Chinese learning application for Vietnamese-speaking
 - A public marketplace for third-party executable plugins.
 - Automatically sharing commercial uploaded textbooks with other users.
 - Guaranteeing clinical/phonetic-grade tone assessment without field validation.
-- Shipping all Android-specific integrations before the iOS acceptance criteria are met.
+- Native iOS/Android apps or app-store distribution (may be revisited later as a wrapper around the same web app).
+- Guaranteeing parity of Android/desktop browser behaviour before the iPhone Safari acceptance criteria are met.
 
 ## 2. Confirmed product scope (11 domains)
 
@@ -60,7 +61,7 @@ Mandarin AI is an iOS-first Chinese learning application for Vietnamese-speaking
 ### PRD-05 Hint-to-handwriting mini game
 - Present a picture or Vietnamese meaning; user must recall the matching Chinese character and draw it using finger/stylus.
 - Never reveal the target character before answer submission; show model and stroke guidance afterward.
-- Collect vector strokes (coordinates, timestamps); use Google ML Kit Digital Ink recognition, not image OCR, for candidate character recognition.
+- Collect vector strokes (coordinates, timestamps) from a touch/stylus canvas (Pointer Events); recognise candidate characters through a `HandwritingRecognitionPort` adapter that runs in the browser or on the backend (D-020). Recognition quality must be measured on real iPhone handwriting before any claim; Google ML Kit Digital Ink is no longer used (no web SDK).
 - Record recognizer confidence/candidates and allow a retry or manual appeal; do not equate recognition alone with perfect stroke order.
 - Start with single-character prompts, then extend to words/phrases via plugin-type quiz contracts.
 
@@ -85,7 +86,7 @@ Mandarin AI is an iOS-first Chinese learning application for Vietnamese-speaking
 **Acceptance:** Tutor explains a sentence and identifies which vocabulary it is using; generated examples are labeled.
 
 ### PRD-08 Import image/text/PDF
-- Input via camera/photo/screenshot, pasted text and teaching PDF.
+- Input via camera/photo/screenshot (browser file picker / camera capture), pasted text and teaching PDF (file picker incl. iOS Files).
 - Extract text (PDF text layer first, OCR fallback), segment Chinese words, assign Pinyin/meaning and detect lesson structure when possible.
 - Preview extracted content side-by-side with source page, allow correction, selection and dedupe before finalizing.
 - Long PDF is a resumable background import with status, partial errors and idempotent retry; uploads are private by default.
@@ -102,10 +103,10 @@ Mandarin AI is an iOS-first Chinese learning application for Vietnamese-speaking
 
 ### PRD-10 Reminders and review schedule
 - Generate due-review schedules based on performance.
-- Local notifications for offline device reminders; cloud push can be added without rewriting scheduling logic.
+- Reminder delivery on the web (D-024): Web Push scheduled by the server (on iPhone only for Home-Screen web apps on iOS 16.4+, after permission) plus in-app reminders. Review schedules are computed correctly offline; only notification delivery needs the server/network.
 - Respect user notification preferences, quiet hours, permissions and local timezone.
 
-**Acceptance:** User can disable reminders; scheduling remains correct after timezone change and offline periods.
+**Acceptance:** User can disable reminders; scheduling remains correct after timezone change and offline periods; on an iPhone Home-Screen install with permission granted a due-review push arrives; without permission the in-app reminder still shows.
 
 ### PRD-11 Learning Library & textbook import
 - Create course -> chapter -> lesson -> sections (vocabulary, grammar, conversation, exercise, source pages).
@@ -119,7 +120,7 @@ Mandarin AI is an iOS-first Chinese learning application for Vietnamese-speaking
 ## 3. Core flows
 
 ### Onboarding
-Install TestFlight build -> sign up/login -> choose beginner/intermediate, simplified/traditional preference (initial content primarily simplified), study goal -> download starter learning data -> Home.
+Open the HTTPS URL in Safari -> (optional, recommended) Add to Home Screen -> sign up/login with e-mail OTP code or password (D-025) -> choose beginner/intermediate, simplified/traditional preference (initial content primarily simplified), study goal -> download starter learning data -> Home.
 
 Starter data is a small fixture with clear origin and usage rights, loaded as ordinary course/lexicon records; HSK 3.0 content is never hard-coded (D-012).
 
@@ -148,10 +149,10 @@ Primary bottom navigation proposal: Home / Library / Dictionary / Practice / Pro
 
 ## 5. Key quality requirements
 
-- iOS-first, touch-first and accessibility-aware layout (dynamic type, contrast, VoiceOver labels).
-- React Native Expo Development Build and EAS iOS/TestFlight; no Expo Go-only acceptance.
-- Android-ready codebase, but iOS functionality is the initial release gate.
-- Offline local data encrypted where sensitive (SQLCipher via `expo-sqlite`, key held in iOS Keychain through `expo-secure-store`; if not proven on device it is reported as a blocker with a safe fallback for owner approval, D-011); secure credential storage; do not persist audio or other sensitive data locally unless required; protect private PDF/audio.
+- Mobile-first, touch-first, responsive and accessibility-aware layout (respects text size settings, contrast, VoiceOver labels, safe-area insets, no zoom-on-focus).
+- Next.js web app + PWA (manifest, service worker, offline shell); acceptance is on real iPhone Safari (browser tab and Home-Screen mode), not only desktop or simulators.
+- Same codebase serves Android/desktop browsers, but iPhone Safari is the initial release gate.
+- Offline data in IndexedDB is minimised; sensitive fields are encrypted with a non-extractable Web Crypto key, with documented limits (D-022); sessions handled by Supabase Auth; do not persist audio or other sensitive data locally unless required; protect private PDF/audio; logout clears local data.
 - No long-lived provider secrets in client. AI APIs via authenticated backend; time-limited voice session credentials where supported.
 - Supabase Row Level Security and automated negative authorization tests; no cross-user vocabulary/progress leaks.
 - Data deletion/export, private document visibility, input sanitization, file-size/type validation, abuse/expense limits.
@@ -161,7 +162,7 @@ Primary bottom navigation proposal: Home / Library / Dictionary / Practice / Pro
 
 ## 6. Open questions tracked without blocking foundation
 
-- Release distribution: TestFlight private beta before public App Store.
+- Release distribution: private beta on an HTTPS URL (invite-only accounts) before public launch; custom domain to be chosen.
 - Exact course PDF file structure, scan quality and copyright status (not yet supplied; imported by the owner after the app is complete).
 - Chinese simplified-first and optional traditional display rules.
 - Detailed XP formula, tone scoring rubric and notification defaults (to validate with test users).
@@ -169,7 +170,7 @@ Primary bottom navigation proposal: Home / Library / Dictionary / Practice / Pro
 
 ## 7. Definition of product done
 
-- iOS device TestFlight build installs, authenticates, studies, reviews and syncs real data.
+- On a real iPhone, the PWA opens in Safari and from the Home Screen, authenticates, studies, reviews and syncs real data, including after offline use.
 - 11 modules have implemented acceptance criteria or explicitly documented release-stage gates; no mocked backend masquerading as production.
 - Sample PDF ingest is end-to-end verified; HSK PDF import can be performed afterward without new code.
 - Offline sync conflict and no-data-loss tests pass.

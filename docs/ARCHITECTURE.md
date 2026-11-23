@@ -1,20 +1,21 @@
-# Mandarin AI — Mobile Technical Architecture v1.3
+# Mandarin AI — Technical Architecture v2.0 (Web/PWA)
 
-> v1.3 incorporates owner decisions D-001 … D-013. The authoritative decision log is `docs/DECISIONS.md`; this document describes the resulting architecture.
+> v2.0 moves the client from React Native/Expo to a Next.js web app + PWA optimised for Safari on iPhone (D-018 … D-027). v1.3 incorporated owner decisions D-001 … D-013. The authoritative decision log is `docs/DECISIONS.md`; this document describes the resulting architecture.
 
 ## Architecture decision record
 
-**Chosen:** iOS-first Expo React Native + TypeScript, Supabase Postgres/Auth/Storage, on-device SQLite (SQLCipher-encrypted where proven), OpenAI API (turn-based first, Realtime gated), Azure AI Speech pronunciation assessment, Google ML Kit Digital Ink. Separately deployed TypeScript Node.js API and background PDF worker (Railway is the hosting candidate; no Railway-specific APIs in domain logic). pnpm workspaces + Turborepo monorepo. Cloud persistence with offline-first selected study flows. Android-ready but iOS validated first.
+**Chosen:** Mobile-first Next.js (App Router) + TypeScript + Tailwind CSS web app, installable as a PWA (manifest + Serwist service worker), primary target Safari on iPhone; Supabase Postgres/Auth/Storage; IndexedDB (Dexie) offline store + outbox with idempotent sync; separately deployed Fastify Node.js API and background PDF worker (Railway candidate, no host-specific APIs in domain logic); OpenAI API (turn-based first, Realtime gated); Azure AI Speech pronunciation assessment via the API; handwriting recognition through a web/backend `HandwritingRecognitionPort` adapter. pnpm workspaces + Turborepo monorepo.
 
 **Style:** Modular monolith + explicit module contracts + ports/adapters, not uncontrolled runtime plugin execution or premature microservices.
 
-**Warning:** Expo Go cannot test all required native integrations; use development builds on an iPhone and later EAS/TestFlight. ML Kit Digital Ink consumes vector touch strokes, whereas PDF/photo import is OCR/document parsing. Azure speech should be evaluated on device through a server-side adapter or viable native integration (don't assume an official React Native SDK). OpenAI real-time credentials must be short-lived and issued via backend.
+**Warnings:** Acceptance happens on a real iPhone in Safari (tab and Home-Screen mode); desktop Chrome or Playwright WebKit are not sufficient. Safari has no Background Sync, no Web Bluetooth/NFC, limited Web Push (Home-Screen apps, iOS ≥ 16.4), separate storage for Home-Screen apps, possible storage eviction, and `MediaRecorder` produces AAC/MP4 (Azure REST needs WAV/PCM) — see the Safari constraints section. Handwriting recognition consumes vector strokes; PDF/photo import is OCR/document parsing. OpenAI Realtime credentials must be short-lived and issued via the backend.
 
 ## Logical components
 
 ```mermaid
 flowchart TD
-  A[iOS React Native Expo] --> L[SQLite offline store + Outbox]
+  A[Next.js PWA - Safari iPhone] --> W[Service worker: app shell + asset cache]
+  A --> L[IndexedDB offline store + Outbox]
   A --> C[Application service layer]
   C --> D[Supabase Auth and RLS Postgres]
   C --> B[Authenticated Backend API]
@@ -23,7 +24,8 @@ flowchart TD
   B --> P[PDF extraction background job workers]
   P --> S[Private Supabase Storage]
   B --> D
-  A --> I[Native Digital Ink adapter - iOS ML Kit]
+  A --> I[HandwritingRecognitionPort: in-browser adapter or API adapter]
+  B --> I2[Optional server-side handwriting adapter]
   C --> E[Learning Events]
   E --> R[Review Scheduler]
   E --> G[Gamification]
@@ -33,12 +35,15 @@ flowchart TD
 
 ```text
 mandarin-ai/
-  apps/mobile/                         # Expo Router app, iOS first (Expo SDK 58 dev build)
-    app/                               # navigation only
-    modules/digital-ink/               # local Expo native module (Swift, ML Kit Digital Ink)
-    src/components/                    # shared UI
-    src/modules/                       # feature screens/controllers
-    src/native/                        # iOS module integration wrappers
+  apps/web/                            # Next.js App Router PWA (mobile-first, Safari iPhone)
+    app/                               # routes/layouts only
+    src/modules/                       # feature modules (dictionary, practice, library, …)
+    src/components/                    # shared UI (Tailwind)
+    src/offline/                       # IndexedDB schema (Dexie), outbox, sync engine
+    src/platform/                      # browser adapters: handwriting canvas, audio capture (AudioWorklet), push
+    src/sw.ts                          # Serwist service worker source
+    public/manifest.webmanifest        # PWA manifest + icons
+  apps/mobile/                         # LEGACY M0 native spike (Expo) — frozen, removed after M0-PWA approval
   apps/api/                            # Node.js TS service: privileged AI calls, auth-checked
                                        #   (PDF worker entrypoint added in M4, same codebase)
   packages/contracts/                  # zod schemas, API types, events, QuizType ids, skills
@@ -57,8 +62,8 @@ Package dependency direction (no cycles, enforced by lint/CI): `contracts` <- `d
 ## Layering and dependency rules
 
 - UI modules depend on domain contracts and application interfaces, not on other modules' private table schemas.
-- Domain code is pure TypeScript and can run in tests without React Native or cloud APIs.
-- External providers implement ports: `AiTutorPort`, `ConversationPort`, `PronunciationAssessmentPort`, `DocumentExtractionPort`, `DigitalInkPort`, `TextToSpeechPort`, `LearningRepository`, `ContentRepository`, `SyncTransport`.
+- Domain code is pure TypeScript and can run in tests without a browser, React or cloud APIs.
+- External providers implement ports: `AiTutorPort`, `ConversationPort`, `PronunciationAssessmentPort`, `DocumentExtractionPort`, `HandwritingRecognitionPort` (was `DigitalInkPort`), `TextToSpeechPort`, `LearningRepository`, `ContentRepository`, `SyncTransport`.
 - Versioned `QuizType` registry with exactly six initial types: `meaning_recognition`, `hanzi_recognition`, `pinyin_matching`, `audio_recognition`, `dictation`, `handwriting` (D-002). Each registration declares `id`, `version`, trained `skill`, answer schema and grader; renderers register on the client. Add quiz types by registration plus a type-specific renderer/grader.
 - Skill mapping (D-007): `meaning_recognition`, `hanzi_recognition`, `pinyin_matching` -> `meaning`; `audio_recognition`, `dictation` -> `listening`; `handwriting` -> `writing`; speaking practice (not a `QuizType`) -> `speaking`.
 - Content is sourced from dynamic course/lesson records, never hard-coded into source code.
@@ -114,6 +119,7 @@ All rows carry `user_id`/`owner_id`; RLS: owner only. Composite foreign keys `(i
 `xp_ledger(id, user_id, source_event_id UNIQUE, points, created_at)` — created and populated from `learning_events` in M7 (D-003); M3 writes events only.
 `achievements(id, code, description)` / `user_achievements(user_id, achievement_id, achieved_at)`
 `notifications_preferences(user_id, timezone, quiet_hours, enabled)`
+`push_subscriptions(id, user_id, endpoint UNIQUE, p256dh, auth, user_agent, created_at, last_success_at, revoked_at)` — Web Push (VAPID) subscriptions, owner-only RLS (D-024, M7)
 `learning_events(id, user_id, event_type, event_version, payload_json, occurred_at, idempotency_key UNIQUE)`
 `sync_operations(id, user_id, operation_id UNIQUE, client_device_id, entity_type, status, server_version)`
 
@@ -127,10 +133,10 @@ All rows carry `user_id`/`owner_id`; RLS: owner only. Composite foreign keys `(i
 
 ## Offline synchronization protocol
 
-1. Local SQLite is read model for downloaded lesson content, vocabulary, due reviews, local attempts and outbox. The database is encrypted with SQLCipher (`expo-sqlite` config plugin `useSQLCipher`), with a random per-install key generated on device and stored in the iOS Keychain via `expo-secure-store` (`WHEN_UNLOCKED_THIS_DEVICE_ONLY`). Auth tokens are stored in secure storage, never in plain SQLite/AsyncStorage. Raw audio is not persisted locally beyond the active attempt unless the learner opts in (D-011).
+1. Local IndexedDB (Dexie) is the read model for downloaded lesson content, vocabulary, due reviews, local attempts and the outbox (D-021). `navigator.storage.persist()` is requested; the UI shows unsynced operation count and warns before logout. Sensitive fields are encrypted with a non-extractable Web Crypto AES-GCM key (D-022, limits documented). Sessions are handled by Supabase Auth (`@supabase/ssr`); provider secrets never reach the browser. Raw audio is not persisted locally beyond a pending upload the learner approved.
 2. Each offline mutation gets ULID/UUID, device ID, user ID, schema version, logical timestamp, and immutable event payload.
-3. UI writes local state plus outbox entry atomically.
-4. On network restoration, sync worker sends bounded idempotent batches with auth; server verifies ownership, dedupes and acknowledges canonical versions.
+3. UI writes local state plus outbox entry atomically (single IndexedDB transaction).
+4. Sync runs on app start, `online`, `visibilitychange` (visible), end of each study session and a timer while the app is open (Safari has no Background Sync API). It sends bounded idempotent batches with auth; server verifies ownership, dedupes by `operation_id`/`idempotency_key` and acknowledges canonical versions. A Web Lock (or IndexedDB lease) prevents two tabs syncing at once.
 5. Use append-only attempts/learning events for conflict-free review history. Server deterministically replays SRS state in causal order. For editable notes, use server revision / conflict UI or explicit last-write-wins policy only after documented decision.
 6. Downloads use per-user cursor/updated_at + tombstones; deletion and logout purge appropriate local data.
 7. Re-run after interruptions without double XP or lost attempts; local audio remains local until approved upload.
@@ -150,25 +156,39 @@ All rows carry `user_id`/`owner_id`; RLS: owner only. Composite foreign keys `(i
 ## AI provider boundaries
 
 - **OpenAI:** grammar/example/quiz draft generation, document understanding and role-play. Turn-based voice first; Realtime only after an on-device stability proof (D-004). M0 performs a feasibility/auth spike only: the API mints short-lived Realtime client secrets for authenticated users; mocked responses are always labelled `MOCK` and never reported as live.
-- **Azure AI Speech:** reference-based pronunciation evaluation (zh-CN); test scores/available dimensions and Vietnamese user accents on real devices before enabling any definitive tone judgement.
-- **Google ML Kit Digital Ink:** iOS native bridge receives coordinate/timestamp strokes, downloads correct language model, returns candidate Hanzi; test model licensing and packaging/deployment. Not photo OCR.
+- **Azure AI Speech:** reference-based pronunciation evaluation (zh-CN) through `apps/api`; the browser records PCM via `AudioWorklet` and sends 16 kHz mono WAV (D-023); test scores/available dimensions and Vietnamese user accents on real devices before enabling any definitive tone judgement.
+- **Handwriting recognition (D-020):** canvas Pointer Events capture (x, y, t) strokes; `HandwritingRecognitionPort` adapters are evaluated in M0-PWA (in-browser `hanzilookup-js`; target-aware stroke matching with Hanzi Writer data after submission; optional server adapter in `apps/api` only with owner approval). No quality claim before measured top-1/top-5 on real iPhone samples. Unofficial endpoints are not used.
 - **Text-to-Speech:** configurable provider (Azure or OpenAI); cache reusable voice assets where licensing permits. No need to make a premature exclusive choice.
 
 ## Platform and release
 
-- iOS minimum version decided after latest Expo, ML Kit and Azure integration compatibility matrix is tested.
-- Expo EAS Development Build from first native-integration milestone, not only Expo Go. Current baseline: Expo SDK 58 / React Native 0.88 / iOS deployment target 16.4 (floor set by `expo-modules-core` and `expo-sqlite`); see `docs/NATIVE_COMPATIBILITY.md`.
-- Backend hosting: `apps/api` (and later the PDF worker) are plain Node.js processes configured by environment variables; Railway is the candidate host. No production deploy in M0 (D-009).
-- TestFlight private beta -> staged App Store release after privacy and safety review.
-- CI: lint, TypeScript, unit, integration with Supabase policies, migration checks, mobile JS bundle/prebuild checks, EAS build (when `EXPO_TOKEN` is configured), end-to-end smoke tests on actual iPhone (manual evidence until device automation exists).
-- Feature flags for incomplete features; release should not represent mocked AI responses as production.
-- Keep Android compatibility in shared logic; postpone Android native bridge validation and Play distribution to a separate release gate.
+- Client: Next.js 16 web app, `output: 'standalone'`, served over HTTPS (Railway candidate, D-026); PWA manifest (`display: standalone`, icons incl. `apple-touch-icon`), Serwist service worker for app shell, static assets and downloaded study content.
+- Supported targets: iPhone Safari (current and previous major iOS; minimum to be fixed after M0-PWA device tests, Web Push needs iOS ≥ 16.4), Home-Screen mode; Android Chrome and desktop browsers as secondary.
+- Distribution: private beta at an HTTPS URL with invite-only accounts; no App Store/TestFlight.
+- CI: lint, TypeScript, unit (Vitest + fake-indexeddb), integration with Supabase policies, migration checks, `next build`, Playwright E2E on WebKit with iPhone emulation, Lighthouse/PWA manifest check. Real-iPhone Safari checks are manual with evidence (`docs/RELEASE_CHECKLIST.md`).
+- Feature flags for incomplete features; release must not represent mocked AI or recognition results as production.
+- Legacy `apps/mobile` (Expo) is frozen and removed only after M0-PWA approval (`docs/MIGRATION_M0_PWA.md`).
+
+## Safari iOS constraints (design inputs)
+
+| Constraint | Design response |
+|---|---|
+| No Background Sync / Periodic Sync | Sync on open/online/visibility/session end; show pending count |
+| Home-Screen app storage is separate from Safari tab | Login and offline download happen inside the installed app; onboarding explains this |
+| Storage may be evicted (quota/inactivity) | `storage.persist()`, server is source of truth, outbox flushed eagerly, re-download on demand |
+| Magic links open Safari, not the installed app | E-mail OTP code / password (D-025) |
+| Web Push only for Home-Screen apps, iOS ≥ 16.4, after user gesture | Push + in-app reminders (D-024) |
+| `MediaRecorder` = AAC/MP4 | AudioWorklet PCM → WAV 16 kHz (D-023) |
+| getUserMedia/service worker need HTTPS; mic permission may be re-asked | HTTPS everywhere; recoverable permission UX |
+| Audio autoplay needs user gesture | Start playback from taps; `playbackRate` for slow audio |
+| Touch gestures (scroll, double-tap zoom, edge swipe) | Canvas `touch-action: none`, Pointer Events, prevent zoom; inputs ≥ 16 px |
+| `100vh`, keyboard and notch | `dvh` units, `viewport-fit=cover`, `env(safe-area-inset-*)` |
 
 ## Architecture acceptance probes
 
 1. Add a new `QuizType` and renderer without modifying old question graders; regression suite remains green.
 2. Add a new course from PDF without app code edit and without duplicating a known lexeme.
-3. Swap mock OpenAI/Azure/Ink adapters for live ones in integration tests without changing domain code.
-4. Offline quiz -> process killed -> reopen -> reconnect -> exactly one server attempt, correct next review, one XP grant.
+3. Swap mock OpenAI/Azure/handwriting adapters for live ones in integration tests without changing domain code.
+4. Offline quiz -> Safari tab/PWA killed -> reopen -> reconnect -> exactly one server attempt, correct next review, one XP grant (M7).
 5. User A cannot read user B documents, attempts, audio or dictionary even with guessed UUIDs.
 6. Failed PDF import can resume/retry; published course is not partially corrupted.

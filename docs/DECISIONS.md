@@ -10,7 +10,7 @@ Quy ước:
 ---
 
 ## D-000 — Stack nền tảng (baseline v1.2)
-- **Ngày:** 2026-11-23 · **Trạng thái:** Đã duyệt
+- **Ngày:** 2026-11-23 · **Trạng thái:** Thay thế một phần bởi D-018 (phần Expo React Native, SQLite trên thiết bị, ML Kit Digital Ink). Supabase, OpenAI, Azure, modular monolith + ports/adapters vẫn hiệu lực.
 - **Bối cảnh:** PRD v1.2 và ARCHITECTURE v1.2 đã chốt stack trước M0.
 - **Lựa chọn:** Expo React Native + TypeScript (iOS-first, Android-ready), Supabase (Postgres/Auth/Storage/RLS), SQLite trên thiết bị, OpenAI, Azure AI Speech (pronunciation assessment), Google ML Kit Digital Ink. Kiến trúc modular monolith + module contracts + ports/adapters.
 - **Lý do:** Một codebase cho iOS/Android; Supabase cung cấp Auth + RLS; các nhà cung cấp AI được bọc sau port để thay thế được.
@@ -82,7 +82,7 @@ Quy ước:
 - **Hậu quả:** CI kiểm tra không có phụ thuộc vòng (`scripts/check-deps.mjs`); pnpm dùng `node-linker=hoisted` để tương thích Metro/Expo.
 
 ## D-011 — Bảo mật dữ liệu cục bộ
-- **Ngày:** 2026-11-23 · **Trạng thái:** Đã duyệt (chủ dự án); kết quả kỹ thuật chờ kiểm chứng trên iPhone
+- **Ngày:** 2026-11-23 · **Trạng thái:** Thay thế bởi D-022 (nguyên tắc tối thiểu hóa dữ liệu nhạy cảm vẫn giữ; SQLCipher/Keychain không áp dụng cho web)
 - **Lựa chọn:** SQLCipher qua config plugin của `expo-sqlite` (`useSQLCipher: true`), khóa ngẫu nhiên 256-bit sinh trên thiết bị, lưu ở iOS Keychain qua `expo-secure-store` (`WHEN_UNLOCKED_THIS_DEVICE_ONLY`). Token đăng nhập lưu ở secure storage. Không ghi âm thanh/dữ liệu nhạy cảm xuống local nếu không cần.
 - **Lý do:** PRD yêu cầu mã hóa dữ liệu nhạy cảm offline.
 - **Hậu quả:** Nếu chưa chứng minh được trên dev build iOS → báo **BLOCKED** và đề xuất phương án an toàn (chỉ cache dữ liệu không nhạy cảm, ghi chú cá nhân chỉ trên server, hoặc mã hóa cấp trường bằng khóa Keychain) để chủ dự án duyệt.
@@ -101,7 +101,7 @@ Quy ước:
 ## Quyết định kỹ thuật phát sinh trong M0 (đề xuất, chờ chủ dự án duyệt khi nghiệm thu M0)
 
 ## D-014 — Baseline Expo SDK 58 / React Native 0.88 / iOS 16.4
-- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Ngày:** 2026-11-23 · **Trạng thái:** Thay thế bởi D-018/D-019 (chưa từng được duyệt; giữ lại làm lịch sử)
 - **Bối cảnh:** Kiến trúc yêu cầu chọn SDK hiện hành và chốt iOS deployment target sau khi kiểm tra tương thích.
 - **Lựa chọn:** `expo@~58.0.26`, `react-native@0.88.1`, `react@19.3.0`, TypeScript `~6.0.3`; iOS deployment target **16.4** (mức tối thiểu của `expo-modules-core` 58 và `expo-sqlite` 58). Phiên bản native module lấy theo `bundledNativeModules.json` của SDK 58.
 - **Lý do:** SDK mới nhất ổn định tại thời điểm M0 (`latest` trên npm); SQLCipher có sẵn trong `expo-sqlite` 58.
@@ -113,7 +113,7 @@ Quy ước:
 - **Lý do:** Ổn định, nhẹ, `inject()` giúp test không cần mở cổng mạng; không phụ thuộc nền tảng hosting.
 
 ## D-016 — Digital Ink qua local Expo module (Swift)
-- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Ngày:** 2026-11-23 · **Trạng thái:** Thay thế bởi D-020 (ML Kit Digital Ink không có SDK web)
 - **Lựa chọn:** Module cục bộ `apps/mobile/modules/digital-ink` (Expo Modules API, Swift) dùng pod `GoogleMLKit/DigitalInkRecognition`, model `zh-Hani-CN`. JS gửi strokes dạng vector (x, y, t). Interface TS trùng với `DigitalInkPort`.
 - **Lý do:** Không có thư viện React Native chính thức của Google; tự viết module mỏng giúp kiểm soát phiên bản và license.
 - **Hậu quả:** Chỉ biên dịch được trên macOS/EAS; trong môi trường Linux chỉ kiểm tra được TypeScript và cấu hình.
@@ -121,3 +121,74 @@ Quy ước:
 ## D-017 — Công cụ kiểm thử
 - **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
 - **Lựa chọn:** Vitest cho packages và API; logic thuần của app mobile đặt trong file TS không import React Native để test bằng Vitest; kiểm tra build mobile bằng `expo export` (bundle JS iOS) và `expo prebuild` (sinh project iOS) trong CI; test RLS bằng SQL chạy trên Supabase local.
+- **Cập nhật theo D-018:** phần Expo được thay bằng `next build` + Playwright (WebKit) — xem D-019. Vitest và pgTAP giữ nguyên.
+
+---
+
+## Chuyển hướng nền tảng sang Web/PWA (2026-11-23)
+
+## D-018 — Chuyển từ React Native/Expo sang Next.js Web App + PWA (ưu tiên Safari iPhone)
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đã duyệt (chủ dự án)
+- **Bối cảnh:** Chủ dự án muốn dùng trực tiếp trên iPhone mà không phụ thuộc Apple Developer Program, TestFlight, EAS hay quy trình build native. M0 native chưa được build lần nào trên thiết bị.
+- **Lựa chọn:** Ứng dụng web Next.js + TypeScript + Tailwind CSS, cài được bằng "Thêm vào Màn hình chính" (PWA), thiết kế mobile-first, nghiệm thu chính trên Safari iOS. Giữ nguyên 11 module PRD, Supabase, Fastify API, OpenAI, Azure Speech, modular monolith + contracts + ports/adapters + learning events.
+- **Lý do:** Phân phối tức thì qua HTTPS, không cần ký ứng dụng; một codebase cho iPhone, Android và desktop.
+- **Hậu quả:**
+  - ML Kit Digital Ink không dùng được → thay bằng adapter nhận dạng chữ viết tay cho web/backend (D-020); chất lượng phải được đo lại, không được giả định.
+  - SQLite/SQLCipher/Keychain → IndexedDB + Web Crypto (D-021, D-022), mức bảo vệ thấp hơn native.
+  - Thông báo nhắc học trên iOS chỉ có qua Web Push khi đã thêm vào Màn hình chính, iOS ≥ 16.4; không có thông báo cục bộ khi offline (D-024).
+  - Không có Background Sync trên Safari → đồng bộ khi mở app / có mạng lại (D-021).
+  - Không có App Store/TestFlight; phân phối bằng URL HTTPS.
+  - Code native M0 (`apps/mobile`) chỉ bị gỡ sau khi phần web tương đương đã có và được duyệt (xem `docs/MIGRATION_M0_PWA.md`).
+
+## D-019 — Stack web cụ thể
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Lựa chọn:** `apps/web` dùng Next.js 16 (App Router, `output: 'standalone'`), React 19, Tailwind CSS 4, service worker bằng Serwist 9 (`@serwist/next`), IndexedDB qua Dexie 4, `@supabase/ssr` + `@supabase/supabase-js` cho Auth (chỉ publishable key). Test: Vitest (+ `fake-indexeddb`) cho logic, Playwright với **WebKit** + mô phỏng iPhone cho E2E; kiểm thử Safari iOS thật là thủ công, có bằng chứng.
+- **Lý do:** Phiên bản ổn định mới nhất tại thời điểm lập kế hoạch (npm `latest`: next 16.4.6, @serwist/next 9.5.15, dexie 4.4.7, tailwindcss 4.3.5). Dexie đã xử lý nhiều lỗi IndexedDB của Safari; Serwist là công cụ PWA được duy trì cho Next.js.
+- **Hậu quả:** Bản build production của Next.js phải dùng webpack nếu `@serwist/next` chưa hỗ trợ Turbopack cho production — kiểm chứng ở M0-PWA; phương án dự phòng là service worker viết tay biên dịch bằng `@serwist/cli`/esbuild.
+
+## D-020 — Nhận dạng chữ viết tay trên web qua `HandwritingRecognitionPort`
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Bối cảnh:** PRD-05 yêu cầu nhận dạng từ nét vector (không OCR ảnh), không lộ đáp án trước khi nộp, ứng viên sai không được tính đúng.
+- **Lựa chọn:** Đổi `DigitalInkPort` thành `HandwritingRecognitionPort` (cùng dữ liệu nét x, y, t đã có trong `@mandarin/contracts`). Canvas dùng Pointer Events thu nét. Các adapter ứng viên được **đánh giá** trong M0-PWA, chưa chọn mặc định:
+  1. `hanzilookup-js` — nhận dạng nét offline ngay trên trình duyệt, trả danh sách ứng viên (code ISC; dữ liệu phái sinh từ Make Me a Hanzi — phải kiểm tra giấy phép dữ liệu trước khi dùng).
+  2. Đối chiếu nét theo chữ đích bằng dữ liệu `hanzi-writer-data` (Arphic Public License) — chỉ trả lời "khớp/không khớp với chữ đích", chạy **sau khi nộp**; dùng để chấm và gợi ý thứ tự nét, không thay thế nhận dạng mở.
+  3. Adapter backend trong `apps/api` (ví dụ dịch vụ thương mại như MyScript iink, hoặc mô hình tự host) — chỉ cân nhắc nếu (1) không đạt ngưỡng; cần chủ dự án duyệt chi phí/giấy phép.
+  4. **Không dùng** endpoint không chính thức (ví dụ Google Input Tools) cho production.
+- **Đánh giá bắt buộc:** bộ mẫu viết tay thật thu trên iPhone Safari (tối thiểu 20 chữ × 5 lượt, gồm 山), đo top-1/top-5, độ trễ, kích thước tải. Không ghi nhận chất lượng nào trước khi có số đo.
+- **Hậu quả:** Grader `handwriting` trong `@mandarin/domain` giữ nguyên (chỉ ứng viên top-1 mới đúng). `source` của kết quả ghi rõ adapter nào (`live:hanzilookup`, `mock`…).
+
+## D-021 — Offline queue + đồng bộ idempotent trên IndexedDB
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Lựa chọn:** IndexedDB (Dexie) chứa: nội dung đã tải (bài, từ, thẻ ôn), attempts cục bộ, và **outbox** gồm các mutation bất biến (`operation_id` ULID, `device_id`, `user_id`, `schema_version`, `logical_clock`, `payload`). Ghi state + outbox trong cùng một transaction IndexedDB. Đồng bộ chạy khi: mở app, sự kiện `online`, `visibilitychange` → visible, sau mỗi phiên học, và hẹn giờ khi app đang mở (Safari không có Background Sync). Server khử trùng lặp bằng `sync_operations.operation_id UNIQUE` + `idempotency_key` trên attempts/events, trả version chuẩn. Gọi `navigator.storage.persist()` và hiển thị số thao tác chưa đồng bộ; cảnh báo trước khi đăng xuất nếu outbox chưa rỗng.
+- **Lý do:** Không mất tiến độ dù tab bị đóng, mất mạng hoặc iOS xóa bộ nhớ trình duyệt.
+- **Hậu quả:** Test bắt buộc: chết tab giữa chừng → mở lại → gửi lại → đúng một bản ghi phía server.
+
+## D-022 — Bảo vệ dữ liệu cục bộ trên web (thay D-011)
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất — **cần chủ dự án duyệt** vì mức bảo vệ thấp hơn D-011
+- **Lựa chọn:** (a) Tối thiểu hóa: chỉ lưu offline dữ liệu cần để học; ghi âm không lưu IndexedDB trừ khi đang chờ gửi và người học đồng ý; (b) trường nhạy cảm (ghi chú cá nhân, câu trả lời tự do) mã hóa AES-GCM bằng khóa Web Crypto **non-extractable** lưu trong IndexedDB; (c) phiên đăng nhập do Supabase quản lý, refresh token không đưa vào `localStorage` khi có lựa chọn cookie HttpOnly qua `@supabase/ssr`; (d) đăng xuất/xóa tài khoản xóa sạch IndexedDB, Cache Storage và service worker cache của người dùng.
+- **Giới hạn phải nói rõ:** khóa nằm cùng thiết bị/trình duyệt nên (b) chỉ chống đọc file thô, **không** tương đương Keychain/SQLCipher; ai mở được trình duyệt đã đăng nhập vẫn xem được dữ liệu.
+
+## D-023 — Thu âm trên Safari: PCM → WAV 16 kHz phía client
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Bối cảnh:** `MediaRecorder` trên Safari xuất `audio/mp4` (AAC), trong khi Azure REST short-audio cần WAV PCM (hoặc OGG/Opus).
+- **Lựa chọn:** `getUserMedia` + Web Audio `AudioWorklet` lấy PCM, giảm mẫu xuống 16 kHz mono 16-bit và đóng gói WAV ngay trên trình duyệt (logic thuần, có unit test). Phương án dự phòng (nếu AudioWorklet lỗi trên thiết bị): ghi `audio/mp4` bằng MediaRecorder và chuyển mã trên `apps/api` (cần thêm ffmpeg vào image — phải duyệt).
+- **Hậu quả:** Contract `PronunciationAssessmentRequest` giữ WAV; thêm trường `audioMimeType` nếu dùng dự phòng.
+
+## D-024 — Nhắc học trên web
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất — **cần chủ dự án duyệt** vì thay đổi cách đáp ứng PRD-10
+- **Bối cảnh:** Web không có "local notification" hẹn giờ khi offline; iOS chỉ cho Web Push với web app đã thêm vào Màn hình chính (iOS ≥ 16.4) và sau khi người dùng cho phép.
+- **Lựa chọn:** PRD-10 giữ nguyên chức năng (lịch ôn, tùy chọn, giờ yên lặng, múi giờ) nhưng kênh gửi là: Web Push (VAPID) do server lên lịch + nhắc trong app (badge, banner khi mở). Lịch ôn vẫn tính đúng khi offline; chỉ việc *gửi thông báo* cần server và mạng.
+- **Hậu quả:** Thêm bảng `push_subscriptions` và job lên lịch ở M7; tiêu chí nghiệm thu PRD-10 được viết lại cho web.
+
+## D-025 — Đăng nhập trong PWA
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Bối cảnh:** Web app đã thêm vào Màn hình chính trên iOS có bộ nhớ (cookie, IndexedDB) **tách riêng** khỏi Safari; link "magic link" trong email sẽ mở Safari chứ không mở app đã cài → đăng nhập không vào được app.
+- **Lựa chọn:** Supabase Auth bằng **mã OTP 6 số qua email** (nhập ngay trong app) và/hoặc mật khẩu; không dựa vào magic link hay OAuth redirect cho luồng chính.
+
+## D-026 — Hosting web
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Lựa chọn:** `apps/web` build `output: 'standalone'` (tiến trình Node chuẩn, có Dockerfile chung), cùng ứng viên hosting Railway như API (D-009); không dùng API riêng của nhà cung cấp hosting. HTTPS bắt buộc (getUserMedia, service worker). Môi trường dev trên iPhone thật dùng URL HTTPS (preview deploy hoặc tunnel). Không deploy production trong M0-PWA.
+
+## D-027 — Quy trình Git cho việc chuyển đổi
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Lựa chọn:** Branch `claude/m0-pwa` tạo từ commit `7e20b16` (đầu PR #1) để giữ code tái sử dụng. PR #1 giữ nguyên, không merge, không đóng; chủ dự án tự đóng sau khi PR M0-PWA được duyệt. Code native chỉ gỡ trong commit riêng, sau khi phần web tương đương đã có và được duyệt.

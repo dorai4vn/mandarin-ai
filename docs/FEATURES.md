@@ -2,7 +2,7 @@
 
 Trạng thái: `Chưa bắt đầu` · `Đang làm` · `MOCKED` (chạy bằng adapter giả, có nhãn) · `VERIFIED` (có bằng chứng thật) · `BLOCKED` (thiếu tài nguyên bên ngoài) · `Hoàn thành` (đạt tiêu chí nghiệm thu PRD).
 
-Cập nhật lần cuối: 2026-11-23 (M0).
+Cập nhật lần cuối: 2026-11-23 — chuyển hướng Web/PWA (D-018). Phạm vi 11 module giữ nguyên; trạng thái hạ tầng dưới đây là của M0 native (PR #1), M0-PWA chưa bắt đầu.
 
 | PRD | Tính năng | Milestone | Trạng thái | Ghi chú |
 |---|---|---|---|---|
@@ -10,15 +10,15 @@ Cập nhật lần cuối: 2026-11-23 (M0).
 | PRD-02 | Từ điển cá nhân, tìm kiếm Hanzi/Pinyin/tiếng Việt, tags/topics | M2 | Chưa bắt đầu | |
 | PRD-03 | Hanzi visual etymology có nguồn | M5 | Chưa bắt đầu | |
 | PRD-04 | Quiz & spaced repetition theo skill | M3 | Đang làm (contract) | M0: registry 6 QuizType + mapping skill (D-002, D-007) |
-| PRD-05 | Mini game gợi ý → viết tay (ML Kit Digital Ink) | M5 | Đang làm (spike) | M0: native module + màn hình spike 山; cần iPhone thật |
+| PRD-05 | Mini game gợi ý → viết tay (canvas + HandwritingRecognitionPort) | M5 | Kế hoạch | M0-PWA: spike canvas + đánh giá adapter (D-020); module ML Kit native bị thay thế |
 | PRD-06 | Nghe & nói (Azure, OpenAI voice) | M6 | Đang làm (spike) | M0: ghi âm + đường Azure + spike auth Realtime (D-004) |
 | PRD-07 | AI tutor | M7 | Chưa bắt đầu | |
 | PRD-08 | Import ảnh/văn bản/PDF | M4 / M7 | Chưa bắt đầu | Test bằng PDF mẫu tự tạo |
 | PRD-09 | Gamification (XP engine) | M7 | Chưa bắt đầu | M3 chỉ phát learning events (D-003) |
-| PRD-10 | Nhắc nhở & lịch ôn | M7 | Chưa bắt đầu | |
+| PRD-10 | Nhắc nhở & lịch ôn | M7 | Chưa bắt đầu | Web Push + nhắc trong app (D-024, chờ duyệt) |
 | PRD-11 | Learning Library & import giáo trình | M2 / M4 | Chưa bắt đầu | Starter fixture (D-012) |
 
-## Hạ tầng M0
+## Hạ tầng M0 (native — lịch sử, PR #1)
 
 | Hạng mục | Trạng thái | Bằng chứng / ghi chú |
 |---|---|---|
