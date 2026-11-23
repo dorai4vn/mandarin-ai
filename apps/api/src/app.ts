@@ -13,7 +13,7 @@ import {
 } from '@mandarin/contracts';
 import { createHash, randomUUID } from 'node:crypto';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
-import type { AuthUser, TokenVerifier } from './auth.js';
+import { authModes, type AuthUser, type TokenVerifier } from './auth.js';
 import type { AppConfig } from './config.js';
 import type { Providers } from './providers.js';
 import { FixedWindowLimiter } from './rate-limit.js';
@@ -102,6 +102,7 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
     status: 'ok',
     version: config.version,
     environment: config.appEnv,
+    auth: authModes(config),
     providers: {
       openaiRealtime: providers.conversation?.mode ?? 'disabled',
       azureSpeech: providers.pronunciation?.mode ?? 'disabled',

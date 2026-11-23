@@ -43,7 +43,11 @@ const EnvSchema = z.object({
   IP_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(10).max(10000).default(300),
   /** Behind a reverse proxy (Railway, Vercel) set true so the client IP comes from X-Forwarded-For. */
   TRUST_PROXY: z.enum(['true', 'false']).default('false'),
-  /** Server-only key for Supabase Storage writes. */
+  /**
+   * Server-only Supabase key for Storage writes: the new secret key (`sb_secret_…`, preferred)
+   * or the legacy `service_role` JWT. SUPABASE_SERVICE_ROLE_KEY is accepted as an alias.
+   */
+  SUPABASE_SECRET_KEY: optional,
   SUPABASE_SERVICE_ROLE_KEY: optional,
   STORAGE_BUCKET: z
     .string()
@@ -56,6 +60,8 @@ export type AppEnv = 'development' | 'preview' | 'production';
 export type AppConfig = z.infer<typeof EnvSchema> & {
   version: string;
   appEnv: AppEnv;
+  /** SUPABASE_SECRET_KEY, or the legacy SUPABASE_SERVICE_ROLE_KEY alias. */
+  supabaseSecretKey: string | undefined;
   webOrigins: string[];
   webOriginRegex: RegExp | null;
 };
@@ -68,11 +74,20 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error(`Invalid API configuration: ${fields}`);
   }
   const cfg = parsed.data;
+  const appEnv: AppEnv =
+    cfg.APP_ENV ?? (cfg.NODE_ENV === 'production' ? 'production' : 'development');
+  if (appEnv !== 'development' && cfg.SUPABASE_URL && !cfg.SUPABASE_URL.startsWith('https://')) {
+    throw new Error('Invalid API configuration: SUPABASE_URL must use https outside development');
+  }
+  const supabaseSecretKey = cfg.SUPABASE_SECRET_KEY ?? cfg.SUPABASE_SERVICE_ROLE_KEY;
+  if (supabaseSecretKey?.startsWith('sb_publishable_')) {
+    throw new Error(
+      'Invalid API configuration: SUPABASE_SECRET_KEY holds a publishable key (use the secret key)',
+    );
+  }
   if (!cfg.SUPABASE_URL && !cfg.SUPABASE_JWT_SECRET) {
     throw new Error('Invalid API configuration: set SUPABASE_URL (JWKS) or SUPABASE_JWT_SECRET');
   }
-  const appEnv: AppEnv =
-    cfg.APP_ENV ?? (cfg.NODE_ENV === 'production' ? 'production' : 'development');
   // Mocks never stand in for providers in production; in preview only when explicitly allowed.
   const mocksAllowed =
     appEnv === 'development' || (appEnv === 'preview' && cfg.ALLOW_MOCKS_IN_PREVIEW === 'true');
@@ -105,6 +120,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   return {
     ...cfg,
     MISSING_PROVIDER_MODE: mode,
+    supabaseSecretKey,
     appEnv,
     webOrigins,
     webOriginRegex,

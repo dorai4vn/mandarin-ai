@@ -26,7 +26,7 @@ Trạng thái: **Preview (thử nghiệm)**, build từ branch `claude/m0-pwa` (
 ## 1. Tách biệt môi trường (preview ≠ production)
 | Thành phần | Preview (bây giờ) | Production (sau này) |
 |---|---|---|
-| Supabase | Dự án **`mandarin-ai-preview`** riêng | Dự án production **riêng**, tạo sau khi đo region (D-034) |
+| Supabase | Dự án **`mandarin-ai-dev`** riêng (tên chủ dự án đã tạo) | Dự án production **riêng**, tạo sau khi đo region (D-034) |
 | Railway | Project **`mandarin-ai-preview`**, `APP_ENV=preview` | Project/environment production riêng, `APP_ENV=production` |
 | Vercel | Biến môi trường phạm vi **Preview**; Deployment Protection bật | Biến phạm vi **Production**; tên miền riêng |
 | Dữ liệu | Chỉ tài khoản thử nghiệm; có thể xóa bất cứ lúc nào | Dữ liệu người học thật |
@@ -36,23 +36,31 @@ Không dùng chung database, khóa hay bucket giữa preview và production.
 
 ## 2. Biến môi trường
 
-### 2.1 Supabase (dự án `mandarin-ai-preview`) — lấy ở Project Settings → API Keys / Data API
+### 2.1 Supabase (dự án `mandarin-ai-dev`) — ba loại khóa khác nhau
+
+| Loại | Trông như | Là JWT? | Dùng để | Đặt ở |
+|---|---|---|---|---|
+| **Publishable key** | `sb_publishable_…` (hoặc anon key kiểu cũ `eyJ…`) | Không (khóa mới) | Trình duyệt gọi Supabase Auth (đăng nhập OTP). Công khai theo thiết kế; dữ liệu được RLS bảo vệ | Vercel `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` |
+| **Secret key** | `sb_secret_…` (hoặc service_role kiểu cũ `eyJ…`) | Không (khóa mới) | Server ghi Storage với quyền đặc biệt (bỏ qua RLS). API gửi trong header `apikey` | Railway `SUPABASE_SECRET_KEY` — **BÍ MẬT** |
+| **JWT signing keys** | Cặp khóa bất đối xứng (ES256) ở Project Settings → JWT Keys; phần **công khai** được Supabase đăng tại `<Project URL>/auth/v1/.well-known/jwks.json` | — | Supabase dùng khóa riêng để **ký** access token của người dùng; API tự tải khóa công khai để **kiểm tra** | **Không cần đặt gì** — API chỉ cần `SUPABASE_URL` |
+| Legacy JWT secret | Chuỗi bí mật HS256 (chỉ dự án/khóa kiểu cũ) | — | Chỉ khi dự án vẫn ký token bằng HS256 | Railway `SUPABASE_JWT_SECRET` — **chỉ đặt nếu bước kiểm tra ở mục 3.11 cho thấy cần** |
+
+Lấy giá trị ở **Project Settings → API Keys** (Project URL, publishable, secret) và **Project Settings → JWT Keys** (xem loại khóa đang dùng).
+
 | Giá trị | Dùng ở | Loại |
 |---|---|---|
 | Project URL `https://<ref>.supabase.co` | Railway `SUPABASE_URL`, Vercel `NEXT_PUBLIC_SUPABASE_URL` | công khai |
-| Publishable key (`sb_publishable_…`) hoặc anon key | Vercel `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | công khai (được RLS bảo vệ) |
-| Secret key (`sb_secret_…`) / service role | Railway `SUPABASE_SERVICE_ROLE_KEY` | **BÍ MẬT** — không bao giờ đặt ở Vercel |
-| Mật khẩu database | Không dùng trong Preview | **BÍ MẬT** — lưu trong trình quản lý mật khẩu của anh/chị |
+| Mật khẩu database | **Không dùng** trong Preview | **BÍ MẬT** — chỉ lưu trong trình quản lý mật khẩu |
 
 ### 2.2 Railway — service `api`
 | Biến | Loại | Giá trị Preview |
 |---|---|---|
 | `APP_ENV` | cấu hình | `preview` |
 | `TRUST_PROXY` | cấu hình | `true` |
-| `SUPABASE_URL` | cấu hình | Project URL (2.1) — API lấy khóa xác thực JWT (JWKS) từ đây |
+| `SUPABASE_URL` | cấu hình | Project URL (2.1), bắt buộc `https://` — API lấy khóa công khai (JWKS) từ đây và kiểm tra `iss = <Project URL>/auth/v1` |
 | `WEB_ORIGINS` | cấu hình | URL Vercel cố định của branch, ví dụ `https://mandarin-ai-git-claude-m0-pwa-<team>.vercel.app` |
 | `WEB_ORIGIN_REGEX` | cấu hình (tùy chọn) | `^https://mandarin-ai-[a-z0-9-]+-<team>\.vercel\.app$` — thay `<team>` bằng slug team Vercel của anh/chị |
-| `SUPABASE_SERVICE_ROLE_KEY` | **BÍ MẬT** | Secret key (2.1) — để upload PDF vào bucket private |
+| `SUPABASE_SECRET_KEY` | **BÍ MẬT** | Secret key `sb_secret_…` (2.1) — để upload PDF vào bucket private. (Tên cũ `SUPABASE_SERVICE_ROLE_KEY` vẫn được chấp nhận) |
 | `STORAGE_BUCKET` | cấu hình | `documents` |
 | `HANDWRITING_ADAPTER` | cấu hình | **`disabled`** (D-029: `hanzilookup` bị API từ chối ngoài development) |
 | `ALLOW_MOCKS_IN_PREVIEW` | cấu hình | `false` (mặc định). Đặt `true` chỉ để thử giao diện chấm phát âm/Realtime **giả lập có nhãn MOCK** |
@@ -62,7 +70,7 @@ Không dùng chung database, khóa hay bucket giữa preview và production.
 | `OPENAI_API_KEY` | **BÍ MẬT** | Để trống cho tới khi thử OpenAI thật |
 | `AZURE_SPEECH_KEY` | **BÍ MẬT** | Để trống cho tới khi thử Azure thật |
 | `AZURE_SPEECH_REGION`, `OPENAI_REALTIME_MODEL` | cấu hình | Chỉ khi có khóa tương ứng |
-| `SUPABASE_JWT_SECRET` | **BÍ MẬT** | **Không đặt** (chỉ cần với dự án Supabase dùng JWT HS256 kiểu cũ) |
+| `SUPABASE_JWT_SECRET` | **BÍ MẬT** | **Không đặt** — trừ khi mục 3.11 cho thấy dự án còn ký token bằng HS256 (Legacy JWT secret) |
 | `PORT`, `NODE_ENV` | tự động | Railway và Dockerfile tự đặt — không nhập |
 
 **Không thể** dùng mock lưu dữ liệu trên Preview: đồng bộ và lưu file chỉ chạy với backend thật; dữ liệu học đã nhập luôn ở trạng thái "chờ đồng bộ" trên máy cho tới khi M1 có bảng Postgres (D-035).
@@ -83,7 +91,7 @@ Vercel **không** chứa khóa bí mật nào.
 
 ## 3. Bước 1 — Supabase (≈ 15 phút) · anh/chị làm
 1. Vào **supabase.com** → **Sign in** (có thể dùng GitHub) → **New project**.
-2. **Organization:** tạo mới hoặc chọn sẵn. **Project name:** `mandarin-ai-preview`. **Database password:** bấm *Generate*, lưu vào trình quản lý mật khẩu (không gửi qua chat).
+2. **Organization:** tạo mới hoặc chọn sẵn. **Project name:** `mandarin-ai-dev` (anh/chị đã tạo). **Database password:** bấm *Generate*, lưu vào trình quản lý mật khẩu (không gửi qua chat).
 3. **Region:** chọn region gần người dùng thử nghiệm (ví dụ *Southeast Asia (Singapore)*) — với Preview chấp nhận được; production sẽ chọn lại bằng đo đạc (D-034).
 4. Bấm **Create new project**, chờ trạng thái xanh.
 5. **SQL Editor** → **New query** → mở file `supabase/migrations/20261123000000_m0_profiles_baseline.sql` trên GitHub (nút *Raw*), sao chép toàn bộ, dán vào → **Run**. Kết quả mong đợi: "Success. No rows returned".
@@ -91,7 +99,13 @@ Vercel **không** chứa khóa bí mật nào.
 7. **Authentication → Sign In / Providers → Email:** bật *Enable Email provider*; bật *Confirm email*.
 8. **Authentication → Emails → Templates → Magic Link:** thêm vào nội dung email dòng `Mã đăng nhập Mandarin AI: {{ .Token }}` → **Save** (app dùng mã 6 số, D-025).
 9. **Authentication → Sessions** (nếu có): kiểm tra *Detect and revoke potentially compromised refresh tokens* đang bật.
-10. **Project Settings → API Keys:** ghi lại (cho bước 2–3) Project URL, publishable key (công khai); secret key chỉ dán thẳng vào Railway ở bước 2.
+10. **Project Settings → API Keys:** ghi lại (cho bước 2–3) Project URL, publishable key (công khai); secret key chỉ dán thẳng vào Railway ở bước 2. Nếu trang chỉ có "Legacy API keys" (anon/service_role): bấm tạo **publishable key** và **secret key** mới (khuyến nghị) — hoặc dùng anon/service_role kiểu cũ (API vẫn hỗ trợ).
+11. **Project Settings → JWT Keys** — xác định cách Supabase ký token người dùng:
+    - Thấy **Current key** loại **ECC (P-256)** hoặc RSA → token ký **bất đối xứng** → Railway **chỉ cần `SUPABASE_URL`**, không đặt `SUPABASE_JWT_SECRET`. Kiểm tra nhanh: mở `https://<ref>.supabase.co/auth/v1/.well-known/jwks.json` trên trình duyệt → thấy `"keys":[{…"alg":"ES256"…}]`.
+    - Chỉ thấy **Legacy JWT Secret** đang là khóa hiện hành (JWKS trả `"keys":[]`) → khuyến nghị bấm **Migrate JWT secret** / **Rotate keys** để chuyển sang khóa bất đối xứng; nếu chưa muốn đổi, đặt thêm `SUPABASE_JWT_SECRET` trên Railway (giá trị Legacy JWT Secret — **bí mật**).
+    - Trong lúc xoay khóa (cả hai cùng hợp lệ): đặt cả `SUPABASE_URL` và `SUPABASE_JWT_SECRET`; API chọn cách kiểm tra theo từng token. Khi khóa HS256 cũ đã bị thu hồi → xóa `SUPABASE_JWT_SECRET`.
+
+**Migration cần chạy (đúng 1 file, chạy 1 lần):** `supabase/migrations/20261123000000_m0_profiles_baseline.sql` — tạo bảng `profiles` + RLS + trigger tạo profile khi người dùng đăng ký. Chạy lại lần 2 sẽ báo lỗi "already exists" (an toàn, không mất dữ liệu). Bucket `documents` tạo bằng giao diện (bước 6), không bằng migration.
 
 ## 4. Bước 2 — Railway (≈ 15 phút) · anh/chị làm
 1. Vào **railway.com** → **Login** → **GitHub** → cho phép.
@@ -113,13 +127,13 @@ Vercel **không** chứa khóa bí mật nào.
    RATE_LIMIT_PER_MINUTE=20
    IP_RATE_LIMIT_PER_MINUTE=300
    ```
-   Sau đó **New Variable** → tên `SUPABASE_SERVICE_ROLE_KEY` → dán secret key Supabase → **Add** (đây là bí mật, chỉ dán ở đây).
+   Sau đó **New Variable** → tên `SUPABASE_SECRET_KEY` → dán **secret key** (`sb_secret_…`) của Supabase → **Add** (đây là bí mật, chỉ dán ở đây). **Không** dán publishable key vào đây — API sẽ từ chối khởi động nếu nhầm.
 6. **Settings → Networking → Generate Domain** → ghi lại URL `https://….up.railway.app`.
 7. **Deployments:** chờ **Success**. Mở `https://<domain>/health` trên trình duyệt. Mong đợi:
    ```json
-   {"status":"ok","environment":"preview","providers":{"openaiRealtime":"disabled","azureSpeech":"disabled","handwriting":"disabled","storage":"live","sync":"disabled"}}
+   {"status":"ok","version":"0.1.0","environment":"preview","auth":["jwks"],"providers":{"openaiRealtime":"disabled","azureSpeech":"disabled","handwriting":"disabled","storage":"live","sync":"disabled"}}
    ```
-   `storage: live` = đã có khóa Supabase; `sync: disabled` là **đúng** (chưa có database đồng bộ — M1).
+   `auth: ["jwks"]` = API kiểm tra token bằng khóa công khai của Supabase; `storage: live` = đã có secret key; `sync: disabled` là **đúng** (chưa có database đồng bộ — M1).
 8. Gửi cho Claude **URL API** (công khai) nếu muốn Claude kiểm tra.
 
 ## 5. Bước 3 — Vercel (≈ 15 phút) · anh/chị làm

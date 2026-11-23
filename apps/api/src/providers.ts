@@ -60,10 +60,10 @@ export function createProviders(config: AppConfig): Providers {
         : null,
     handwriting: handwriting(config, allowMock),
     storage:
-      config.SUPABASE_URL && config.SUPABASE_SERVICE_ROLE_KEY
+      config.SUPABASE_URL && config.supabaseSecretKey
         ? new SupabaseObjectStorage({
             url: config.SUPABASE_URL,
-            serviceRoleKey: config.SUPABASE_SERVICE_ROLE_KEY,
+            secretKey: config.supabaseSecretKey,
             bucket: config.STORAGE_BUCKET,
           })
         : allowStatefulMock

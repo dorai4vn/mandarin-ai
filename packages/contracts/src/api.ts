@@ -9,6 +9,8 @@ export const HealthResponseSchema = z.object({
   status: z.literal('ok'),
   version: z.string(),
   environment: z.enum(['development', 'preview', 'production']),
+  /** Enabled access-token verification methods (no secrets): JWKS (asymmetric) and/or HS256. */
+  auth: z.array(z.enum(['jwks', 'hs256'])),
   providers: z.object({
     openaiRealtime: z.enum(['live', 'mock', 'disabled']),
     azureSpeech: z.enum(['live', 'mock', 'disabled']),

@@ -281,3 +281,9 @@ Quy ước:
   - Trình duyệt **không** coi xác nhận có `source: "mock"` là đã lưu, trừ bản build dev/E2E đặt `NEXT_PUBLIC_ALLOW_MOCK_SYNC=true`; ngược lại thao tác giữ trạng thái chờ với lỗi `server_not_persistent`.
   - Chip trạng thái hiển thị "lỗi đồng bộ" khi có thao tác bị từ chối; chỉ báo "Đã đồng bộ" khi không còn thao tác chờ **và** không có thao tác bị từ chối (sửa G1).
 - **Hậu quả:** Trên Preview, đồng bộ chỉ hoạt động khi có backend lưu bền (Postgres `sync_operations` — M1). Trước đó, dữ liệu học trên Preview chỉ nằm trên thiết bị và luôn hiện "chờ đồng bộ".
+
+## D-036 — Xác thực access token Supabase theo thuật toán của từng token
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất (sửa trong phạm vi M0-PWA)
+- **Bối cảnh:** Dự án Supabase mới ký access token bằng **JWT signing keys bất đối xứng** (ES256), công bố khóa công khai qua JWKS; dự án cũ dùng **Legacy JWT secret** (HS256); khi xoay khóa có thể tồn tại cả hai. Code M0 chỉ dùng **một** trong hai (có secret thì bỏ JWKS). API keys mới (`sb_publishable_…`, `sb_secret_…`) **không phải JWT**.
+- **Lựa chọn:** Chọn cách kiểm tra theo `alg` của từng token: ES256/RS256 → JWKS từ `SUPABASE_URL` (cache 10 phút); HS256 → chỉ khi `SUPABASE_JWT_SECRET` được đặt; thuật toán khác/`none` → từ chối. Bắt buộc `aud=authenticated`, `iss=<SUPABASE_URL>/auth/v1`, `role=authenticated`, `exp`, `sub` là UUID; dung sai đồng hồ 30 s. Storage dùng `SUPABASE_SECRET_KEY` trong header `apikey` (JWT kiểu cũ gửi thêm Bearer). `SUPABASE_URL` phải là https ngoài development; publishable key đặt nhầm vào biến secret → API từ chối khởi động. `/health` báo `auth: ["jwks"|"hs256"]` (không lộ khóa).
+- **Hậu quả:** Railway chỉ cần `SUPABASE_URL` + `SUPABASE_SECRET_KEY` với dự án mới; `SUPABASE_JWT_SECRET` chỉ dùng cho dự án/giai đoạn HS256.

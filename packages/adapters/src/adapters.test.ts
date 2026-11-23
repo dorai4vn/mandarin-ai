@@ -10,6 +10,7 @@ import {
   AzurePronunciationAssessment,
   OpenAIRealtimeSessions,
   SupabaseObjectStorage,
+  storageAuthHeaders,
   buildPronunciationHeader,
   mapAzureResponse,
 } from './server.js';
@@ -165,7 +166,7 @@ describe('cross-platform handwriting + sync/storage mocks', () => {
     const fetchMock = vi.fn(async () => new Response('{}', { status: 200 }));
     const s = new SupabaseObjectStorage({
       url: 'https://x.supabase.co/',
-      serviceRoleKey: 'k',
+      secretKey: 'sb_secret_test',
       bucket: 'documents',
       fetch: fetchMock,
     });
@@ -174,5 +175,19 @@ describe('cross-platform handwriting + sync/storage mocks', () => {
       'https://x.supabase.co/storage/v1/object/documents/u/abc.pdf',
     );
     await expect(s.put('../etc/passwd', new Uint8Array([1]), 'application/pdf')).rejects.toThrow();
+  });
+});
+
+describe('Supabase Storage auth headers (new vs legacy keys)', () => {
+  it('sends sb_secret_ keys only in the apikey header (they are not JWTs)', () => {
+    const h = storageAuthHeaders('sb_secret_abc', 'application/pdf');
+    expect(h.apikey).toBe('sb_secret_abc');
+    expect(h.Authorization).toBeUndefined();
+  });
+
+  it('also sends legacy service_role JWTs as Bearer', () => {
+    const h = storageAuthHeaders('eyJhbGciOiJIUzI1NiJ9.x.y', 'application/pdf');
+    expect(h.apikey).toBe('eyJhbGciOiJIUzI1NiJ9.x.y');
+    expect(h.Authorization).toBe('Bearer eyJhbGciOiJIUzI1NiJ9.x.y');
   });
 });

@@ -2,10 +2,25 @@ import { ProviderError, type FetchLike, type ObjectStoragePort } from '../ports.
 
 export interface SupabaseStorageConfig {
   url: string;
-  /** Service role key — server only. */
-  serviceRoleKey: string;
+  /**
+   * Server-only key: the new secret API key (`sb_secret_…`) or a legacy `service_role` JWT.
+   * New-style keys are not JWTs and must be sent in the `apikey` header only.
+   */
+  secretKey: string;
   bucket: string;
   fetch?: FetchLike;
+}
+
+/** Headers for Supabase Storage with a privileged key (new `sb_secret_…` or legacy JWT). */
+export function storageAuthHeaders(secretKey: string, contentType: string): Record<string, string> {
+  const headers: Record<string, string> = {
+    apikey: secretKey,
+    'Content-Type': contentType,
+    'x-upsert': 'false',
+  };
+  // Legacy service_role keys are JWTs and are also sent as Bearer; sb_secret_ keys must not be.
+  if (secretKey.startsWith('eyJ')) headers.Authorization = `Bearer ${secretKey}`;
+  return headers;
 }
 
 const SAFE_PATH = /^[a-zA-Z0-9/_.-]{1,512}$/;
@@ -24,11 +39,7 @@ export class SupabaseObjectStorage implements ObjectStoragePort {
     const url = `${this.config.url.replace(/\/$/, '')}/storage/v1/object/${this.config.bucket}/${path}`;
     const res = await this.fetchImpl(url, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.config.serviceRoleKey}`,
-        'Content-Type': contentType,
-        'x-upsert': 'false',
-      },
+      headers: storageAuthHeaders(this.config.secretKey, contentType),
       body: body as unknown as BodyInit,
       signal: AbortSignal.timeout(60_000),
     });
