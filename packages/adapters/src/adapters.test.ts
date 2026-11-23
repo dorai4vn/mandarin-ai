@@ -1,0 +1,121 @@
+import { describe, expect, it, vi } from 'vitest';
+import { MockConversation, MockDigitalInk, MockPronunciationAssessment } from './index.js';
+import {
+  AzurePronunciationAssessment,
+  OpenAIRealtimeSessions,
+  buildPronunciationHeader,
+  mapAzureResponse,
+} from './server.js';
+
+describe('mock adapters are always labelled', () => {
+  it('returns source=mock and never invents pronunciation scores', async () => {
+    const ink = await new MockDigitalInk().recognize({
+      languageTag: 'zh-Hani-CN',
+      strokes: [{ points: [{ x: 0, y: 0, t: 0 }] }],
+    });
+    expect(ink.source).toBe('mock');
+    const pa = await new MockPronunciationAssessment().assess({
+      referenceText: '山',
+      locale: 'zh-CN',
+      audioBase64: 'AA==',
+    });
+    expect(pa.source).toBe('mock');
+    expect(Object.values(pa.scores).every((v) => v === null)).toBe(true);
+    expect((await new MockConversation().createSessionGrant()).source).toBe('mock');
+  });
+});
+
+describe('Azure pronunciation adapter', () => {
+  it('encodes the assessment header as base64 JSON with the reference text', () => {
+    const decoded = JSON.parse(Buffer.from(buildPronunciationHeader('你好'), 'base64').toString());
+    expect(decoded.ReferenceText).toBe('你好');
+    expect(decoded.GradingSystem).toBe('HundredMark');
+  });
+
+  it('maps provider scores and keeps missing dimensions null', () => {
+    const r = mapAzureResponse({
+      RecognitionStatus: 'Success',
+      NBest: [
+        {
+          Display: '山。',
+          PronunciationAssessment: { AccuracyScore: 92, FluencyScore: 88, PronScore: 90 },
+          Words: [
+            { Word: '山', PronunciationAssessment: { AccuracyScore: 92, ErrorType: 'None' } },
+          ],
+        },
+      ],
+    });
+    expect(r.source).toBe('live');
+    expect(r.scores).toEqual({
+      accuracy: 92,
+      fluency: 88,
+      completeness: null,
+      prosody: null,
+      pronunciation: 90,
+    });
+    expect(r.words).toEqual([{ word: '山', accuracy: 92, errorType: 'None' }]);
+  });
+
+  it('calls the regional endpoint with the key header and rejects oversize audio', async () => {
+    const fetchMock = vi.fn(
+      async () => new Response(JSON.stringify({ RecognitionStatus: 'Success', NBest: [] })),
+    );
+    const adapter = new AzurePronunciationAssessment({
+      key: 'k',
+      region: 'southeastasia',
+      fetch: fetchMock,
+    });
+    await adapter.assess({
+      referenceText: '山',
+      locale: 'zh-CN',
+      audioBase64: Buffer.from('RIFF').toString('base64'),
+    });
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toContain('https://southeastasia.stt.speech.microsoft.com/');
+    expect(url).toContain('language=zh-CN');
+    expect((init.headers as Record<string, string>)['Ocp-Apim-Subscription-Key']).toBe('k');
+    await expect(
+      adapter.assess({
+        referenceText: '山',
+        locale: 'zh-CN',
+        audioBase64: Buffer.alloc(1_000_001).toString('base64'),
+      }),
+    ).rejects.toThrow(/too large/);
+    expect(() => new AzurePronunciationAssessment({ key: 'k', region: 'evil.com/x' })).toThrow();
+  });
+});
+
+describe('OpenAI realtime client secret adapter', () => {
+  it('posts to /v1/realtime/client_secrets and maps the grant', async () => {
+    const fetchMock = vi.fn(
+      async () => new Response(JSON.stringify({ value: 'ek_test', expires_at: 1_800_000_000 })),
+    );
+    const adapter = new OpenAIRealtimeSessions({
+      apiKey: 'sk-x',
+      model: 'gpt-realtime',
+      ttlSeconds: 99999,
+      fetch: fetchMock,
+    });
+    const grant = await adapter.createSessionGrant({ userId: 'u' });
+    expect(grant).toEqual({
+      source: 'live',
+      clientSecret: 'ek_test',
+      expiresAt: new Date(1_800_000_000_000).toISOString(),
+      model: 'gpt-realtime',
+    });
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://api.openai.com/v1/realtime/client_secrets');
+    expect(JSON.parse(init.body as string).expires_after.seconds).toBe(7200);
+  });
+
+  it('throws a ProviderError on non-2xx', async () => {
+    const adapter = new OpenAIRealtimeSessions({
+      apiKey: 'sk-x',
+      model: 'gpt-realtime',
+      fetch: async () => new Response('nope', { status: 401 }),
+    });
+    await expect(adapter.createSessionGrant({ userId: 'u' })).rejects.toMatchObject({
+      status: 401,
+    });
+  });
+});

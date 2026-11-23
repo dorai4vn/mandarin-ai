@@ -22,4 +22,16 @@ Cập nhật lần cuối: 2026-11-23 (M0).
 
 | Hạng mục | Trạng thái | Bằng chứng / ghi chú |
 |---|---|---|
-| Xem báo cáo M0 (`docs/M0_REPORT.md`) và `docs/NATIVE_COMPATIBILITY.md` | — | Trạng thái chi tiết từng spike được ghi ở đó |
+| Monorepo pnpm + Turborepo, lockfile | VERIFIED | `pnpm install --frozen-lockfile`, `check:deps` |
+| Lint / typecheck / unit test / build | VERIFIED | 34 unit test pass (xem `docs/M0_REPORT.md`) |
+| QuizType registry 6 loại + skill mapping | VERIFIED | test `contracts`, `domain` |
+| API Node.js (health, auth JWT, rate limit) | VERIFIED (local) | 9 test API + smoke `/health` |
+| Supabase local: migration `profiles` + RLS | VERIFIED (local) | pgTAP 9/9 PASS; policy rò rỉ → FAIL 2/9 |
+| Bundle JS iOS + `expo prebuild` | VERIFIED (cấu hình) | `expo export`, `expo prebuild` |
+| ML Kit Digital Ink 山 | BLOCKED | Cần EAS build + iPhone; app rơi về MOCK có nhãn |
+| Ghi âm micro iPhone | BLOCKED | Cần iPhone |
+| Azure pronunciation | MOCKED / BLOCKED | Cần `AZURE_SPEECH_KEY` + iPhone |
+| OpenAI Realtime client secret | MOCKED / BLOCKED | Cần `OPENAI_API_KEY` |
+| SQLCipher + Keychain | BLOCKED | Cần dev build trên iPhone |
+| EAS development build | BLOCKED | Cần tài khoản Expo, Apple Developer, `EXPO_TOKEN` |
+| CI GitHub Actions | Đã cấu hình | Kết quả lần chạy đầu xem trên PR |

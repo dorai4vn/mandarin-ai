@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint · Typecheck · Test · Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Guards (secrets, package layering, Expo versions)
+        run: |
+          pnpm check:secrets
+          pnpm check:deps
+          pnpm check:expo
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Build (packages, API, iOS JS bundle)
+        run: pnpm build
+      - name: Expo prebuild (iOS native project generation)
+        working-directory: apps/mobile
+        run: pnpm prebuild:ios
+      - name: API container image builds (generic OCI, Railway candidate)
+        run: docker build -f apps/api/Dockerfile -t mandarin-api:ci .
+      - name: expo-doctor (needs Expo API network)
+        working-directory: apps/mobile
+        run: npx --yes expo-doctor@1.21.8
+
+  database:
+    name: Supabase migrations + RLS tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Start Postgres (Supabase local)
+        run: pnpm exec supabase db start
+      - name: Apply migrations from scratch
+        run: pnpm exec supabase db reset
+      - name: RLS tests (pgTAP)
+        run: pnpm exec supabase test db
+      - name: Schema lint
+        run: pnpm exec supabase db lint --level warning --fail-on error

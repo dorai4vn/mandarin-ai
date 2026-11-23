@@ -1,0 +1,44 @@
+# Manual EAS development build for a physical iPhone. Requires repository secret
+# EXPO_TOKEN (and the project linked via EAS_PROJECT_ID / IOS_BUNDLE_IDENTIFIER variables).
+# Apple signing credentials are managed by EAS, never stored in this repo.
+name: EAS iOS development build
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: EAS build profile
+        default: development
+        type: choice
+        options: [development, development-simulator, preview]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EAS_PROJECT_ID: ${{ vars.EAS_PROJECT_ID }}
+      IOS_BUNDLE_IDENTIFIER: ${{ vars.IOS_BUNDLE_IDENTIFIER }}
+      EXPO_PUBLIC_API_URL: ${{ vars.EXPO_PUBLIC_API_URL }}
+    steps:
+      - name: Require EXPO_TOKEN
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::BLOCKED — repository secret EXPO_TOKEN is not configured (see docs/SETUP.md)"
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter "./packages/*" build
+      - name: Queue EAS build (runs on Expo macOS workers)
+        working-directory: apps/mobile
+        run: npx --yes eas-cli@27.11.0 build --platform ios --profile ${{ inputs.profile }} --non-interactive --no-wait
