@@ -63,7 +63,15 @@ jobs:
       - run: pnpm fetch:handwriting-data
       - name: Install Playwright browser
         working-directory: apps/web
-        run: pnpm exec playwright install --with-deps ${{ matrix.engine }}
+        timeout-minutes: 14
+        # The apt step occasionally hangs on hosted runners (seen twice for WebKit): bound each
+        # attempt to 6 minutes and retry once instead of blocking the job for 30 minutes.
+        run: |
+          for attempt in 1 2; do
+            if timeout 360 pnpm exec playwright install --with-deps ${{ matrix.engine }}; then exit 0; fi
+            echo "::warning::playwright install attempt $attempt failed or timed out"
+          done
+          exit 1
       - name: Virtual audio device (runners have no sound card; real computers do)
         if: matrix.engine == 'firefox'
         run: |
