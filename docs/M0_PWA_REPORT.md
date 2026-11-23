@@ -42,7 +42,11 @@ GO/NO-GO decision: NO-GO cho tiêu chí thoát M0-PWA cho tới khi có (1) CI F
 |---|---|---|---|---|---|---|
 | `cd855ed` / 45241745204 | PASS | PASS | PASS | PASS | **FAIL** 68✓ 7⊘ 3✗ (ghi âm treo) | **FAIL** 64✓ 11⊘ 3✗ (reload offline: lỗi nội bộ WebKit) |
 | `15620cc` / 45243746422 | PASS | PASS | PASS | PASS | **FAIL** 68✓ 7⊘ 3✗ (ghi âm vẫn không bắt đầu) | **PASS** 67✓ 11⊘ |
-| `fc5b4db` / 45244779226 | xem PR | xem PR | xem PR | xem PR | xem PR (đã thêm thiết bị âm thanh ảo + chẩn đoán) | xem PR |
+| `fc5b4db` / 45244779226 | bị hủy (có push mới) | — | — | — | — | — |
+| `c1d4551` / 45245008142 | PASS | PASS | PASS | PASS | **PASS** 71✓ 7⊘ (ghi âm chạy thật ×3) | Lần 1: kẹt ở bước cài trình duyệt (hạ tầng) → hủy, chạy lại: 66✓ 11⊘ **1 flaky** (form offline nhận click trước khi IndexedDB mở xong → sửa app) |
+| **`24d7f44` / 45247827210** | **PASS** | **PASS** | **PASS** | **PASS** 71✓ 7⊘ | **PASS** 71✓ 7⊘ | **PASS** 67✓ 11⊘ |
+
+Từ `24d7f44`, CI bật `failOnFlakyTests`: test chỉ qua khi retry sẽ làm job FAIL. Nguyên nhân Firefox: hai thay đổi cùng lúc (tạo AudioContext trong thao tác người dùng + thiết bị âm thanh ảo cho runner) — không tách riêng được thay đổi nào là nguyên nhân chính.
 
 Skip có chủ đích (không phải để làm CI xanh): chuột trên điện thoại; kiểm tra chỉ dành cho desktop ở viewport mobile/tablet; kéo-thả trên mobile/tablet; WebKit: ghi âm (Playwright WebKit không có micro giả) và Tab-tới-link (Safari mặc định không Tab tới link).
 
