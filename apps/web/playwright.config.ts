@@ -56,6 +56,8 @@ export default defineConfig({
   fullyParallel: true,
   workers: process.env.CI ? 2 : 3,
   retries: process.env.CI ? 1 : 0,
+  // A test that only passes on retry is reported as a FAILURE, never hidden as green.
+  failOnFlakyTests: Boolean(process.env.CI),
   reporter: [
     ['list'],
     ['html', { open: 'never' }],

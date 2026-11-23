@@ -73,9 +73,10 @@ export default function OfflineLab() {
               placeholder="Ví dụ: 山 = núi"
               aria-label="Nội dung ghi chú"
               data-testid="note-input"
+              disabled={!store}
               className="min-w-0 flex-1 rounded-xl border border-line bg-paper px-3 py-2"
             />
-            <Button type="submit" data-testid="note-add">
+            <Button type="submit" data-testid="note-add" disabled={!store}>
               Lưu
             </Button>
           </form>
