@@ -1,6 +1,8 @@
 # Mandarin AI — Master Product Requirements Document
 
-Version: 1.2 | Date: 2026-11-23 | Status: Product requirements approved; implementation pending
+Version: 1.3 | Date: 2026-11-23 | Status: Product requirements approved; M0 in progress
+
+> v1.3 aligns this PRD with the owner decisions recorded in `docs/DECISIONS.md` (D-001 … D-013). Where wording differs, `docs/DECISIONS.md` is authoritative.
 
 ## 1. Product definition
 
@@ -23,8 +25,9 @@ Mandarin AI is an iOS-first Chinese learning application for Vietnamese-speaking
 
 ### PRD-01 Daily vocabulary intake
 - Learner can input Chinese word or character, Pinyin, Vietnamese meaning and optional example/notes; app offers suggestions but does not silently overwrite user data.
-- Entries have a stable canonical vocabulary identity and individual ownership metadata.
-- Each addition links to study date, optional lesson/course/topic and provenance.
+- Two vocabulary sources exist (D-001): the **shared lexicon** (canonical, curated data; only administrators or the import pipeline may change it) and **user-owned custom vocabulary** (created/edited by the learner, protected by RLS). A learner's personal dictionary item references exactly one of the two. A learner can never edit shared canonical content or another learner's custom vocabulary.
+- When a typed entry matches a shared lexeme, the app suggests linking to it; otherwise the entry is saved as custom vocabulary (optionally linked to a suggested canonical lexeme).
+- Each addition records provenance (D-006): study date, optional lesson, topic(s), source document, import batch, entry method and source page where available.
 - Duplicate detection suggests merge/link instead of deleting or repeating an existing entry.
 
 **Acceptance:** User adds five words; app restarts and all five persist; adding a known word from another lesson links the lesson rather than duplicating the personal dictionary entry.
@@ -32,7 +35,7 @@ Mandarin AI is an iOS-first Chinese learning application for Vietnamese-speaking
 ### PRD-02 Personal dictionary
 - Search by simplified/traditional Hanzi, diacritic or numbered Pinyin, and Vietnamese meaning (accent-insensitive search is a target).
 - Show pronunciation, examples, meanings, tags, course/lesson occurrences and individual learning history.
-- Edit personal notes, manage topics and filter by due review or mastery.
+- Edit personal notes, manage tags and topics (real tables with foreign keys, D-006) and filter by due review or mastery.
 - Distinguish a multi-character word from its component Hanzi; one character may have its own etymology resource.
 
 **Acceptance:** User finds 山 via 山, shan1 and núi; sees all lessons referencing the character and prior attempts.
@@ -46,12 +49,13 @@ Mandarin AI is an iOS-first Chinese learning application for Vietnamese-speaking
 **Acceptance:** 山 detail shows sourced historical stages, user-friendly explanations, animation, and provenance; an unsupported form is not invented.
 
 ### PRD-04 Quiz & spaced repetition
-- Quiz types: meaning recognition, Hanzi recognition, Pinyin matching, audio recognition, dictation, handwriting answer.
+- Quiz types (exactly six in the versioned `QuizType` registry, D-002): `meaning_recognition`, `hanzi_recognition`, `pinyin_matching`, `audio_recognition`, `dictation`, `handwriting`.
+- Review schedules are kept per **user + vocabulary item + skill** (`meaning`, `writing`, `listening`, `speaking`) (D-007); each quiz type declares which skill it trains, and the same skill never gets duplicate schedules.
 - New words receive same-day quick practice; previous days' due words are included based on a documented scheduling algorithm.
 - Persist per-item attempts and use them to compute next review, avoiding double credit for repeat submissions.
 - Quiz session survives app interruption and resume.
 
-**Acceptance:** Failed word becomes due sooner than a successfully recalled word; past-day cards appear even when new words are added.
+**Acceptance:** Failed word becomes due sooner than a successfully recalled word; past-day cards appear even when new words are added; a failure in one skill (e.g. writing) does not reset another skill's schedule (e.g. meaning).
 
 ### PRD-05 Hint-to-handwriting mini game
 - Present a picture or Vietnamese meaning; user must recall the matching Chinese character and draw it using finger/stylus.
@@ -66,8 +70,9 @@ Mandarin AI is an iOS-first Chinese learning application for Vietnamese-speaking
 - Listen to word/sentence/audio at normal and slower playback speeds.
 - Listening exercise: select meaning, identify spoken word, or write dictated Hanzi.
 - Speaking: record and replay, submit against a known reference phrase for Azure AI Speech pronunciation assessment; show available assessment dimensions and constructive Vietnamese feedback.
-- AI role-play: real-time/turn-based Chinese conversations using OpenAI, constrained by learner level and recently learned vocabulary.
+- AI role-play: Chinese conversations using OpenAI, constrained by learner level and recently learned vocabulary. Turn-based voice ships first; OpenAI Realtime is enabled only after it is proven stable on device (D-004).
 - Store attempt metadata, scores where provider supports them, feedback and recurring difficulties; raw recordings retention is configurable and minimized.
+- Speaking attempts link to the user and, where applicable (nullable), to the vocabulary item, lesson and quiz attempt (D-008).
 - Tone-specific scoring must be empirically validated; missing provider dimensions should display as unavailable rather than fabricated.
 
 **Acceptance:** Speaking permission denied produces recoverable UX; assessment failure does not erase recording or progress; successful attempt is visible in history.
@@ -90,6 +95,7 @@ Mandarin AI is an iOS-first Chinese learning application for Vietnamese-speaking
 ### PRD-09 Gamification
 - XP, daily streak, levels, badges and daily goals; timestamps and timezone policy defined for daily activity.
 - Rewards tied to actual learning completion; idempotent XP grants prevent exploitation by replays.
+- Delivery split (D-003): from M3 onward study flows only **emit learning events**; the XP engine that consumes those events (and back-fills from them) ships in M7.
 - Gamification must not override accurate learning assessment.
 
 **Acceptance:** Completed session increments XP once; offline work syncs without double rewards.
@@ -113,7 +119,9 @@ Mandarin AI is an iOS-first Chinese learning application for Vietnamese-speaking
 ## 3. Core flows
 
 ### Onboarding
-Install TestFlight build -> sign up/login -> choose beginner/intermediate, simplified/traditional preference (initial content primarily simplified), study goal -> create/download starter learning data -> Home.
+Install TestFlight build -> sign up/login -> choose beginner/intermediate, simplified/traditional preference (initial content primarily simplified), study goal -> download starter learning data -> Home.
+
+Starter data is a small fixture with clear origin and usage rights, loaded as ordinary course/lexicon records; HSK 3.0 content is never hard-coded (D-012).
 
 ### Daily study
 Home -> due review -> answer mixed quiz -> enter/import daily words -> dictionary/etymology -> handwriting practice -> listening/speaking -> session summary and next review.
@@ -143,7 +151,7 @@ Primary bottom navigation proposal: Home / Library / Dictionary / Practice / Pro
 - iOS-first, touch-first and accessibility-aware layout (dynamic type, contrast, VoiceOver labels).
 - React Native Expo Development Build and EAS iOS/TestFlight; no Expo Go-only acceptance.
 - Android-ready codebase, but iOS functionality is the initial release gate.
-- Offline local data encrypted where sensitive; secure credential storage; protect private PDF/audio.
+- Offline local data encrypted where sensitive (SQLCipher via `expo-sqlite`, key held in iOS Keychain through `expo-secure-store`; if not proven on device it is reported as a blocker with a safe fallback for owner approval, D-011); secure credential storage; do not persist audio or other sensitive data locally unless required; protect private PDF/audio.
 - No long-lived provider secrets in client. AI APIs via authenticated backend; time-limited voice session credentials where supported.
 - Supabase Row Level Security and automated negative authorization tests; no cross-user vocabulary/progress leaks.
 - Data deletion/export, private document visibility, input sanitization, file-size/type validation, abuse/expense limits.
@@ -154,7 +162,7 @@ Primary bottom navigation proposal: Home / Library / Dictionary / Practice / Pro
 ## 6. Open questions tracked without blocking foundation
 
 - Release distribution: TestFlight private beta before public App Store.
-- Exact course PDF file structure, scan quality and copyright status (not yet supplied).
+- Exact course PDF file structure, scan quality and copyright status (not yet supplied; imported by the owner after the app is complete).
 - Chinese simplified-first and optional traditional display rules.
 - Detailed XP formula, tone scoring rubric and notification defaults (to validate with test users).
 - Pricing/billing/cost caps; no commitment to numerical budgets without usage tests.
