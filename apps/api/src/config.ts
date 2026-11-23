@@ -85,6 +85,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       'Invalid API configuration: SUPABASE_SECRET_KEY holds a publishable key (use the secret key)',
     );
   }
+  if (appEnv !== 'development' && !cfg.SUPABASE_URL) {
+    // Outside development the issuer (iss) must always be checked, which needs the project URL.
+    throw new Error('Invalid API configuration: SUPABASE_URL is required outside development');
+  }
   if (!cfg.SUPABASE_URL && !cfg.SUPABASE_JWT_SECRET) {
     throw new Error('Invalid API configuration: set SUPABASE_URL (JWKS) or SUPABASE_JWT_SECRET');
   }

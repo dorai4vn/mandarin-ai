@@ -280,7 +280,7 @@ describe('cross-platform web endpoints', () => {
 });
 
 describe('deployment safety (APP_ENV, D-029, preview)', () => {
-  const base = { SUPABASE_JWT_SECRET: SECRET };
+  const base = { SUPABASE_JWT_SECRET: SECRET, SUPABASE_URL: 'https://x.supabase.co' };
 
   it('treats containers (NODE_ENV=production) as production unless APP_ENV says otherwise', () => {
     expect(loadConfig({ ...base, NODE_ENV: 'production' }).appEnv).toBe('production');

@@ -88,6 +88,8 @@ export function createTokenVerifier(
       throw new Error('Unsupported token algorithm');
     }
     if (payload.role !== 'authenticated') throw new Error('Token is not a signed-in user');
+    // Supabase anonymous sign-ins also carry role=authenticated; they are not learner accounts.
+    if (payload.is_anonymous === true) throw new Error('Anonymous sessions are not accepted');
     if (typeof payload.sub !== 'string' || !UUID.test(payload.sub)) {
       throw new Error('Token subject is not a user id');
     }

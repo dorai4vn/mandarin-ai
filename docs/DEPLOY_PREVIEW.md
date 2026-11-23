@@ -57,7 +57,7 @@ Lấy giá trị ở **Project Settings → API Keys** (Project URL, publishable
 |---|---|---|
 | `APP_ENV` | cấu hình | `preview` |
 | `TRUST_PROXY` | cấu hình | `true` |
-| `SUPABASE_URL` | cấu hình | Project URL (2.1), bắt buộc `https://` — API lấy khóa công khai (JWKS) từ đây và kiểm tra `iss = <Project URL>/auth/v1` |
+| `SUPABASE_URL` | cấu hình — **bắt buộc** | Project URL (2.1), phải là `https://` — API lấy khóa công khai (JWKS) từ đây và kiểm tra `iss = <Project URL>/auth/v1`; thiếu → API không khởi động |
 | `WEB_ORIGINS` | cấu hình | URL Vercel cố định của branch, ví dụ `https://mandarin-ai-git-claude-m0-pwa-<team>.vercel.app` |
 | `WEB_ORIGIN_REGEX` | cấu hình (tùy chọn) | `^https://mandarin-ai-[a-z0-9-]+-<team>\.vercel\.app$` — thay `<team>` bằng slug team Vercel của anh/chị |
 | `SUPABASE_SECRET_KEY` | **BÍ MẬT** | Secret key `sb_secret_…` (2.1) — để upload PDF vào bucket private. (Tên cũ `SUPABASE_SERVICE_ROLE_KEY` vẫn được chấp nhận) |
@@ -98,7 +98,7 @@ Vercel **không** chứa khóa bí mật nào.
 6. **Storage** → **New bucket** → tên `documents` → **Public bucket: TẮT** → **Save**.
 7. **Authentication → Sign In / Providers → Email:** bật *Enable Email provider*; bật *Confirm email*.
 8. **Authentication → Emails → Templates → Magic Link:** thêm vào nội dung email dòng `Mã đăng nhập Mandarin AI: {{ .Token }}` → **Save** (app dùng mã 6 số, D-025).
-9. **Authentication → Sessions** (nếu có): kiểm tra *Detect and revoke potentially compromised refresh tokens* đang bật.
+9. **Authentication → Sessions** (nếu có): kiểm tra *Detect and revoke potentially compromised refresh tokens* đang bật. **Authentication → Sign In / Providers:** để **tắt** *Allow anonymous sign-ins* (API cũng từ chối phiên ẩn danh).
 10. **Project Settings → API Keys:** ghi lại (cho bước 2–3) Project URL, publishable key (công khai); secret key chỉ dán thẳng vào Railway ở bước 2. Nếu trang chỉ có "Legacy API keys" (anon/service_role): bấm tạo **publishable key** và **secret key** mới (khuyến nghị) — hoặc dùng anon/service_role kiểu cũ (API vẫn hỗ trợ).
 11. **Project Settings → JWT Keys** — xác định cách Supabase ký token người dùng:
     - Thấy **Current key** loại **ECC (P-256)** hoặc RSA → token ký **bất đối xứng** → Railway **chỉ cần `SUPABASE_URL`**, không đặt `SUPABASE_JWT_SECRET`. Kiểm tra nhanh: mở `https://<ref>.supabase.co/auth/v1/.well-known/jwks.json` trên trình duyệt → thấy `"keys":[{…"alg":"ES256"…}]`.
@@ -179,3 +179,10 @@ Tạm dừng Preview khi không dùng: Railway → service → **Settings → Pa
 - **API báo "Invalid API configuration: …":** tên biến được nêu trong thông báo — kiểm tra lại giá trị biến đó (thông báo không in giá trị).
 - **Web gọi API báo "Không kết nối được máy chủ API":** kiểm tra `NEXT_PUBLIC_API_URL` (Vercel) và `WEB_ORIGINS` (Railway) đúng từng ký tự.
 - **Không nhận được email mã:** kiểm tra thư rác; giới hạn email mặc định của Supabase; mẫu email có `{{ .Token }}`.
+
+## 9. Bảo mật xác thực (tóm tắt cho người vận hành)
+- API chỉ chấp nhận **access token người dùng** của dự án Supabase đã cấu hình: chữ ký hợp lệ (khóa công khai JWKS hoặc Legacy JWT secret nếu được đặt), `iss = <Project URL>/auth/v1`, `aud = authenticated`, `role = authenticated`, chưa hết hạn, không phải phiên ẩn danh.
+- Publishable key, secret key, token `service_role`, token tự ký với thuật toán khác hoặc `alg: none` → **401**.
+- Khóa JWKS được cache 10 phút; khi Supabase xoay khóa (token có `kid` mới) API tự tải lại (tối đa 1 lần / 30 giây).
+- Access token vẫn hợp lệ tới khi hết hạn (mặc định 1 giờ) kể cả sau khi đăng xuất — giới hạn của JWT; thu hồi tức thì sẽ xem xét ở M1 (`docs/AUTH_SESSION_DESIGN.md`).
+- Secret key chỉ được API gửi tới Supabase Storage trong header `apikey`; không ghi vào log, không có trong JavaScript của trình duyệt (đã kiểm bằng build có giá trị mồi).

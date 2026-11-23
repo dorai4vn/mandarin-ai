@@ -79,6 +79,34 @@ describe('Supabase JWT verification (asymmetric signing keys / JWKS)', () => {
     await expect(v(noExp)).rejects.toThrow();
   });
 
+  it('rejects Supabase anonymous sessions (role=authenticated, is_anonymous=true)', async () => {
+    await expect(verifier()(await es256({ is_anonymous: true }))).rejects.toThrow(/Anonymous/);
+    await expect(verifier()(await es256({ is_anonymous: false }))).resolves.toEqual({ id: USER });
+  });
+
+  it('rejects a service_role token and a wrong audience', async () => {
+    await expect(verifier()(await es256({ role: 'service_role' }))).rejects.toThrow();
+    const wrongAud = await new SignJWT({ role: 'authenticated' })
+      .setProtectedHeader({ alg: 'ES256', kid: 'k1' })
+      .setSubject(USER)
+      .setAudience('anon')
+      .setIssuer(ISS)
+      .setExpirationTime('5m')
+      .sign(es.privateKey);
+    await expect(verifier()(wrongAud)).rejects.toThrow();
+  });
+
+  it('rejects an HS256 token forged with the public JWK as HMAC key (alg confusion)', async () => {
+    const forged = await new SignJWT({ role: 'authenticated' })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setSubject(USER)
+      .setAudience('authenticated')
+      .setIssuer(ISS)
+      .setExpirationTime('5m')
+      .sign(new TextEncoder().encode(JSON.stringify(es.jwk)));
+    await expect(verifier()(forged)).rejects.toThrow(/HS256/);
+  });
+
   it('rejects HS256 tokens when no legacy secret is configured, and alg=none always', async () => {
     const v = verifier();
     await expect(v(await hs256())).rejects.toThrow(/HS256/);
@@ -92,8 +120,8 @@ describe('Supabase JWT verification (asymmetric signing keys / JWKS)', () => {
 
   it('never accepts API keys (publishable/secret keys are not JWTs)', async () => {
     const v = verifier();
-    await expect(v('sb_publishable_abcdefghijklmnop')).rejects.toThrow(/Malformed/);
-    await expect(v('sb_secret_abcdefghijklmnop')).rejects.toThrow(/Malformed/);
+    await expect(v('sb_publishable_fake')).rejects.toThrow(/Malformed/);
+    await expect(v('sb_secret_fake')).rejects.toThrow(/Malformed/);
   });
 });
 
@@ -141,6 +169,12 @@ describe('remote JWKS endpoint (<SUPABASE_URL>/auth/v1/.well-known/jwks.json)', 
 });
 
 describe('Supabase configuration guards', () => {
+  it('requires SUPABASE_URL (issuer check) outside development, even with an HS256 secret', () => {
+    expect(() =>
+      loadConfig({ APP_ENV: 'preview', NODE_ENV: 'production', SUPABASE_JWT_SECRET: HS_SECRET }),
+    ).toThrow(/SUPABASE_URL is required/);
+  });
+
   it('requires https for SUPABASE_URL outside development', () => {
     expect(() =>
       loadConfig({
