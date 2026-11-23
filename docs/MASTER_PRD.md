@@ -1,12 +1,12 @@
 # Mandarin AI — Master Product Requirements Document
 
-Version: 2.0 | Date: 2026-11-23 | Status: Product requirements approved; platform changed to Web/PWA (D-018); M0-PWA planning
+Version: 2.1 | Date: 2026-11-23 | Status: Product requirements approved; cross-platform web application (D-018, D-028); M0-PWA in progress
 
-> v1.3 aligned this PRD with owner decisions D-001 … D-013. v2.0 changes the delivery platform from a React Native/Expo iOS app to a Next.js web app + PWA optimised for Safari on iPhone (D-018 … D-027). **All 11 functional domains are kept.** Where wording differs, `docs/DECISIONS.md` is authoritative.
+> v1.3 aligned this PRD with owner decisions D-001 … D-013. v2.0 changed the delivery platform from a React Native/Expo iOS app to a Next.js web app (D-018). v2.1 fixes the scope as a **cross-platform web application** for desktop, laptop, tablet and smartphone browsers; PWA install, offline and Web Push are progressive enhancements, never requirements (D-028). **All 11 functional domains are kept.** Where wording differs, `docs/DECISIONS.md` is authoritative.
 
 ## 1. Product definition
 
-Mandarin AI is a mobile-first Chinese learning web application (installable PWA) for Vietnamese-speaking learners. The primary target is Safari on iPhone, used in the browser or added to the Home Screen; Android browsers and desktop use the same codebase. No App Store, TestFlight or native build is required. The product starts with learner-imported HSK 3.0 teaching PDFs after the app is built; future textbooks must be addable without code changes. The learning experience is powered by a personal vocabulary dictionary, spaced-repetition reviews, handwriting games, listening and speaking practice, and explanations of Hanzi evolution grounded in verifiable historical sources.
+Mandarin AI is a cross-platform Chinese learning web application for Vietnamese-speaking learners. It runs directly in modern browsers (Chrome, Edge, Firefox, Safari) on Windows, macOS, iOS and Android — desktop, laptop, tablet and smartphone — with one account and one learning record synchronised across all devices. Installing it (Add to Home Screen / Install app) is optional and adds conveniences only. No App Store, TestFlight or native build is required. The product starts with learner-imported HSK 3.0 teaching PDFs after the app is built; future textbooks must be addable without code changes. The learning experience is powered by a personal vocabulary dictionary, spaced-repetition reviews, handwriting games, listening and speaking practice, and explanations of Hanzi evolution grounded in verifiable historical sources.
 
 ### Goals
 - Enable users to study daily from personally entered words and imported textbooks.
@@ -20,7 +20,7 @@ Mandarin AI is a mobile-first Chinese learning web application (installable PWA)
 - Automatically sharing commercial uploaded textbooks with other users.
 - Guaranteeing clinical/phonetic-grade tone assessment without field validation.
 - Native iOS/Android apps or app-store distribution (may be revisited later as a wrapper around the same web app).
-- Guaranteeing parity of Android/desktop browser behaviour before the iPhone Safari acceptance criteria are met.
+- Supporting legacy browsers (Internet Explorer, pre-Chromium Edge, browser versions older than the support policy in ARCHITECTURE).
 
 ## 2. Confirmed product scope (11 domains)
 
@@ -61,7 +61,7 @@ Mandarin AI is a mobile-first Chinese learning web application (installable PWA)
 ### PRD-05 Hint-to-handwriting mini game
 - Present a picture or Vietnamese meaning; user must recall the matching Chinese character and draw it using finger/stylus.
 - Never reveal the target character before answer submission; show model and stroke guidance afterward.
-- Collect vector strokes (coordinates, timestamps) from a touch/stylus canvas (Pointer Events); recognise candidate characters through a `HandwritingRecognitionPort` adapter that runs in the browser or on the backend (D-020). Recognition quality must be measured on real iPhone handwriting before any claim; Google ML Kit Digital Ink is no longer used (no web SDK).
+- Collect vector strokes (coordinates, timestamps) from a canvas using Pointer Events for touch, mouse and stylus alike (never touch-only); recognise candidate characters through a `HandwritingRecognitionPort` adapter that runs in the browser or on the backend (D-020). Recognition quality must be measured on real handwriting samples (finger on phone, mouse/trackpad and stylus on desktop/tablet) before any claim; Google ML Kit Digital Ink is no longer used (no web SDK).
 - Record recognizer confidence/candidates and allow a retry or manual appeal; do not equate recognition alone with perfect stroke order.
 - Start with single-character prompts, then extend to words/phrases via plugin-type quiz contracts.
 
@@ -86,7 +86,7 @@ Mandarin AI is a mobile-first Chinese learning web application (installable PWA)
 **Acceptance:** Tutor explains a sentence and identifies which vocabulary it is using; generated examples are labeled.
 
 ### PRD-08 Import image/text/PDF
-- Input via camera/photo/screenshot (browser file picker / camera capture), pasted text and teaching PDF (file picker incl. iOS Files).
+- Input via camera/photo/screenshot (browser file picker / camera capture), pasted text and teaching PDF (file picker on every platform, incl. iOS/Android Files and desktop drag-and-drop).
 - Extract text (PDF text layer first, OCR fallback), segment Chinese words, assign Pinyin/meaning and detect lesson structure when possible.
 - Preview extracted content side-by-side with source page, allow correction, selection and dedupe before finalizing.
 - Long PDF is a resumable background import with status, partial errors and idempotent retry; uploads are private by default.
@@ -103,10 +103,10 @@ Mandarin AI is a mobile-first Chinese learning web application (installable PWA)
 
 ### PRD-10 Reminders and review schedule
 - Generate due-review schedules based on performance.
-- Reminder delivery on the web (D-024): Web Push scheduled by the server (on iPhone only for Home-Screen web apps on iOS 16.4+, after permission) plus in-app reminders. Review schedules are computed correctly offline; only notification delivery needs the server/network.
+- Reminder delivery on the web (D-024): Web Push scheduled by the server (where the browser supports it; on iPhone/iPad only for Home-Screen web apps on iOS 16.4+, after permission) plus in-app reminders. Review schedules are computed correctly offline; only notification delivery needs the server/network.
 - Respect user notification preferences, quiet hours, permissions and local timezone.
 
-**Acceptance:** User can disable reminders; scheduling remains correct after timezone change and offline periods; on an iPhone Home-Screen install with permission granted a due-review push arrives; without permission the in-app reminder still shows.
+**Acceptance:** User can disable reminders; scheduling remains correct after timezone change and offline periods; where Web Push is supported and permitted a due-review push arrives (verified on at least one desktop browser and an iPhone Home-Screen install); without push support or permission the in-app reminder still shows and nothing is blocked.
 
 ### PRD-11 Learning Library & textbook import
 - Create course -> chapter -> lesson -> sections (vocabulary, grammar, conversation, exercise, source pages).
@@ -120,7 +120,7 @@ Mandarin AI is a mobile-first Chinese learning web application (installable PWA)
 ## 3. Core flows
 
 ### Onboarding
-Open the HTTPS URL in Safari -> (optional, recommended) Add to Home Screen -> sign up/login with e-mail OTP code or password (D-025) -> choose beginner/intermediate, simplified/traditional preference (initial content primarily simplified), study goal -> download starter learning data -> Home.
+Open the HTTPS URL in any supported browser -> (optional) install / Add to Home Screen -> sign up/login with e-mail OTP code or password (D-025) -> choose beginner/intermediate, simplified/traditional preference (initial content primarily simplified), study goal -> download starter learning data -> Home.
 
 Starter data is a small fixture with clear origin and usage rights, loaded as ordinary course/lexicon records; HSK 3.0 content is never hard-coded (D-012).
 
@@ -145,13 +145,14 @@ Download relevant lessons/cards/audio -> app loses connection -> quizzes/diction
 - Progress: mastered words, speaking trend, XP, streak, achievements
 - Settings: language, audio, privacy, downloads, notifications, export/delete account
 
-Primary bottom navigation proposal: Home / Library / Dictionary / Practice / Profile; AI tutor entry can be contextual.
+Primary navigation: Home / Library / Dictionary / Practice / Profile — bottom tab bar on phones, compact rail on tablets, persistent sidebar on desktop (with room for secondary panels such as word details next to a list). AI tutor entry can be contextual.
 
 ## 5. Key quality requirements
 
-- Mobile-first, touch-first, responsive and accessibility-aware layout (respects text size settings, contrast, VoiceOver labels, safe-area insets, no zoom-on-focus).
-- Next.js web app + PWA (manifest, service worker, offline shell); acceptance is on real iPhone Safari (browser tab and Home-Screen mode), not only desktop or simulators.
-- Same codebase serves Android/desktop browsers, but iPhone Safari is the initial release gate.
+- Responsive web design built mobile-first but designed per device class: single column on phones, optimised medium-screen layout on tablets, dedicated desktop layout with sidebar navigation — not a stretched phone UI. Touch, mouse, keyboard and stylus input all supported. Accessibility-aware (text size, contrast, screen-reader labels incl. VoiceOver/NVDA/TalkBack, keyboard navigation, safe-area insets, no zoom-on-focus).
+- Next.js web app; every core feature works in a normal browser tab without installation. PWA manifest, service worker/offline shell, install and Web Push are progressive enhancements with graceful fallback: if IndexedDB, Cache Storage or service workers are unavailable the online app keeps working.
+- Capability detection with clear permission prompts and compatibility messages for microphone, audio playback, file upload, storage and notifications in each browser.
+- Release gate: automated tests on Chromium, Firefox and WebKit at mobile, tablet and desktop viewports, plus manual verification on real iPhone Safari and at least one real desktop browser.
 - Offline data in IndexedDB is minimised; sensitive fields are encrypted with a non-extractable Web Crypto key, with documented limits (D-022); sessions handled by Supabase Auth; do not persist audio or other sensitive data locally unless required; protect private PDF/audio; logout clears local data.
 - No long-lived provider secrets in client. AI APIs via authenticated backend; time-limited voice session credentials where supported.
 - Supabase Row Level Security and automated negative authorization tests; no cross-user vocabulary/progress leaks.
@@ -170,7 +171,7 @@ Primary bottom navigation proposal: Home / Library / Dictionary / Practice / Pro
 
 ## 7. Definition of product done
 
-- On a real iPhone, the PWA opens in Safari and from the Home Screen, authenticates, studies, reviews and syncs real data, including after offline use.
+- The same account studies, reviews and syncs real data across a desktop browser and a smartphone browser (verified on real iPhone Safari and at least one real desktop browser), including after offline use where offline is available; installation is never required.
 - 11 modules have implemented acceptance criteria or explicitly documented release-stage gates; no mocked backend masquerading as production.
 - Sample PDF ingest is end-to-end verified; HSK PDF import can be performed afterward without new code.
 - Offline sync conflict and no-data-loss tests pass.

@@ -128,7 +128,7 @@ Quy ước:
 ## Chuyển hướng nền tảng sang Web/PWA (2026-11-23)
 
 ## D-018 — Chuyển từ React Native/Expo sang Next.js Web App + PWA (ưu tiên Safari iPhone)
-- **Ngày:** 2026-11-23 · **Trạng thái:** Đã duyệt (chủ dự án)
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đã duyệt (chủ dự án); **phạm vi nền tảng được điều chỉnh bởi D-028** (cross-platform, không ưu tiên riêng Safari/iPhone; PWA là tùy chọn)
 - **Bối cảnh:** Chủ dự án muốn dùng trực tiếp trên iPhone mà không phụ thuộc Apple Developer Program, TestFlight, EAS hay quy trình build native. M0 native chưa được build lần nào trên thiết bị.
 - **Lựa chọn:** Ứng dụng web Next.js + TypeScript + Tailwind CSS, cài được bằng "Thêm vào Màn hình chính" (PWA), thiết kế mobile-first, nghiệm thu chính trên Safari iOS. Giữ nguyên 11 module PRD, Supabase, Fastify API, OpenAI, Azure Speech, modular monolith + contracts + ports/adapters + learning events.
 - **Lý do:** Phân phối tức thì qua HTTPS, không cần ký ứng dụng; một codebase cho iPhone, Android và desktop.
@@ -147,7 +147,7 @@ Quy ước:
 - **Hậu quả:** Bản build production của Next.js phải dùng webpack nếu `@serwist/next` chưa hỗ trợ Turbopack cho production — kiểm chứng ở M0-PWA; phương án dự phòng là service worker viết tay biên dịch bằng `@serwist/cli`/esbuild.
 
 ## D-020 — Nhận dạng chữ viết tay trên web qua `HandwritingRecognitionPort`
-- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất; bổ sung bởi D-029 (vị trí chạy adapter và giấy phép)
 - **Bối cảnh:** PRD-05 yêu cầu nhận dạng từ nét vector (không OCR ảnh), không lộ đáp án trước khi nộp, ứng viên sai không được tính đúng.
 - **Lựa chọn:** Đổi `DigitalInkPort` thành `HandwritingRecognitionPort` (cùng dữ liệu nét x, y, t đã có trong `@mandarin/contracts`). Canvas dùng Pointer Events thu nét. Các adapter ứng viên được **đánh giá** trong M0-PWA, chưa chọn mặc định:
   1. `hanzilookup-js` — nhận dạng nét offline ngay trên trình duyệt, trả danh sách ứng viên (code ISC; dữ liệu phái sinh từ Make Me a Hanzi — phải kiểm tra giấy phép dữ liệu trước khi dùng).
@@ -192,3 +192,33 @@ Quy ước:
 ## D-027 — Quy trình Git cho việc chuyển đổi
 - **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
 - **Lựa chọn:** Branch `claude/m0-pwa` tạo từ commit `7e20b16` (đầu PR #1) để giữ code tái sử dụng. PR #1 giữ nguyên, không merge, không đóng; chủ dự án tự đóng sau khi PR M0-PWA được duyệt. Code native chỉ gỡ trong commit riêng, sau khi phần web tương đương đã có và được duyệt.
+
+---
+
+## Điều chỉnh phạm vi: ứng dụng web cross-platform (2026-11-23)
+
+## D-028 — Mandarin AI là cross-platform web application; PWA là progressive enhancement
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đã duyệt (chủ dự án)
+- **Bối cảnh:** D-018 và các tài liệu v2.0 viết "ưu tiên Safari trên iPhone", dễ hiểu nhầm là sản phẩm chỉ dành cho iPhone/PWA.
+- **Lựa chọn:**
+  - Web app chạy trực tiếp trên trình duyệt desktop, laptop, tablet, smartphone; Windows, macOS, iOS, Android; Chrome, Edge, Firefox, Safari bản hiện đại (2 major gần nhất; Safari/iOS bản hiện hành và bản trước).
+  - Một tài khoản, một hệ dữ liệu, tiến độ đồng bộ giữa mọi thiết bị.
+  - Mọi tính năng cốt lõi hoạt động **không cần cài PWA**. Cài đặt, Web Push và offline là progressive enhancements, không bao giờ chặn truy cập.
+  - Capability detection (không dựa vào user-agent) cho micro, audio, upload, IndexedDB, service worker, push; có giao diện xin quyền và thông báo tương thích riêng cho từng trình duyệt.
+  - IndexedDB/cache/service worker có fallback: nếu không khả dụng, ứng dụng online vẫn hoạt động đầy đủ.
+  - Canvas viết Hán tự dùng Pointer Events cho touch, mouse và stylus; không hard-code touch-only.
+  - Kiểm thử tự động Playwright trên Chromium, Firefox, WebKit với viewport mobile, tablet, desktop; kiểm thử thật trên Safari iPhone **và** ít nhất một trình duyệt desktop trước khi nghiệm thu.
+- **Lý do:** Người học dùng nhiều thiết bị (học trên máy tính, ôn trên điện thoại); không phụ thuộc một nền tảng.
+- **Hậu quả:** Các câu "ưu tiên Safari/iPhone" trong tài liệu được thay thế; định hướng UX: *mobile-first trong kỹ thuật responsive, cross-platform-first trong phạm vi sản phẩm, desktop là trải nghiệm hoàn chỉnh*. Các ràng buộc riêng của Safari (D-021, D-024, D-025) vẫn giữ vì Safari vẫn là trình duyệt được hỗ trợ.
+
+## D-029 — Adapter nhận dạng chữ viết tay mặc định chạy phía server
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất — **cần chủ dự án duyệt giấy phép**
+- **Bối cảnh:** Kiểm tra trong M0-PWA: thư viện nhận dạng nét offline khả dụng là HanziLookupJS (code gốc **GPL-3**; gói npm `hanzilookup-js` 1.0.3 phái sinh từ đó nhưng ghi ISC — tình trạng giấy phép không rõ ràng) với dữ liệu `mmah.json` (phái sinh từ Make Me a Hanzi, **Arphic Public License**). Gửi code GPL xuống trình duyệt là phân phối và kéo theo nghĩa vụ GPL cho mã client.
+- **Lựa chọn:** Chạy matcher **trên `apps/api`** sau `HandwritingRecognitionPort` (endpoint `POST /v1/handwriting/recognize`, cần đăng nhập). Dữ liệu `mmah.json` không commit vào repo; tải bằng script có kiểm tra SHA-256 cùng file giấy phép Arphic. Client chỉ gửi nét vector. Khi adapter không sẵn sàng → client hiển thị MOCK có nhãn hoặc thông báo, không giả kết quả.
+- **Lý do:** Giữ client không bị ràng buộc GPL; nhận dạng như nhau trên mọi trình duyệt/thiết bị.
+- **Hậu quả:** Nhận dạng chữ viết tay cần mạng (không offline). Việc dùng mã GPL phía server và phân phối dữ liệu Arphic cần chủ dự án/tư vấn pháp lý xác nhận; phương án thay thế: tự viết matcher (clean-room) trên dữ liệu Arphic, hoặc dịch vụ thương mại. Chất lượng chưa được kết luận — chỉ có kết quả trên nét tổng hợp cho tới khi có mẫu viết tay thật.
+
+## D-030 — Responsive layout theo lớp thiết bị
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Lựa chọn:** Breakpoint dùng chung (Tailwind): phone < 768 px (một cột, tab bar dưới), tablet 768–1279 px (navigation rail, hai cột khi hữu ích), desktop ≥ 1280 px (sidebar cố định, nội dung nhiều cột, phím tắt, trạng thái hover). Mỗi module mô tả bố cục desktop riêng (ví dụ: danh sách + chi tiết từ điển cạnh nhau; canvas + gợi ý + lịch sử). Kiểm thử tự động ở 390×844, 820×1180, 1440×900.
+- **Hậu quả:** Test E2E kiểm tra đúng thành phần điều hướng hiển thị theo từng viewport và không có cuộn ngang.
