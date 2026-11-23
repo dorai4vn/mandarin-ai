@@ -165,9 +165,15 @@ Quy ước:
 - **Hậu quả:** Test bắt buộc: chết tab giữa chừng → mở lại → gửi lại → đúng một bản ghi phía server.
 
 ## D-022 — Bảo vệ dữ liệu cục bộ trên web (thay D-011)
-- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất — **cần chủ dự án duyệt** vì mức bảo vệ thấp hơn D-011
+- **Ngày:** 2026-11-23 · **Trạng thái:** **Đã duyệt có điều kiện** (chủ dự án, 2026-11-23) — xem "Điều kiện duyệt" bên dưới
 - **Lựa chọn:** (a) Tối thiểu hóa: chỉ lưu offline dữ liệu cần để học; ghi âm không lưu IndexedDB trừ khi đang chờ gửi và người học đồng ý; (b) trường nhạy cảm (ghi chú cá nhân, câu trả lời tự do) mã hóa AES-GCM bằng khóa Web Crypto **non-extractable** lưu trong IndexedDB; (c) phiên đăng nhập do Supabase quản lý, refresh token không đưa vào `localStorage` khi có lựa chọn cookie HttpOnly qua `@supabase/ssr`; (d) đăng xuất/xóa tài khoản xóa sạch IndexedDB, Cache Storage và service worker cache của người dùng.
 - **Giới hạn phải nói rõ:** khóa nằm cùng thiết bị/trình duyệt nên (b) chỉ chống đọc file thô, **không** tương đương Keychain/SQLCipher; ai mở được trình duyệt đã đăng nhập vẫn xem được dữ liệu.
+
+- **Điều kiện duyệt (chủ dự án, 2026-11-23):**
+  - Chỉ lưu offline **tối thiểu** dữ liệu cần để học.
+  - **Không** lưu trong IndexedDB: API secret (bất kỳ loại nào), refresh token, bản ghi âm nhạy cảm.
+  - Web Crypto **không được quảng bá** là tương đương Keychain/SQLCipher của native (trong tài liệu, giao diện, tài liệu marketing).
+- **Hiện trạng M0-PWA đối chiếu điều kiện:** IndexedDB chỉ chứa ghi chú thử nghiệm + outbox + `deviceId`/đồng hồ logic; âm thanh chỉ nằm trong bộ nhớ (không ghi xuống storage); không có secret phía client. **Lưu ý cho M1:** `@supabase/supabase-js` mặc định lưu phiên (gồm refresh token) trong `localStorage` — không vi phạm chữ "IndexedDB" nhưng trái tinh thần quyết định; M1 phải chuyển sang phiên dựa trên cookie HttpOnly (`@supabase/ssr` + route server) hoặc trình chủ dự án phương án khác trước khi bật đăng nhập thật. Mã hóa trường bằng Web Crypto (mục b) chưa triển khai.
 
 ## D-023 — Thu âm trên Safari: PCM → WAV 16 kHz phía client
 - **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
@@ -176,10 +182,11 @@ Quy ước:
 - **Hậu quả:** Contract `PronunciationAssessmentRequest` giữ WAV; thêm trường `audioMimeType` nếu dùng dự phòng.
 
 ## D-024 — Nhắc học trên web
-- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất — **cần chủ dự án duyệt** vì thay đổi cách đáp ứng PRD-10
+- **Ngày:** 2026-11-23 · **Trạng thái:** **Đã duyệt** (chủ dự án, 2026-11-23): nhắc trong ứng dụng là **bắt buộc**, Web Push là **tùy chọn**
 - **Bối cảnh:** Web không có "local notification" hẹn giờ khi offline; iOS chỉ cho Web Push với web app đã thêm vào Màn hình chính (iOS ≥ 16.4) và sau khi người dùng cho phép.
 - **Lựa chọn:** PRD-10 giữ nguyên chức năng (lịch ôn, tùy chọn, giờ yên lặng, múi giờ) nhưng kênh gửi là: Web Push (VAPID) do server lên lịch + nhắc trong app (badge, banner khi mở). Lịch ôn vẫn tính đúng khi offline; chỉ việc *gửi thông báo* cần server và mạng.
 - **Hậu quả:** Thêm bảng `push_subscriptions` và job lên lịch ở M7; tiêu chí nghiệm thu PRD-10 được viết lại cho web.
+- **Bổ sung khi duyệt:** tiêu chí nghiệm thu PRD-10 yêu cầu nhắc trong ứng dụng hoạt động trên mọi trình duyệt; Web Push chỉ được kiểm nơi trình duyệt hỗ trợ và người dùng cho phép, thiếu Web Push không làm milestone thất bại.
 
 ## D-025 — Đăng nhập trong PWA
 - **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
@@ -190,8 +197,10 @@ Quy ước:
 - **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
 - **Lựa chọn:** `apps/web` build `output: 'standalone'` (tiến trình Node chuẩn, có Dockerfile chung), cùng ứng viên hosting Railway như API (D-009); không dùng API riêng của nhà cung cấp hosting. HTTPS bắt buộc (getUserMedia, service worker). Môi trường dev trên iPhone thật dùng URL HTTPS (preview deploy hoặc tunnel). Không deploy production trong M0-PWA.
 
+- **Cập nhật (2026-11-23):** Preview của web chạy trên **Vercel** theo yêu cầu chủ dự án (D-031); `output: 'standalone'` + Dockerfile vẫn giữ để có thể chạy ở host khác. API vẫn dùng Railway.
+
 ## D-027 — Quy trình Git cho việc chuyển đổi
-- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đã áp dụng; chủ dự án xác nhận (2026-11-23): PR #1 và PR #2 **chưa merge**, `apps/mobile` **giữ đóng băng, chưa được xóa**
 - **Lựa chọn:** Branch `claude/m0-pwa` tạo từ commit `7e20b16` (đầu PR #1) để giữ code tái sử dụng. PR #1 giữ nguyên, không merge, không đóng; chủ dự án tự đóng sau khi PR M0-PWA được duyệt. Code native chỉ gỡ trong commit riêng, sau khi phần web tương đương đã có và được duyệt.
 
 ---
@@ -213,13 +222,26 @@ Quy ước:
 - **Hậu quả:** Các câu "ưu tiên Safari/iPhone" trong tài liệu được thay thế; định hướng UX: *mobile-first trong kỹ thuật responsive, cross-platform-first trong phạm vi sản phẩm, desktop là trải nghiệm hoàn chỉnh*. Các ràng buộc riêng của Safari (D-021, D-024, D-025) vẫn giữ vì Safari vẫn là trình duyệt được hỗ trợ.
 
 ## D-029 — Adapter nhận dạng chữ viết tay mặc định chạy phía server
-- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất — **cần chủ dự án duyệt giấy phép**
+- **Ngày:** 2026-11-23 · **Trạng thái:** **CHƯA DUYỆT cho production** (chủ dự án, 2026-11-23). Việc chạy trên server **không** được coi là miễn trừ nghĩa vụ GPL. Không thay thư viện khi chưa duyệt. Rà soát giấy phép: `docs/HANDWRITING_LICENSE_REVIEW.md`.
 - **Bối cảnh:** Kiểm tra trong M0-PWA: thư viện nhận dạng nét offline khả dụng là HanziLookupJS (code gốc **GPL-3**; gói npm `hanzilookup-js` 1.0.3 phái sinh từ đó nhưng ghi ISC — tình trạng giấy phép không rõ ràng) với dữ liệu `mmah.json` (phái sinh từ Make Me a Hanzi, **Arphic Public License**). Gửi code GPL xuống trình duyệt là phân phối và kéo theo nghĩa vụ GPL cho mã client.
 - **Lựa chọn:** Chạy matcher **trên `apps/api`** sau `HandwritingRecognitionPort` (endpoint `POST /v1/handwriting/recognize`, cần đăng nhập). Dữ liệu `mmah.json` không commit vào repo; tải bằng script có kiểm tra SHA-256 cùng file giấy phép Arphic. Client chỉ gửi nét vector. Khi adapter không sẵn sàng → client hiển thị MOCK có nhãn hoặc thông báo, không giả kết quả.
 - **Lý do:** Giữ client không bị ràng buộc GPL; nhận dạng như nhau trên mọi trình duyệt/thiết bị.
 - **Hậu quả:** Nhận dạng chữ viết tay cần mạng (không offline). Việc dùng mã GPL phía server và phân phối dữ liệu Arphic cần chủ dự án/tư vấn pháp lý xác nhận; phương án thay thế: tự viết matcher (clean-room) trên dữ liệu Arphic, hoặc dịch vụ thương mại. Chất lượng chưa được kết luận — chỉ có kết quả trên nét tổng hợp cho tới khi có mẫu viết tay thật.
 
+- **Hiện trạng kỹ thuật sau quyết định "chưa duyệt":** adapter mặc định `HANDWRITING_ADAPTER=disabled`; API **từ chối khởi động** nếu `HANDWRITING_ADAPTER=hanzilookup` khi `APP_ENV=production`; image Docker **không** đóng gói dữ liệu `mmah.json`; chỉ môi trường development/test (và Preview nếu chủ dự án chủ động bật) mới chạy được HanziLookup. Gói npm `hanzilookup-js` vẫn còn trong `package.json` (chưa thay thư viện theo chỉ đạo).
+
 ## D-030 — Responsive layout theo lớp thiết bị
-- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Ngày:** 2026-11-23 · **Trạng thái:** **Đã duyệt** (chủ dự án, 2026-11-23)
 - **Lựa chọn:** Breakpoint dùng chung (Tailwind): phone < 768 px (một cột, tab bar dưới), tablet 768–1279 px (navigation rail, hai cột khi hữu ích), desktop ≥ 1280 px (sidebar cố định, nội dung nhiều cột, phím tắt, trạng thái hover). Mỗi module mô tả bố cục desktop riêng (ví dụ: danh sách + chi tiết từ điển cạnh nhau; canvas + gợi ý + lịch sử). Kiểm thử tự động ở 390×844, 820×1180, 1440×900.
 - **Hậu quả:** Test E2E kiểm tra đúng thành phần điều hướng hiển thị theo từng viewport và không có cuộn ngang.
+
+## D-031 — Triển khai Preview: Vercel (web) + Railway (API)
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Bối cảnh:** Chủ dự án yêu cầu Preview trên Vercel (`apps/web`) và Railway (`apps/api`); Supabase dev tạo riêng.
+- **Lựa chọn:**
+  - Vercel: Root Directory `apps/web`, cấu hình trong `apps/web/vercel.json` (install `pnpm install --frozen-lockfile --filter @mandarin/web...`, build `turbo run build --filter=@mandarin/web...`), Node 22.x. Bật **Deployment Protection** (Vercel Authentication) cho Preview.
+  - Railway: build bằng `apps/api/Dockerfile` (cấu hình `apps/api/railway.json`, health check `/health`), `APP_ENV=preview`, `TRUST_PROXY=true`.
+  - Mock **tắt mặc định** trên Preview; chỉ bật khi `ALLOW_MOCKS_IN_PREVIEW=true` và vẫn bắt buộc đăng nhập; mọi kết quả mock gắn nhãn `MOCK`.
+  - Giới hạn tần suất theo IP (mọi request) + theo user (endpoint tốn phí); CORS chỉ cho origin web (danh sách chính xác hoặc regex neo `^https://…$`).
+  - Không deploy production trong M0-PWA.
+- **Hậu quả:** Không có Supabase thì Preview chỉ thử được phần chạy hoàn toàn trên trình duyệt; các API cần đăng nhập trả 401. Hướng dẫn: `docs/DEPLOY_PREVIEW.md`; smoke test: `docs/SMOKE_TEST.md`.

@@ -19,6 +19,14 @@ export function SyncCard() {
         </dd>
         <dt className="text-ink-2">Chờ gửi</dt>
         <dd>{pending}</dd>
+        <dt className="text-ink-2">Máy chủ</dt>
+        <dd>
+          {lastSync?.source === 'mock'
+            ? 'MOCK (RAM, không lưu lâu dài)'
+            : lastSync?.source === 'live'
+              ? 'Cơ sở dữ liệu'
+              : '—'}
+        </dd>
         <dt className="text-ink-2">Lần cuối</dt>
         <dd>{lastSync ? new Date(lastSync.at).toLocaleTimeString('vi-VN') : '—'}</dd>
       </dl>

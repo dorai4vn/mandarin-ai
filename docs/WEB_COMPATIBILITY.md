@@ -4,6 +4,12 @@ Ngày: 2026-11-23 · Phạm vi: D-028 (Chrome, Edge, Firefox, Safari bản hiệ
 
 Nhãn: **VERIFIED (auto)** = Playwright chạy thật trong môi trường này · **CI** = đã viết test, chạy trên GitHub Actions (chưa có kết quả tại thời điểm viết) · **MANUAL** = cần kiểm thử trên thiết bị thật · **BLOCKED** = thiếu tài nguyên · **MOCKED** = chạy bằng adapter giả có nhãn.
 
+## 0. Kết quả CI chính thức
+| Commit | Chromium | Firefox | WebKit |
+|---|---|---|---|
+| `cd855ed` (run 45241745204) | PASS | **FAIL** 68 pass / 7 skip / 3 fail — ghi âm treo (AudioContext tạo sau `await`, bị chính sách autoplay giữ `suspended`) | **FAIL** 64 pass / 11 skip / 3 fail — `page.reload()` khi offline: "WebKit encountered an internal error" |
+| `15620cc` (run 45243746422) | PASS | xem `docs/M0_PWA_REPORT.md` | **PASS** 67 pass / 11 skip — test SW trên WebKit kiểm precache + controller; **điều hướng offline trên Safari là mục kiểm tay** (SMOKE_TEST B10) |
+
 ## 1. Kiểm thử tự động (Playwright 1.63)
 Viewport: mobile 390×844 (touch, isMobile*), tablet 820×1180 (touch), desktop 1440×900 (chuột). *Firefox không hỗ trợ giả lập `isMobile`.
 

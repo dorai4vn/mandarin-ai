@@ -63,6 +63,8 @@ Chỉ chạy một engine: `E2E_ENGINES=chromium pnpm exec playwright test --tra
 **Lưu ý:** bản build E2E bật dev token — không dùng bản build này để deploy.
 
 ## 5. Kiểm thử trên thiết bị thật (điện thoại + máy tính)
+
+> Cách được khuyến nghị: triển khai **Preview** theo `docs/DEPLOY_PREVIEW.md` (Vercel + Railway) và chạy `docs/SMOKE_TEST.md`.
 Micro và service worker yêu cầu **HTTPS** (riêng `localhost` được coi là an toàn). Để điện thoại truy cập được, cần một trong hai cách:
 - **Preview deploy** của web + API trên host đã chọn (Railway là ứng viên, D-026) — dùng `apps/web/Dockerfile` và `apps/api/Dockerfile`.
 - **Tunnel HTTPS** từ máy phát triển tới cổng 3000 (web) và 8787 (API); đặt `NEXT_PUBLIC_API_URL` và `WEB_ORIGINS` theo URL tunnel.

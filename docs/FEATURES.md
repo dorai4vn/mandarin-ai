@@ -18,21 +18,28 @@ Cập nhật lần cuối: 2026-11-23 — web app cross-platform (D-018, D-028).
 | PRD-10 | Nhắc nhở & lịch ôn | M7 | Chưa bắt đầu | Web Push nơi hỗ trợ + nhắc trong app mọi nơi (D-024, chờ duyệt) |
 | PRD-11 | Learning Library & import giáo trình | M2 / M4 | Chưa bắt đầu | Starter fixture (D-012) |
 
-## Hạ tầng M0-PWA (web cross-platform)
+## Trạng thái thực tế M0-PWA (cập nhật 2026-11-23)
 
-| Hạng mục | Trạng thái | Bằng chứng / ghi chú |
+Phân loại: **THẬT** = chạy bằng mã/hạ tầng thật · **MOCK** = adapter giả có nhãn, không phải tích hợp thật · **CHƯA TRIỂN KHAI** = chưa có mã · **TẮT** = có mã nhưng bị tắt có chủ đích.
+
+| Chức năng | Trạng thái | Chi tiết trung thực |
 |---|---|---|
-| `apps/web` Next.js 16 + Tailwind 4, layout phone/tablet/desktop | VERIFIED (Chromium tự động) | E2E layout 3 viewport; Firefox/WebKit chạy ở CI |
-| Capability detection + thông báo tương thích | VERIFIED (Chromium tự động) | `src/platform/capabilities.ts` + test |
-| Canvas Pointer Events (chạm, chuột, bút) | VERIFIED (Chromium tự động) | Thiết bị thật: MANUAL |
-| Nhận dạng chữ viết tay (server, HanziLookup) | Chạy được, **chưa đo chất lượng** | Chỉ nét tổng hợp; giấy phép chờ duyệt (D-029) |
-| Ghi âm → WAV 16 kHz | VERIFIED (Chromium micro giả) | Safari thật: MANUAL |
-| Chấm phát âm Azure / Realtime OpenAI | MOCKED | Thiếu key |
-| Upload PDF (chọn tệp, kéo-thả) | VERIFIED với storage MOCK | Supabase Storage thật: BLOCKED (chưa có dự án) |
-| IndexedDB outbox + sync idempotent + fallback bộ nhớ | VERIFIED (unit + Chromium) | Server store hiện là in-memory (MOCK) tới M1 |
-| Service worker + manifest (tùy chọn) | VERIFIED (Chromium) | Cài đặt thật trên thiết bị: MANUAL |
-| Đăng nhập OTP email | BLOCKED | Chưa có dự án Supabase |
-| CI: 3 engine × 3 viewport | Đã cấu hình | Kết quả xem trên PR |
+| Layout responsive phone/tablet/desktop (D-030) | THẬT | E2E Chromium/Firefox/WebKit × 3 viewport |
+| Phát hiện khả năng trình duyệt + thông báo tương thích | THẬT | Chạy hoàn toàn trên trình duyệt |
+| Canvas viết tay (chạm/chuột/bút) | THẬT | Chỉ thu nét; nhận dạng là mục riêng |
+| Nhận dạng chữ viết tay | **TẮT** trên Preview/production | HanziLookup chỉ chạy ở dev/test; **chưa duyệt giấy phép** (D-029); chất lượng **chưa đo** (chỉ có nét tổng hợp) |
+| Ghi âm → WAV 16 kHz, nghe lại, tốc độ chậm | THẬT (trên trình duyệt) | E2E Chromium/Firefox bằng micro giả; Safari: kiểm tay |
+| Chấm phát âm Azure | MOCK / TẮT | Không có khóa; Preview mặc định TẮT (503) |
+| OpenAI Realtime (khóa tạm thời) | MOCK / TẮT | Không có khóa; không có hội thoại thật |
+| Upload PDF | THẬT ở phía trình duyệt + API; lưu trữ **MOCK in-memory** khi chưa có Supabase | Với `SUPABASE_SERVICE_ROLE_KEY` + bucket private → lưu thật vào Supabase Storage (chưa kiểm vì chưa có dự án) |
+| Lưu offline cục bộ (IndexedDB) + hàng đợi outbox | THẬT (trên trình duyệt) | Có fallback bộ nhớ tạm khi không có IndexedDB |
+| Đồng bộ lên server | **MOCK** | Server lưu thao tác **trong bộ nhớ RAM** (`MemorySyncOperationStore`): **không phải database**, **mất khi API khởi động lại**, tối đa 10 000 thao tác. Bảng Postgres `sync_operations` thuộc M1. Preview mặc định TẮT |
+| Đồng bộ tiến độ giữa nhiều thiết bị | CHƯA TRIỂN KHAI | Chỉ có chiều gửi lên (push); chiều tải về thuộc M1 |
+| Đăng nhập OTP email | THẬT (mã) / chưa kiểm | Cần dự án Supabase; phiên hiện lưu bởi supabase-js trong `localStorage` — M1 chuyển sang cookie (D-022) |
+| PWA: manifest, service worker, cài đặt | THẬT, tùy chọn | Offline navigation đã kiểm tự động trên Chromium/Firefox; Safari: kiểm tay |
+| Nhắc học (in-app bắt buộc, Web Push tùy chọn) | CHƯA TRIỂN KHAI | M7 (D-024 đã duyệt) |
+| Từ điển, thư viện, quiz, SRS, PDF pipeline, AI tutor, XP | CHƯA TRIỂN KHAI | Chỉ có khung giao diện/placeholder; M2–M7 |
+| Supabase: bảng `profiles` + RLS | THẬT (local/CI) | Chưa áp dụng lên dự án Supabase dev |
 
 ## Hạ tầng M0 (native — lịch sử, PR #1)
 

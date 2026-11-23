@@ -41,7 +41,7 @@ Delivered on branch `claude/serene-feynman-joougp` (PR #1, not merged): monorepo
 
 ## M1 — Identity, core schema, offline foundation
 
-**Deliverables:** e-mail OTP/password login, signup, logout (clears IndexedDB/caches), profiles, RLS for user-owned content, schema migrations, IndexedDB read store + outbox and first bidirectional sync with server `sync_operations`, sensitive-field encryption per D-022 (if approved).
+**Deliverables:** e-mail OTP/password login with a cookie-based session (no refresh token in IndexedDB/localStorage, D-022), signup, logout (clears IndexedDB/caches), profiles, RLS for user-owned content, schema migrations, IndexedDB read store + outbox and first bidirectional sync with server `sync_operations`, sensitive-field encryption per D-022 (if approved).
 
 **Exit:** A/B cross-user read/write denied by integration tests; offline mutation survives tab/app kill and syncs exactly once after reconnect; the same account sees the same progress on desktop and phone (Playwright multi-context + real device evidence).
 
@@ -77,9 +77,9 @@ Delivered on branch `claude/serene-feynman-joougp` (PR #1, not merged): monorepo
 
 ## M7 — AI explanations, image import, gamification, notifications
 
-**Deliverables:** tutor explanation with prompt validation, image/screenshot OCR import (camera/photo picker), XP engine consuming learning events (D-003), streak/levels/achievements, reminders via Web Push + in-app (D-024, `push_subscriptions`), profile and progress dashboards.
+**Deliverables:** tutor explanation with prompt validation, image/screenshot OCR import (camera/photo picker), XP engine consuming learning events (D-003), streak/levels/achievements, in-app reminders (mandatory) + optional Web Push (D-024, `push_subscriptions`), profile and progress dashboards.
 
-**Exit:** all features integrate with same vocabulary item ID, review history and study events; XP granted exactly once per qualifying event including offline replays; image OCR corrections are user-confirmed; notification opt-out works; push received where supported (desktop Chrome/Edge/Firefox, Android, iOS ≥ 16.4 Home Screen); in-app reminders everywhere.
+**Exit:** all features integrate with same vocabulary item ID, review history and study events; XP granted exactly once per qualifying event including offline replays; image OCR corrections are user-confirmed; in-app reminders work in every supported browser (mandatory); notification opt-out works; Web Push verified only where supported and permitted (optional, never blocks acceptance).
 
 ## M8 — Modular extensibility audit & private beta
 

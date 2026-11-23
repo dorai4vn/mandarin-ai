@@ -4,7 +4,7 @@
 - **Quyết định gốc:** D-018 (Next.js web app), phạm vi **cross-platform** theo D-028 (desktop, tablet, smartphone; Chrome, Edge, Firefox, Safari; PWA là tùy chọn); chi tiết ở D-019 … D-030.
 - **Điểm xuất phát:** commit `7e20b16` (đầu PR #1, branch `claude/serene-feynman-joougp`, **chưa merge**).
 - **Branch làm việc:** `claude/m0-pwa` (tạo từ `7e20b16`).
-- **Trạng thái:** Bước 1–6 **đã thực hiện** trên `claude/m0-pwa` (xem `docs/M0_PWA_REPORT.md`). Bước 7 (gỡ `apps/mobile`) **chưa làm — chờ duyệt**.
+- **Trạng thái:** Bước 1–6 **đã thực hiện** trên `claude/m0-pwa` (xem `docs/M0_PWA_REPORT.md`). Bước 7 (gỡ `apps/mobile`) **chưa làm — chủ dự án chưa cho phép (2026-11-23)**; code native giữ đóng băng.
 
 ## 1. Nguyên tắc
 1. Không mất tính năng: 11 module PRD giữ nguyên, chỉ đổi cách hiện thực trên nền web.

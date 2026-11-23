@@ -24,6 +24,8 @@ test('offline write survives closing the tab and syncs once after reconnect', as
   await expect(again.getByTestId('note-list')).toContainText('山 = núi (offline)');
   await expect(again.getByTestId('last-sync')).toContainText('applied=1');
   await expect(again.getByTestId('offline-status')).toContainText('chờ=0');
+  // The in-memory server store must never be presented as a persistent database.
+  await expect(again.getByTestId('mock-sync-note')).toContainText('không phải cơ sở dữ liệu');
 });
 
 test('a lost server response is retried and deduplicated (exactly once)', async ({ page }) => {

@@ -34,9 +34,22 @@ Phạm vi (D-028): web app chạy trên Chrome, Edge, Firefox, Safari bản hi�
 - [ ] IndexedDB khả dụng: outbox gửi đúng một lần. Không khả dụng (private mode…): app online vẫn chạy, có thông báo.
 - [ ] Service worker/manifest: chỉ đăng ký khi được hỗ trợ; app shell offline; cài đặt là tùy chọn.
 - [ ] Đăng nhập bằng mã OTP trong tab trình duyệt và trong app đã cài (không phụ thuộc magic link).
-- [ ] Web Push (từ M7): nơi hỗ trợ (desktop Chrome/Edge/Firefox, Android, iOS ≥ 16.4 Home Screen) nhận được thông báo; nơi khác có nhắc trong app.
+- [ ] Nhắc học (từ M7): **nhắc trong ứng dụng hoạt động ở mọi trình duyệt (bắt buộc)**; Web Push chỉ kiểm nơi được hỗ trợ và người dùng cho phép (tùy chọn, không chặn nghiệm thu) — D-024.
 - [ ] Trình duyệt quá cũ: hiện thông báo "trình duyệt không được hỗ trợ" thay vì lỗi.
 - [ ] Trình đọc màn hình (VoiceOver/NVDA/TalkBack) đọc được nút chính; cỡ chữ lớn không vỡ layout.
+
+## C2. Lưu trữ phía trình duyệt (D-022)
+- [ ] IndexedDB **không** chứa API secret, refresh token, bản ghi âm nhạy cảm (kiểm bằng DevTools → Application → IndexedDB).
+- [ ] Không mô tả Web Crypto là tương đương Keychain/SQLCipher trong UI/tài liệu.
+- [ ] Đăng xuất xóa dữ liệu cục bộ của người dùng.
+
+## C3. Preview (D-031)
+- [ ] Vercel Deployment Protection bật cho Preview.
+- [ ] API Preview: `APP_ENV=preview`, `TRUST_PROXY=true`, `WEB_ORIGINS` chỉ domain Vercel; mock tắt trừ khi `ALLOW_MOCKS_IN_PREVIEW=true` có chủ đích.
+- [ ] `HANDWRITING_ADAPTER` ≠ `hanzilookup` khi D-029 chưa duyệt.
+- [ ] `NEXT_PUBLIC_ENABLE_DEV_TOKEN` không bật trên Preview/production.
+- [ ] `/health` trả `environment: preview` và chế độ từng nhà cung cấp đúng như cấu hình.
+- [ ] Chạy `docs/SMOKE_TEST.md` (Chrome/Edge desktop, Safari iPhone, Chrome Android).
 
 ## D. Backend / dữ liệu
 - [ ] Migration chạy được từ đầu trên DB trống (`supabase db reset`).

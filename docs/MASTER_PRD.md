@@ -1,6 +1,6 @@
 # Mandarin AI — Master Product Requirements Document
 
-Version: 2.1 | Date: 2026-11-23 | Status: Product requirements approved; cross-platform web application (D-018, D-028); M0-PWA in progress
+Version: 2.2 | Date: 2026-11-23 | Status: Product requirements approved; cross-platform web application (D-018, D-028); M0-PWA in progress
 
 > v1.3 aligned this PRD with owner decisions D-001 … D-013. v2.0 changed the delivery platform from a React Native/Expo iOS app to a Next.js web app (D-018). v2.1 fixes the scope as a **cross-platform web application** for desktop, laptop, tablet and smartphone browsers; PWA install, offline and Web Push are progressive enhancements, never requirements (D-028). **All 11 functional domains are kept.** Where wording differs, `docs/DECISIONS.md` is authoritative.
 
@@ -103,7 +103,7 @@ Mandarin AI is a cross-platform Chinese learning web application for Vietnamese-
 
 ### PRD-10 Reminders and review schedule
 - Generate due-review schedules based on performance.
-- Reminder delivery on the web (D-024): Web Push scheduled by the server (where the browser supports it; on iPhone/iPad only for Home-Screen web apps on iOS 16.4+, after permission) plus in-app reminders. Review schedules are computed correctly offline; only notification delivery needs the server/network.
+- Reminder delivery on the web (D-024, approved): **in-app reminders are mandatory** in every browser (due-review badge/banner when the app is opened); **Web Push is optional** — server-scheduled where the browser supports it and the learner allows it (on iPhone/iPad only for Home-Screen web apps on iOS 16.4+). Review schedules are computed correctly offline; only push delivery needs the server/network.
 - Respect user notification preferences, quiet hours, permissions and local timezone.
 
 **Acceptance:** User can disable reminders; scheduling remains correct after timezone change and offline periods; where Web Push is supported and permitted a due-review push arrives (verified on at least one desktop browser and an iPhone Home-Screen install); without push support or permission the in-app reminder still shows and nothing is blocked.
@@ -153,7 +153,7 @@ Primary navigation: Home / Library / Dictionary / Practice / Profile — bottom 
 - Next.js web app; every core feature works in a normal browser tab without installation. PWA manifest, service worker/offline shell, install and Web Push are progressive enhancements with graceful fallback: if IndexedDB, Cache Storage or service workers are unavailable the online app keeps working.
 - Capability detection with clear permission prompts and compatibility messages for microphone, audio playback, file upload, storage and notifications in each browser.
 - Release gate: automated tests on Chromium, Firefox and WebKit at mobile, tablet and desktop viewports, plus manual verification on real iPhone Safari and at least one real desktop browser.
-- Offline data in IndexedDB is minimised; sensitive fields are encrypted with a non-extractable Web Crypto key, with documented limits (D-022); sessions handled by Supabase Auth; do not persist audio or other sensitive data locally unless required; protect private PDF/audio; logout clears local data.
+- Offline data in IndexedDB is kept to the minimum needed for study (D-022, approved with conditions): **no API secrets, no refresh tokens and no sensitive audio recordings** in IndexedDB. Web Crypto field encryption may be used for sensitive fields but must **not** be presented as equivalent to native Keychain/SQLCipher. Sessions handled by Supabase Auth (cookie-based session planned for M1); logout clears local data; protect private PDF/audio.
 - No long-lived provider secrets in client. AI APIs via authenticated backend; time-limited voice session credentials where supported.
 - Supabase Row Level Security and automated negative authorization tests; no cross-user vocabulary/progress leaks.
 - Data deletion/export, private document visibility, input sanitization, file-size/type validation, abuse/expense limits.

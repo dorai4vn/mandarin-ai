@@ -95,6 +95,16 @@ export default function OfflineLab() {
               <span data-testid="last-sync">{`\nlần cuối: applied=${lastSync.applied} duplicate=${lastSync.duplicate} rejected=${lastSync.rejected} retried=${lastSync.retried} source=${lastSync.source ?? '—'}${lastSync.error ? ` lỗi=${lastSync.error}` : ''}`}</span>
             )}
           </Mono>
+          {lastSync?.source === 'mock' && (
+            <p
+              role="note"
+              data-testid="mock-sync-note"
+              className="mt-2 rounded-lg border-2 border-amber p-2 text-sm"
+            >
+              Máy chủ đồng bộ đang ở chế độ MOCK: dữ liệu chỉ nằm trong bộ nhớ RAM của API, không
+              phải cơ sở dữ liệu, và mất khi API khởi động lại (cơ sở dữ liệu thật làm ở M1).
+            </p>
+          )}
           <div className="mt-3 flex flex-wrap gap-2">
             <Button onClick={() => void syncNow()} disabled={!online} data-testid="sync-now">
               Đồng bộ ngay
