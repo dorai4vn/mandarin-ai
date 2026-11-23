@@ -6,3 +6,6 @@ export * from './pronunciation.js';
 export * from './realtime.js';
 export * from './learning-events.js';
 export * from './api.js';
+export * from './handwriting.js';
+export * from './sync.js';
+export * from './upload.js';

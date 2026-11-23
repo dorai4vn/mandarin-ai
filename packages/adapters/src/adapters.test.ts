@@ -1,8 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
-import { MockConversation, MockDigitalInk, MockPronunciationAssessment } from './index.js';
+import {
+  MemorySyncOperationStore,
+  MockConversation,
+  MockDigitalInk,
+  MockHandwritingRecognizer,
+  MockPronunciationAssessment,
+} from './index.js';
 import {
   AzurePronunciationAssessment,
   OpenAIRealtimeSessions,
+  SupabaseObjectStorage,
   buildPronunciationHeader,
   mapAzureResponse,
 } from './server.js';
@@ -117,5 +124,43 @@ describe('OpenAI realtime client secret adapter', () => {
     await expect(adapter.createSessionGrant({ userId: 'u' })).rejects.toMatchObject({
       status: 401,
     });
+  });
+});
+
+describe('cross-platform handwriting + sync/storage mocks', () => {
+  it('mock recognizer is labelled and respects limit', async () => {
+    const r = await new MockHandwritingRecognizer().recognize({
+      strokes: [{ points: [{ x: 0, y: 0, t: 0 }] }],
+      pointerType: 'mouse',
+      limit: 2,
+    });
+    expect(r).toMatchObject({ source: 'mock', adapterId: 'mock' });
+    expect(r.candidates).toHaveLength(2);
+  });
+
+  it('memory sync store is idempotent per operation id and rejects cross-user reuse', async () => {
+    const store = new MemorySyncOperationStore();
+    const op = {
+      operationId: '01JD8Z6Q9K2V4N7P3R5T8W1Y0A',
+      deviceId: 'device-12345678',
+      entityType: 'spike_note',
+      opType: 'create' as const,
+      schemaVersion: 1,
+      logicalClock: 1,
+      occurredAt: '2026-11-23T10:00:00+07:00',
+      payload: {},
+    };
+    expect((await store.apply('user-a', op)).status).toBe('applied');
+    expect((await store.apply('user-a', op)).status).toBe('duplicate');
+    expect((await store.apply('user-b', op)).status).toBe('rejected');
+    expect(store.countFor('user-a')).toBe(1);
+  });
+
+  it('supabase storage writes to the private bucket path and rejects traversal', async () => {
+    const fetchMock = vi.fn(async () => new Response('{}', { status: 200 }));
+    const s = new SupabaseObjectStorage({ url: 'https://x.supabase.co/', serviceRoleKey: 'k', bucket: 'documents', fetch: fetchMock });
+    await s.put('u/abc.pdf', new Uint8Array([1]), 'application/pdf');
+    expect((fetchMock.mock.calls[0] as unknown as [string])[0]).toBe('https://x.supabase.co/storage/v1/object/documents/u/abc.pdf');
+    await expect(s.put('../etc/passwd', new Uint8Array([1]), 'application/pdf')).rejects.toThrow();
   });
 });

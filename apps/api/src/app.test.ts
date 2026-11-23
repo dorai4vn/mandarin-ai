@@ -40,7 +40,7 @@ describe('config', () => {
       MISSING_PROVIDER_MODE: 'mock',
     });
     expect(prod.MISSING_PROVIDER_MODE).toBe('disabled');
-    expect(createProviders(prod)).toEqual({ conversation: null, pronunciation: null });
+    expect(createProviders(prod)).toEqual({ conversation: null, pronunciation: null, handwriting: null, storage: null, sync: null });
   });
 
   it('reports invalid variable names without leaking values', () => {
@@ -164,5 +164,88 @@ describe('FixedWindowLimiter', () => {
     expect(l.take('a')).toBe(false);
     t = 1000;
     expect(l.take('a')).toBe(true);
+  });
+});
+
+describe('cross-platform web endpoints', () => {
+  const auth = async (sub: string) => ({ authorization: `Bearer ${await token({}, SECRET, sub)}` });
+
+  it('allows CORS only for configured web origins', async () => {
+    const ok = await app.inject({
+      method: 'OPTIONS',
+      url: '/v1/sync/push',
+      headers: { origin: 'http://localhost:3000', 'access-control-request-method': 'POST' },
+    });
+    expect(ok.headers['access-control-allow-origin']).toBe('http://localhost:3000');
+    const evil = await app.inject({
+      method: 'OPTIONS',
+      url: '/v1/sync/push',
+      headers: { origin: 'https://evil.example', 'access-control-request-method': 'POST' },
+    });
+    expect(evil.headers['access-control-allow-origin']).toBeUndefined();
+  });
+
+  it('recognizes handwriting via the configured adapter (mock here) and validates input', async () => {
+    const h = await auth('44444444-2222-4333-8444-555555555555');
+    const bad = await app.inject({ method: 'POST', url: '/v1/handwriting/recognize', headers: h, payload: { strokes: [] } });
+    expect(bad.statusCode).toBe(400);
+    const res = await app.inject({
+      method: 'POST',
+      url: '/v1/handwriting/recognize',
+      headers: h,
+      payload: { strokes: [{ points: [{ x: 1, y: 2, t: 0 }] }], pointerType: 'mouse' },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({ source: 'mock', adapterId: 'mock' });
+  });
+
+  it('applies a sync operation exactly once and rejects reuse of its id by another user', async () => {
+    const op = {
+      operationId: '01JD8Z6Q9K2V4N7P3R5T8W1Y0B',
+      deviceId: 'device-12345678',
+      entityType: 'spike_note',
+      opType: 'create',
+      schemaVersion: 1,
+      logicalClock: 1,
+      occurredAt: '2026-11-23T10:00:00+07:00',
+      payload: { text: '山' },
+    };
+    const a = await auth('55555555-2222-4333-8444-555555555555');
+    const first = await app.inject({ method: 'POST', url: '/v1/sync/push', headers: a, payload: { operations: [op] } });
+    const replay = await app.inject({ method: 'POST', url: '/v1/sync/push', headers: a, payload: { operations: [op] } });
+    expect(first.json().results[0].status).toBe('applied');
+    expect(replay.json().results[0].status).toBe('duplicate');
+    expect(replay.json().source).toBe('mock');
+    const b = await auth('66666666-2222-4333-8444-555555555555');
+    const other = await app.inject({ method: 'POST', url: '/v1/sync/push', headers: b, payload: { operations: [op] } });
+    expect(other.json().results[0].status).toBe('rejected');
+  });
+
+  it('accepts real PDFs only, at a server-chosen private path', async () => {
+    const h = await auth('77777777-2222-4333-8444-555555555555');
+    const pdf = Buffer.from('%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF');
+    const ok = await app.inject({
+      method: 'POST',
+      url: '/v1/uploads/pdf',
+      headers: { ...h, 'content-type': 'application/pdf' },
+      payload: pdf,
+    });
+    expect(ok.statusCode).toBe(201);
+    expect(ok.json().storagePath).toMatch(/^77777777-2222-4333-8444-555555555555\/imports\/[0-9a-f-]{36}\.pdf$/);
+    expect(ok.json().source).toBe('mock');
+    const fake = await app.inject({
+      method: 'POST',
+      url: '/v1/uploads/pdf',
+      headers: { ...h, 'content-type': 'application/pdf' },
+      payload: Buffer.from('<html>not a pdf</html>'),
+    });
+    expect(fake.statusCode).toBe(422);
+    const wrongType = await app.inject({
+      method: 'POST',
+      url: '/v1/uploads/pdf',
+      headers: { ...h, 'content-type': 'text/plain' },
+      payload: 'hello',
+    });
+    expect(wrongType.statusCode).toBe(415);
   });
 });

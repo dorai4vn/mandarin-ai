@@ -23,10 +23,12 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.test.json",
     "lint": "eslint src",
-    "test": "vitest run"
+    "test": "vitest run",
+    "fetch:handwriting-data": "node scripts/fetch-handwriting-data.mjs"
   },
   "dependencies": {
-    "@mandarin/contracts": "workspace:*"
+    "@mandarin/contracts": "workspace:*",
+    "hanzilookup-js": "1.0.3"
   },
   "devDependencies": {
     "@mandarin/config": "workspace:*"

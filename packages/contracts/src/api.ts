@@ -9,8 +9,11 @@ export const HealthResponseSchema = z.object({
   status: z.literal('ok'),
   version: z.string(),
   providers: z.object({
-    openaiRealtime: z.enum(['live', 'mock']),
-    azureSpeech: z.enum(['live', 'mock']),
+    openaiRealtime: z.enum(['live', 'mock', 'disabled']),
+    azureSpeech: z.enum(['live', 'mock', 'disabled']),
+    handwriting: z.enum(['live', 'mock', 'disabled']),
+    storage: z.enum(['live', 'mock', 'disabled']),
+    sync: z.enum(['live', 'mock', 'disabled']),
   }),
 });
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;

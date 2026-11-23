@@ -1,9 +1,17 @@
 import { ProviderError } from '@mandarin/adapters';
+import cors from '@fastify/cors';
 import {
+  HandwritingRecognitionRequestSchema,
+  PDF_UPLOAD_LIMITS,
   PronunciationAssessmentRequestSchema,
+  SyncPushRequestSchema,
+  looksLikePdf,
   type ApiError,
   type HealthResponse,
+  type PdfUploadResult,
+  type SyncPushResponse,
 } from '@mandarin/contracts';
+import { createHash, randomUUID } from 'node:crypto';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import type { AuthUser, TokenVerifier } from './auth.js';
 import type { AppConfig } from './config.js';
@@ -30,7 +38,23 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
     // 1 MB audio as base64 (~1.37 MB) plus JSON overhead.
     bodyLimit: 1_600_000,
   });
-  const limiter = new FixedWindowLimiter(config.RATE_LIMIT_PER_MINUTE);
+  // Paid provider calls get the strict limit; cheap endpoints a 10x larger one.
+  const costLimiter = new FixedWindowLimiter(config.RATE_LIMIT_PER_MINUTE);
+  const generalLimiter = new FixedWindowLimiter(config.RATE_LIMIT_PER_MINUTE * 10);
+
+  // Browsers on any platform call the API cross-origin; only the web app origins are allowed.
+  void app.register(cors, {
+    origin: config.webOrigins,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Authorization', 'Content-Type'],
+    maxAge: 600,
+  });
+
+  app.addContentTypeParser(
+    PDF_UPLOAD_LIMITS.mimeType,
+    { parseAs: 'buffer', bodyLimit: PDF_UPLOAD_LIMITS.maxBytes },
+    (_req, body, done) => done(null, body),
+  );
 
   const requireUser = async (req: FastifyRequest, reply: FastifyReply) => {
     const header = req.headers.authorization;
@@ -42,7 +66,13 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
     } catch {
       return reply.code(401).send(err('unauthenticated', 'Invalid or expired token'));
     }
-    if (!limiter.take(req.user.id)) {
+    if (!generalLimiter.take(req.user.id)) {
+      return reply.code(429).send(err('rate_limited', 'Too many requests'));
+    }
+  };
+
+  const limitCost = async (req: FastifyRequest, reply: FastifyReply) => {
+    if (!costLimiter.take(req.user!.id)) {
       return reply.code(429).send(err('rate_limited', 'Too many requests'));
     }
   };
@@ -60,12 +90,15 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
     status: 'ok',
     version: config.version,
     providers: {
-      openaiRealtime: providers.conversation?.mode === 'live' ? 'live' : 'mock',
-      azureSpeech: providers.pronunciation?.mode === 'live' ? 'live' : 'mock',
+      openaiRealtime: providers.conversation?.mode ?? 'disabled',
+      azureSpeech: providers.pronunciation?.mode ?? 'disabled',
+      handwriting: providers.handwriting?.mode ?? 'disabled',
+      storage: providers.storage?.mode ?? 'disabled',
+      sync: providers.sync?.mode ?? 'disabled',
     },
   }));
 
-  app.post('/v1/voice/realtime-session', { preHandler: requireUser }, async (req, reply) => {
+  app.post('/v1/voice/realtime-session', { preHandler: [requireUser, limitCost] }, async (req, reply) => {
     if (!providers.conversation) {
       return reply.code(503).send(err('provider_unavailable', 'Voice sessions are not configured'));
     }
@@ -96,6 +129,52 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
       }
     },
   );
+
+  app.post('/v1/handwriting/recognize', { preHandler: requireUser }, async (req, reply) => {
+    const parsed = HandwritingRecognitionRequestSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send(err('invalid_request', 'Body does not match contract'));
+    if (!providers.handwriting) {
+      return reply.code(503).send(err('provider_unavailable', 'Handwriting recognition is not configured'));
+    }
+    return providers.handwriting.port.recognize(parsed.data);
+  });
+
+  app.post('/v1/sync/push', { preHandler: requireUser }, async (req, reply): Promise<SyncPushResponse | void> => {
+    const parsed = SyncPushRequestSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send(err('invalid_request', 'Body does not match contract'));
+    if (!providers.sync) return reply.code(503).send(err('provider_unavailable', 'Sync store is not configured'));
+    const results = [];
+    for (const op of parsed.data.operations) {
+      const r = await providers.sync.apply(req.user!.id, op);
+      results.push({ operationId: op.operationId, ...r });
+    }
+    return { source: providers.sync.mode, results };
+  });
+
+  app.post('/v1/uploads/pdf', { preHandler: requireUser, bodyLimit: PDF_UPLOAD_LIMITS.maxBytes }, async (req, reply) => {
+    if (req.headers['content-type'] !== PDF_UPLOAD_LIMITS.mimeType || !Buffer.isBuffer(req.body)) {
+      return reply.code(415).send(err('unsupported_media_type', 'Only application/pdf is accepted'));
+    }
+    const body = req.body;
+    if (body.length === 0 || !looksLikePdf(body.subarray(0, 5))) {
+      return reply.code(422).send(err('not_a_pdf', 'File content is not a PDF'));
+    }
+    if (!providers.storage) return reply.code(503).send(err('provider_unavailable', 'Storage is not configured'));
+    // Server-chosen path: the client never decides where private files go.
+    const storagePath = `${req.user!.id}/imports/${randomUUID()}.pdf`;
+    try {
+      await providers.storage.put(storagePath, body, PDF_UPLOAD_LIMITS.mimeType);
+    } catch (e) {
+      return providerFailure(reply, e);
+    }
+    const result: PdfUploadResult = {
+      source: providers.storage.mode,
+      storagePath,
+      sizeBytes: body.length,
+      sha256: createHash('sha256').update(body).digest('hex'),
+    };
+    return reply.code(201).send(result);
+  });
 
   return app;
 }

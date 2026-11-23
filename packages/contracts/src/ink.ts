@@ -1,7 +1,12 @@
 import { z } from 'zod';
 import { ResultSourceSchema } from './provenance.js';
 
-/** One touch sample. `t` is milliseconds since the stroke set started (monotonic). */
+/**
+ * @deprecated for new code: use `handwriting.ts` (cross-platform, D-020/D-029). Kept for the
+ * frozen native spike in apps/mobile. The point/stroke schemas below are shared.
+ */
+
+/** One pointer sample (touch, mouse or pen). `t` is milliseconds since the stroke set started (monotonic). */
 export const InkPointSchema = z.object({
   x: z.number().finite(),
   y: z.number().finite(),
