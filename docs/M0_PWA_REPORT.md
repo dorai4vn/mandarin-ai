@@ -33,3 +33,23 @@ GO/NO-GO decision: NO-GO cho tiêu chí thoát M0-PWA cho tới khi có (1) CI F
 | `--repeat-each 3` (Chromium) | **205 PASS, 0 fail, 0 flaky** |
 | Firefox / WebKit | Không chạy được tại đây (không có trình duyệt; không được phép `playwright install`) → job `e2e` trên CI |
 | `docker build` web/API | Không chạy được tại đây (giới hạn tải image Docker Hub/ECR) → bước trong CI |
+
+
+## Cập nhật 2026-11-23 (sau quyết định của chủ dự án)
+
+### CI chính thức trên PR #2
+| Commit / run | Lint·Test·Build (+Docker) | Supabase RLS | Mobile (đóng băng) | E2E Chromium | E2E Firefox | E2E WebKit |
+|---|---|---|---|---|---|---|
+| `cd855ed` / 45241745204 | PASS | PASS | PASS | PASS | **FAIL** 68✓ 7⊘ 3✗ (ghi âm treo) | **FAIL** 64✓ 11⊘ 3✗ (reload offline: lỗi nội bộ WebKit) |
+| `15620cc` / 45243746422 | PASS | PASS | PASS | PASS | **FAIL** 68✓ 7⊘ 3✗ (ghi âm vẫn không bắt đầu) | **PASS** 67✓ 11⊘ |
+| `fc5b4db` / 45244779226 | xem PR | xem PR | xem PR | xem PR | xem PR (đã thêm thiết bị âm thanh ảo + chẩn đoán) | xem PR |
+
+Skip có chủ đích (không phải để làm CI xanh): chuột trên điện thoại; kiểm tra chỉ dành cho desktop ở viewport mobile/tablet; kéo-thả trên mobile/tablet; WebKit: ghi âm (Playwright WebKit không có micro giả) và Tab-tới-link (Safari mặc định không Tab tới link).
+
+### Thay đổi
+- Sửa app: `AudioContext` tạo + resume đồng bộ trong thao tác người dùng, không chờ vô hạn, báo lỗi rõ ràng.
+- WebKit: test SW kiểm controller + precache; điều hướng offline trên Safari chuyển thành mục kiểm tay **B10** trong `docs/SMOKE_TEST.md` (chưa xác định lỗi do công cụ hay app).
+- API an toàn cho Preview: `APP_ENV`, mock chỉ khi `ALLOW_MOCKS_IN_PREVIEW=true`, `HANDWRITING_ADAPTER` mặc định tắt và bị từ chối ở production, rate limit theo IP, `WEB_ORIGIN_REGEX`, `TRUST_PROXY`, sync store in-memory có giới hạn.
+- Kiểm tay cấu hình Preview tối thiểu: `/health` → `environment: preview`, mọi nhà cung cấp `disabled`; endpoint cần đăng nhập → 401; origin lạ không có CORS; `hanzilookup` + production → API từ chối khởi động.
+- Mô phỏng lệnh Vercel trên bản clone sạch: `pnpm install --frozen-lockfile --filter @mandarin/web...` (2,6 s) + `turbo run build --filter=@mandarin/web...` → 3/3 task thành công.
+- Unit test: **77** (contracts 8, domain 16, adapters 11, api 19, web 16, mobile 7).
