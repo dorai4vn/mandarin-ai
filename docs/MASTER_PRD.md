@@ -1,6 +1,6 @@
 # Mandarin AI — Master Product Requirements Document
 
-Version: 2.2 | Date: 2026-11-23 | Status: Product requirements approved; cross-platform web application (D-018, D-028); M0-PWA in progress
+Version: 2.3 | Date: 2026-11-23 | Status: Product requirements approved; cross-platform web application (D-018, D-028); M0-PWA in progress
 
 > v1.3 aligned this PRD with owner decisions D-001 … D-013. v2.0 changed the delivery platform from a React Native/Expo iOS app to a Next.js web app (D-018). v2.1 fixes the scope as a **cross-platform web application** for desktop, laptop, tablet and smartphone browsers; PWA install, offline and Web Push are progressive enhancements, never requirements (D-028). **All 11 functional domains are kept.** Where wording differs, `docs/DECISIONS.md` is authoritative.
 
@@ -161,6 +161,27 @@ Primary navigation: Home / Library / Dictionary / Practice / Profile — bottom 
 - Reproducible cloud builds and migrations, CI tests and rollback plan.
 - Require clear, testable performance targets established with device/load testing, rather than invented guarantees.
 
+## 5a. Performance requirements (D-032, performance-first)
+
+Mandarin AI must feel fast on phones, tablets, laptops and PCs — not only on one browser. Targets below are **initial budgets** that must be measured on real HTTPS deployments and adjusted with evidence; no claim of meeting them is valid without such measurements. Full method, datasets, thresholds and monitoring: `docs/PERFORMANCE.md`.
+
+| Metric | Initial target |
+|---|---|
+| UI interaction feedback | p95 < 100 ms |
+| Local dictionary query (realistic dataset) | p95 < 200 ms |
+| Cached navigation | p95 < 300 ms |
+| Local quiz answer feedback | p95 < 100 ms |
+| AI text first visible token | 1–2 s on a defined test network |
+| Pronunciation result (short sample, excluding speaking time) | p95 < 3 s |
+| Core Web Vitals (p75, real-user data) | LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1 |
+
+Product rules that follow from this:
+- Downloaded lessons, dictionary entries and quizzes are read locally (offline-capable) — the network is for sync and fetching more.
+- The UI responds optimistically but **never shows "synced" before the server acknowledges**; pending and failed states are always visible.
+- Heavy work (PDF import, OCR, AI generation) runs in the background with visible progress and safe retry; the learner can keep studying.
+- AI text answers stream; real-time voice is offered only where the browser is compatible and it has been tested.
+- Performance work must not weaken security, row-level access control, offline data safety or sync correctness.
+
 ## 6. Open questions tracked without blocking foundation
 
 - Release distribution: private beta on an HTTPS URL (invite-only accounts) before public launch; custom domain to be chosen.
@@ -168,6 +189,7 @@ Primary navigation: Home / Library / Dictionary / Practice / Profile — bottom 
 - Chinese simplified-first and optional traditional display rules.
 - Detailed XP formula, tone scoring rubric and notification defaults (to validate with test users).
 - Pricing/billing/cost caps; no commitment to numerical budgets without usage tests.
+- Hosting regions for API and database: chosen from measured latency to real users, API and DB colocated (D-034).
 
 ## 7. Definition of product done
 

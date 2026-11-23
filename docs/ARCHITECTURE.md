@@ -188,6 +188,23 @@ All rows carry `user_id`/`owner_id`; RLS: owner only. Composite foreign keys `(i
 | Touch gestures (scroll, zoom, edge swipe) vs mouse/pen | phones/tablets | Canvas `touch-action: none`, Pointer Events with `pointerType`, pressure when present |
 | `100vh`, on-screen keyboards, notches | phones/tablets | `dvh`, `viewport-fit=cover`, `env(safe-area-inset-*)`, inputs ≥ 16 px |
 
+## Performance architecture (D-032, D-033, D-034)
+
+Budgets, measurement method, baseline and monitoring: `docs/PERFORMANCE.md`. Design rules:
+
+- **Local-first reads:** lesson content, dictionary, review cards and quiz items already downloaded are queried from IndexedDB (Dexie) with indexes designed for the actual queries (e.g. `[userId+dueAt]`, normalized Pinyin, Vietnamese gloss tokens); the network is never on the critical path of a study interaction.
+- **Optimistic UI + honest sync state:** local write + outbox entry in one transaction, UI updates immediately; sync status shows `pending`, `rejected`, `error` explicitly and only shows "synced" after server acknowledgement (`applied`/`duplicate`).
+- **Bounded caches with versioning:** Cache Storage / IndexedDB caches are keyed by user id + schema/content version, capped by size (checked with `navigator.storage.estimate()`), evicted LRU; the service worker caches only public assets and pages, never authenticated API responses; logout clears the user's caches.
+- **Prefetch:** next lesson / due cards prefetched when idle (`requestIdleCallback`), skipped on `Save-Data` or slow connections.
+- **Code splitting / lazy loading:** PDF viewer, audio engine (AudioWorklet), Hanzi stroke animation, handwriting UI, Supabase SDK and AI chat UI are loaded with dynamic `import()` only when the feature opens; per-route JS budget enforced in CI.
+- **Background jobs:** PDF ingestion and heavy AI generation run in the worker (M4+) with job rows (`status`, `progress`, `attempt`, `idempotency_key`), retry with backoff, client polling or push of progress — no long synchronous HTTP requests.
+- **Streaming:** AI text uses streaming responses end-to-end (provider → API → browser); Realtime voice (WebRTC) only behind a feature flag after real-browser tests (D-004).
+- **API/database efficiency:** batch endpoints (sync ≤ 100 ops per request already), no N+1 (repository methods load related rows with joins or `IN` lists), every migration ships indexes for its RLS predicates and main queries with `EXPLAIN ANALYZE` on the large test dataset, pooled connections (Supabase pooler / single `pg` pool per API instance), statement timeouts.
+- **Region:** API and database colocated in the region chosen by measurement (D-034); static web served from CDN.
+- **No paid cache tier** (Redis etc.) until metrics prove the need (D-033).
+- **Instrumentation:** `web-vitals` (sampled, anonymous) → API telemetry endpoint; Fastify `responseTime` + `Server-Timing`; `pg_stat_statements`; AI first-token and pronunciation timings; sync duration, outbox length, error rate.
+- **Safety first:** no optimisation may bypass JWT/RLS checks, cache private data in shared caches, drop offline data or weaken idempotent sync.
+
 ## Architecture acceptance probes
 
 1. Add a new `QuizType` and renderer without modifying old question graders; regression suite remains green.
@@ -195,5 +212,6 @@ All rows carry `user_id`/`owner_id`; RLS: owner only. Composite foreign keys `(i
 3. Swap mock OpenAI/Azure/handwriting adapters for live ones in integration tests without changing domain code.
 4. Offline quiz -> browser tab/installed app killed -> reopen -> reconnect -> exactly one server attempt, correct next review, one XP grant (M7).
 7. The same account's progress written on a desktop browser appears on a phone browser after sync, and vice versa.
+8. Performance budgets in `docs/PERFORMANCE.md` are measured on an HTTPS deployment (lab profiles + real devices) and reported per milestone; regressions beyond the failure threshold block acceptance.
 5. User A cannot read user B documents, attempts, audio or dictionary even with guessed UUIDs.
 6. Failed PDF import can resume/retry; published course is not partially corrupted.

@@ -6,6 +6,7 @@
 - Kiến trúc: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · Quyết định: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 - Kế hoạch milestone: [`docs/MILESTONES_CLAUDE_CODE.md`](docs/MILESTONES_CLAUDE_CODE.md)
 - Cài đặt & kiểm thử: [`docs/SETUP.md`](docs/SETUP.md) · Tương thích trình duyệt: [`docs/WEB_COMPATIBILITY.md`](docs/WEB_COMPATIBILITY.md) · Chuyển đổi: [`docs/MIGRATION_M0_PWA.md`](docs/MIGRATION_M0_PWA.md)
+- Hiệu năng: [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md) · Triển khai Preview: [`docs/DEPLOY_PREVIEW.md`](docs/DEPLOY_PREVIEW.md)
 - Tính năng: [`docs/FEATURES.md`](docs/FEATURES.md) · Release: [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) · Báo cáo: [`docs/M0_PWA_REPORT.md`](docs/M0_PWA_REPORT.md) (M0 native cũ: [`docs/M0_REPORT.md`](docs/M0_REPORT.md))
 
 ```text

@@ -245,3 +245,29 @@ Quy ước:
   - Giới hạn tần suất theo IP (mọi request) + theo user (endpoint tốn phí); CORS chỉ cho origin web (danh sách chính xác hoặc regex neo `^https://…$`).
   - Không deploy production trong M0-PWA.
 - **Hậu quả:** Không có Supabase thì Preview chỉ thử được phần chạy hoàn toàn trên trình duyệt; các API cần đăng nhập trả 401. Hướng dẫn: `docs/DEPLOY_PREVIEW.md`; smoke test: `docs/SMOKE_TEST.md`.
+
+---
+
+## Hiệu năng (2026-11-23)
+
+## D-032 — Performance-first architecture và performance budget
+- **Ngày:** 2026-11-23 · **Trạng thái:** **Đã duyệt** (chủ dự án) — các con số là **mục tiêu ban đầu**, phải đo thực tế và điều chỉnh theo môi trường
+- **Bối cảnh:** Mandarin AI phải nhanh trên mobile, tablet, PC và laptop, không chỉ Safari iPhone.
+- **Lựa chọn:**
+  - Performance budget chính thức ở `docs/PERFORMANCE.md` (metrics, phương pháp đo, baseline, target, dataset thử nghiệm, ngưỡng thất bại, kế hoạch giám sát).
+  - Mục tiêu ban đầu: phản hồi tương tác UI p95 < 100 ms; tra từ điển cục bộ p95 < 200 ms; điều hướng đã cache p95 < 300 ms; phản hồi đáp án quiz cục bộ p95 < 100 ms; AI text token đầu tiên 1–2 s (mạng thử nghiệm xác định); kết quả chấm phát âm p95 < 3 s (mẫu ngắn, không tính thời gian nói); Core Web Vitals p75: LCP ≤ 2,5 s, INP ≤ 200 ms, CLS ≤ 0,1.
+  - Kiến trúc: đọc local-first (IndexedDB/Dexie) cho dữ liệu đã tải; optimistic UI + outbox idempotent với trạng thái pending/error rõ ràng, **không** báo "đã đồng bộ" khi chưa có xác nhận của server; cache/prefetch có giới hạn dung lượng, vô hiệu theo version, không cache nhầm dữ liệu riêng của người dùng; lazy-load PDF viewer, audio engine, animation Hanzi, nhận dạng chữ viết tay; PDF/AI nặng chạy background job (progress, retry, idempotency); AI text streaming; Realtime/WebRTC chỉ khi tương thích và đã test thật.
+  - Đo: Web Vitals phía trình duyệt, độ trễ API, độ trễ database, AI first-token, thời lượng sync, độ dài hàng đợi, tỷ lệ lỗi.
+  - Benchmark lab trên profile desktop và mobile (CPU/network throttling) với Chromium/Firefox/WebKit trong CI khi khả thi.
+- **Ràng buộc:** mọi tối ưu **không được** làm suy yếu bảo mật, RLS, dữ liệu offline hay tính đúng đắn của đồng bộ. **Không** được tuyên bố đạt hiệu năng khi chưa có benchmark trên bản HTTPS thực tế.
+- **Hậu quả:** Tiêu chí nghiệm thu M1–M8 có thêm điều kiện hiệu năng; Release Checklist có mục hiệu năng; CI thêm job benchmark lab (báo cáo trước, chặn sau khi baseline ổn định).
+
+## D-033 — Không thêm Redis/dịch vụ cache trả phí khi chưa có số liệu
+- **Ngày:** 2026-11-23 · **Trạng thái:** **Đã duyệt** (chủ dự án)
+- **Lựa chọn:** Trước khi có số liệu đo chứng minh nhu cầu, chỉ dùng: cache HTTP/CDN cho tài nguyên tĩnh, cache trình duyệt (IndexedDB/Cache Storage) có giới hạn, index và tối ưu truy vấn Postgres, cache trong bộ nhớ tiến trình API cho dữ liệu dùng chung chỉ-đọc (có TTL, không chứa dữ liệu riêng người dùng).
+- **Điều kiện xem xét lại:** số liệu production/preview cho thấy (a) p95 độ trễ API vượt budget do truy vấn lặp lại mà index/batching không giải quyết được, hoặc (b) cần chia sẻ trạng thái giữa nhiều instance API (rate limit, hàng đợi job). Khi đó lập đề xuất có số liệu, chi phí, phương án thay thế (ví dụ bảng Postgres, `pg_cron`/hàng đợi trên Postgres).
+
+## D-034 — Chọn hosting region bằng đo đạc
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Lựa chọn:** Không giả định region nhanh nhất. Trước khi chốt region production: đo RTT/độ trễ `/health` và một truy vấn DB mẫu từ thiết bị người dùng thật (Việt Nam và nơi khác nếu có) tới các region ứng viên của Supabase và Railway; ưu tiên đặt API và database **cùng region** (độ trễ API→DB thường chiếm nhiều lần gọi mỗi request). Kết quả và lựa chọn ghi vào `docs/PERFORMANCE.md` mục 8.
+- **Hậu quả:** Region Preview có thể đổi sau khi đo; region của Supabase không đổi được sau khi tạo dự án → **đo trước khi tạo dự án Supabase production**.

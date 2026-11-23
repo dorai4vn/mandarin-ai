@@ -51,6 +51,19 @@ Phạm vi (D-028): web app chạy trên Chrome, Edge, Firefox, Safari bản hi�
 - [ ] `/health` trả `environment: preview` và chế độ từng nhà cung cấp đúng như cấu hình.
 - [ ] Chạy `docs/SMOKE_TEST.md` (Chrome/Edge desktop, Safari iPhone, Chrome Android).
 
+## C4. Hiệu năng (D-032, `docs/PERFORMANCE.md`)
+- [ ] Benchmark lab trên **bản HTTPS** (Preview/production), profile `desktop` và `mobile-mid` (CPU 4×, 4G-lab); Chromium là cổng chặn, Firefox/WebKit báo cáo.
+- [ ] Bảng P1–P16: giá trị đo / mục tiêu / ngưỡng thất bại / "chưa đo được" + lý do; so với baseline trước.
+- [ ] Không chỉ số nào vượt **ngưỡng thất bại**; vượt ngưỡng cảnh báo phải có giải thích và kế hoạch.
+- [ ] JS tải lần đầu mỗi route ≤ budget (P10); thành phần nặng được lazy-load.
+- [ ] Đo tay trên thiết bị thật (iPhone Safari, Android Chrome, laptop): mở app nguội, điều hướng, tương tác chính — ghi số đo.
+- [ ] Trạng thái đồng bộ không báo "đã đồng bộ" khi chưa có xác nhận server; lỗi/từ chối hiển thị.
+- [ ] Cache không chứa dữ liệu riêng của người dùng khác; đăng xuất xóa cache; cache có version và giới hạn.
+- [ ] Truy vấn DB mới có index + `EXPLAIN ANALYZE` trên dataset D-L; không N+1.
+- [ ] Không thêm Redis/cache trả phí khi chưa có số liệu (D-033).
+- [ ] Không tối ưu nào làm yếu bảo mật, RLS, dữ liệu offline hay tính đúng đắn của đồng bộ.
+- [ ] Không tuyên bố "đạt hiệu năng" nếu chưa có số liệu trên HTTPS thật.
+
 ## D. Backend / dữ liệu
 - [ ] Migration chạy được từ đầu trên DB trống (`supabase db reset`).
 - [ ] Test RLS: user A không đọc/ghi được dữ liệu user B; user thường không ghi được shared lexicon.
