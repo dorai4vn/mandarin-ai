@@ -36,6 +36,12 @@ export class SyncEngine {
     private readonly locks: LockManagerLike | undefined = (
       globalThis.navigator as { locks?: LockManagerLike } | undefined
     )?.locks,
+    /**
+     * Whether an acknowledgement from a MOCK (in-memory) server may remove operations from the
+     * outbox. Only true in development/E2E builds (NEXT_PUBLIC_ALLOW_MOCK_SYNC=true). Otherwise
+     * a mock ack is treated as a failure so real study data is never dropped as "synced".
+     */
+    private readonly acceptMockAcks = false,
   ) {}
 
   /**
@@ -82,6 +88,15 @@ export class SyncEngine {
         break;
       }
       summary.source = res.source;
+      if (res.source === 'mock' && !this.acceptMockAcks) {
+        await this.store.recordFailure(
+          batch.map((o) => o.operationId),
+          'server_not_persistent',
+        );
+        summary.error = 'server_not_persistent';
+        summary.retried += batch.length;
+        break;
+      }
       const rec = reconcile(batch, res.results);
       await this.store.applyReconciliation(rec);
       for (const r of res.results) {

@@ -40,3 +40,36 @@ Chỉ đạo của chủ dự án: HanziLookup **chưa được duyệt cho prod
 ## 5. Việc cần chủ dự án quyết định
 1. Chọn phương án (A–E) hoặc yêu cầu tư vấn pháp lý trước.
 2. Có cho phép bật HanziLookup trên **Preview** (môi trường thử nghiệm riêng, có bảo vệ truy cập) để đo chất lượng hay không. Mặc định: **không bật**.
+
+---
+
+## 6. Nghiên cứu phương án B — Hanzi Writer (2026-11-23, theo yêu cầu chủ dự án)
+**Chưa tích hợp, chưa bật** — chỉ kiểm tra gói và giấy phép.
+
+### 6.1 Kiểm tra gói npm (tải tarball và đọc trực tiếp)
+| Gói | Phiên bản | Giấy phép trong gói | Dependency | Kích thước |
+|---|---|---|---|---|
+| `hanzi-writer` | 3.7.3 | **MIT** — file `LICENSE` (Copyright 2014 David Chanin); `COPYING.md` ghi rõ dữ liệu dùng Make Me a Hanzi/Arphic theo APL | **không có** | `hanzi-writer.min.js` ≈ 10,7 KB gzip |
+| `hanzi-writer-data` | 2.0.1 | **Arphic Public License** — kèm `ARPHICPL.TXT` và thư mục `APL/` (bản EN/zh) | không | 9 580 tệp JSON, mỗi chữ ≈ 0,5 KB gzip (ví dụ 山: `strokes` + `medians`, 3 nét); tổng 47 MB → **tải từng chữ khi cần** |
+
+Chuỗi provenance dữ liệu: font Arphic PL KaitiM GB / UKai (APL, 1999) → Make Me a Hanzi (`graphics.txt`, APL, Shaunak Kishore 2016) → `hanzi-writer-data` (APL). Không có thành phần GPL trong chuỗi này.
+
+### 6.2 Đánh giá giấy phép (kỹ thuật, không phải tư vấn pháp lý)
+- Mã MIT: dùng thương mại, sửa đổi, đóng gói vào bundle trình duyệt được; giữ thông báo bản quyền MIT.
+- Dữ liệu APL: được dùng và phân phối (kể cả qua trình duyệt); khi phân phối phải kèm giấy phép APL; nếu **sửa đổi dữ liệu** thì bản sửa đổi tiếp tục theo APL. Không ràng buộc mã nguồn ứng dụng.
+- Việc cần làm khi tích hợp: trang "Giấy phép & ghi công" trong app (MIT + APL + nguồn Make Me a Hanzi/Arphic), tự host dữ liệu (không dùng CDN bên ngoài) để kiểm soát phiên bản và quyền riêng tư.
+
+### 6.3 Phù hợp kỹ thuật với PRD-05
+| Yêu cầu | Hanzi Writer | Ghi chú |
+|---|---|---|
+| Nét vector từ chạm/chuột/bút | Có (quiz mode tự thu nét) | Hoặc dùng canvas hiện có rồi chấm |
+| Chấm theo chữ đích | Có — so từng nét với `medians` của chữ đích | Đúng nhu cầu bài tập (đã biết đáp án) |
+| Danh sách ứng viên mở ("bạn viết chữ gì") | **Không** | Nếu cần → phương án C/D (mục 3) |
+| Không lộ đáp án trước khi nộp | **Xung đột ở quiz mode mặc định**: quiz chấm từng nét **trong lúc viết** nên dữ liệu nét chữ đích phải có sẵn trên trình duyệt | Cần spike: (a) viết tự do → nộp → tải dữ liệu chữ đích → chấm toàn bộ nét sau khi nộp; hoặc (b) chấm phía server bằng thuật toán MIT trên dữ liệu APL |
+| Gợi ý thứ tự nét, animation | Có | Dùng sau khi nộp |
+| Offline | Có, nếu dữ liệu chữ đã tải | Hợp D-032 (local-first, phản hồi < 100 ms) |
+| Hiệu năng | ≈ 10,7 KB + ≈ 0,5 KB/chữ, lazy-load | Trong budget P10 nếu tải lười |
+
+### 6.4 Đề xuất bước tiếp theo (chờ duyệt, chưa làm)
+1. Spike riêng (không bật trên Preview công khai): chấm sau khi nộp với 20 chữ × mẫu thật từ điện thoại và máy tính; đo tỷ lệ đúng/sai, độ lỏng (`leniency`), độ trễ.
+2. Nếu đạt: đề xuất thay `HandwritingRecognitionPort` mặc định bằng adapter "đối chiếu chữ đích" (MIT + APL) cho bài tập; HanziLookup giữ ở trạng thái chỉ dev hoặc gỡ bỏ theo quyết định.

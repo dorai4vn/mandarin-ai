@@ -25,8 +25,17 @@ const isActive = (path: string, href: string) =>
   href === '/' ? path === '/' : path === href || path.startsWith(`${href}/`);
 
 function SyncChip({ compact = false }: { compact?: boolean }) {
-  const { online, pending, store } = useOffline();
-  const text = !online ? 'Offline' : pending > 0 ? `${pending} chờ đồng bộ` : 'Đã đồng bộ';
+  const { online, pending, rejected, store } = useOffline();
+  // "Đã đồng bộ" only when nothing is pending AND nothing was refused by the server (G1).
+  const text =
+    rejected > 0
+      ? `${rejected} lỗi đồng bộ`
+      : !online
+        ? 'Offline'
+        : pending > 0
+          ? `${pending} chờ đồng bộ`
+          : 'Đã đồng bộ';
+  const ok = rejected === 0 && online && pending === 0;
   return (
     <span
       data-testid="sync-chip"
@@ -35,9 +44,9 @@ function SyncChip({ compact = false }: { compact?: boolean }) {
     >
       <span
         aria-hidden
-        className={`h-2 w-2 rounded-full ${!online ? 'bg-amber' : pending ? 'bg-sky' : 'bg-jade'}`}
+        className={`h-2 w-2 rounded-full ${rejected > 0 ? 'bg-seal' : !online ? 'bg-amber' : pending ? 'bg-sky' : 'bg-jade'}`}
       />
-      {compact && pending === 0 && online ? '' : text}
+      {compact && ok ? '' : text}
       <span className="sr-only">{text}</span>
     </span>
   );

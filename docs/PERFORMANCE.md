@@ -168,3 +168,19 @@ Báo cáo hiệu năng kèm mỗi milestone: bảng P1–P16 (đo được/chưa
 | Không Redis | Đơn giản, không chi phí | Rate limit/hàng đợi hiện nằm trong bộ nhớ một instance; cần xem lại khi scale ngang |
 | Colocate API + DB | Ít độ trễ mỗi truy vấn | Có thể xa người dùng hơn; CDN chỉ giúp phần tĩnh |
 | Throttle CPU chỉ có trên Chromium | Đo chuẩn hóa được | Firefox/WebKit chỉ báo xu hướng → cần thiết bị thật |
+
+
+## 12. Điểm phải đo ngay sau deployment Preview (HTTPS)
+Thực hiện khi có URL Preview (Vercel + Railway + Supabase). Ghi kết quả vào mục 5 (bảng mới "HTTPS Preview") kèm ngày, commit, region.
+
+| # | Đo gì | Cách đo | Ai làm |
+|---|---|---|---|
+| H1 | LCP, CLS, JS tải lần đầu trên HTTPS | `apps/web/perf/lab-baseline.mjs` với `BASE=<URL Preview>` (cần link chia sẻ vượt Deployment Protection) — profile `desktop`, `mobile-mid` | Claude (nếu mạng cho phép) hoặc anh/chị chạy theo hướng dẫn |
+| H2 | TTFB và thời gian tải trang nguội trên thiết bị thật | Safari iPhone, Android Chrome, laptop: mở trang lần đầu, ghi thời gian hiển thị (Web Inspector / DevTools nếu có) | Anh/chị |
+| H3 | Độ trễ API `/health` từ thiết bị thật | 30 lần từ Wi-Fi và 4G; p50/p95 | Anh/chị (trang đo do Claude chuẩn bị ở M1) |
+| H4 | Độ trễ API → Supabase | `Server-Timing` / log Railway (M1 thêm `db;dur`) | Claude đọc log anh/chị gửi |
+| H5 | Upload PDF 1 MB / 10 MB | Thời gian từ chọn tệp tới nhãn LIVE | Anh/chị |
+| H6 | Phản hồi tương tác trên máy thật | Event Timing (M1 thêm telemetry), tạm thời đo tay: viết chữ, lưu ghi chú | Anh/chị |
+| H7 | Điều hướng giữa trang đã mở | Đồng hồ trên thiết bị / Performance panel | Anh/chị |
+
+Chưa đo được trên Preview M0: P2, P4, P5, P6, P12, P13 (tính năng hoặc backend lưu bền chưa có), P8 ở p75 (chưa có người dùng thật).

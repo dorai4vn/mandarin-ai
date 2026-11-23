@@ -31,8 +31,8 @@ const EnvSchema = z.object({
   /** Comma-separated browser origins allowed by CORS (the web app). */
   WEB_ORIGINS: z.string().default('http://localhost:3000'),
   /**
-   * Handwriting adapter (D-029). `hanzilookup` is NOT approved for production (licence review
-   * pending) and is refused there; default is `disabled`.
+   * Handwriting adapter (D-029). `hanzilookup` is NOT approved for production or public preview
+   * (licence review pending): refused unless APP_ENV=development; default is `disabled`.
    */
   HANDWRITING_ADAPTER: z.enum(['disabled', 'mock', 'hanzilookup']).default('disabled'),
   /** Path to HanziLookup `mmah.json` (fetched by script, D-029). */
@@ -77,9 +77,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const mocksAllowed =
     appEnv === 'development' || (appEnv === 'preview' && cfg.ALLOW_MOCKS_IN_PREVIEW === 'true');
   const mode = mocksAllowed ? cfg.MISSING_PROVIDER_MODE : 'disabled';
-  if (appEnv === 'production' && cfg.HANDWRITING_ADAPTER === 'hanzilookup') {
+  if (appEnv !== 'development' && cfg.HANDWRITING_ADAPTER === 'hanzilookup') {
+    // D-029: not approved for production OR public preview (licence review pending).
     throw new Error(
-      'Invalid API configuration: HANDWRITING_ADAPTER=hanzilookup is not approved for production (D-029)',
+      'Invalid API configuration: HANDWRITING_ADAPTER=hanzilookup is only allowed in development (D-029)',
     );
   }
   if (cfg.HANDWRITING_ADAPTER === 'mock' && !mocksAllowed) {

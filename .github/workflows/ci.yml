@@ -77,6 +77,8 @@ jobs:
         env:
           NEXT_PUBLIC_ENABLE_DEV_TOKEN: 'true'
           NEXT_PUBLIC_API_URL: http://127.0.0.1:8787
+          # E2E only: the local API uses the in-memory MOCK sync store. Never set on Vercel.
+          NEXT_PUBLIC_ALLOW_MOCK_SYNC: 'true'
         run: pnpm turbo run build --filter "@mandarin/web..." --filter "@mandarin/api..."
       - name: Playwright
         working-directory: apps/web

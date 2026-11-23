@@ -30,6 +30,10 @@ export interface Providers {
 /** Chooses live adapters when credentials exist; otherwise labelled mocks (dev) or null (503). */
 export function createProviders(config: AppConfig): Providers {
   const allowMock = config.MISSING_PROVIDER_MODE === 'mock';
+  // Stateful mocks (sync store, object storage) keep learner data in RAM and lose it on restart.
+  // They are allowed ONLY in local development — never in preview or production, even when
+  // ALLOW_MOCKS_IN_PREVIEW=true — so real study data can never be "acknowledged" by a mock.
+  const allowStatefulMock = allowMock && config.appEnv === 'development';
   return {
     conversation: config.OPENAI_API_KEY
       ? {
@@ -62,10 +66,10 @@ export function createProviders(config: AppConfig): Providers {
             serviceRoleKey: config.SUPABASE_SERVICE_ROLE_KEY,
             bucket: config.STORAGE_BUCKET,
           })
-        : allowMock
+        : allowStatefulMock
           ? new MemoryObjectStorage()
           : null,
-    sync: allowMock ? new MemorySyncOperationStore() : null,
+    sync: allowStatefulMock ? new MemorySyncOperationStore() : null,
   };
 }
 

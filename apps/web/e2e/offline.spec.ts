@@ -61,3 +61,32 @@ test('without IndexedDB the app falls back to memory and still works online', as
   await page.getByTestId('note-add').click();
   await expect(page.getByTestId('last-sync')).toContainText('applied=1');
 });
+
+test('operations refused by the server are shown as errors, never as "synced" (G1)', async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.route('**/v1/sync/push', async (route) => {
+    const body = route.request().postDataJSON() as { operations: { operationId: string }[] };
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        source: 'live',
+        results: body.operations.map((o) => ({
+          operationId: o.operationId,
+          status: 'rejected',
+          serverVersion: null,
+          error: 'forbidden',
+        })),
+      }),
+    });
+  });
+  await page.goto('/lab/offline');
+  await page.getByTestId('note-input').fill('bị từ chối');
+  await page.getByTestId('note-add').click();
+  await expect(page.getByTestId('last-sync')).toContainText('rejected=1');
+  const chip = page.getByTestId('sync-chip').filter({ visible: true }).first();
+  await expect(chip).toContainText('1 lỗi đồng bộ');
+  await expect(chip).not.toContainText('Đã đồng bộ');
+});

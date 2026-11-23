@@ -289,12 +289,15 @@ describe('deployment safety (APP_ENV, D-029, preview)', () => {
     );
   });
 
-  it('refuses the unapproved HanziLookup adapter in production', () => {
+  it('refuses the unapproved HanziLookup adapter in production and preview (D-029)', () => {
     expect(() =>
       loadConfig({ ...base, NODE_ENV: 'production', HANDWRITING_ADAPTER: 'hanzilookup' }),
     ).toThrow(/D-029/);
     expect(() =>
       loadConfig({ ...base, APP_ENV: 'preview', HANDWRITING_ADAPTER: 'hanzilookup' }),
+    ).toThrow(/D-029/);
+    expect(() =>
+      loadConfig({ ...base, APP_ENV: 'development', HANDWRITING_ADAPTER: 'hanzilookup' }),
     ).not.toThrow();
   });
 
@@ -309,6 +312,11 @@ describe('deployment safety (APP_ENV, D-029, preview)', () => {
       ALLOW_MOCKS_IN_PREVIEW: 'true',
     });
     expect(open.MISSING_PROVIDER_MODE).toBe('mock');
+    // Even with mocks allowed, preview never keeps learner data in RAM (stateful mocks).
+    const previewProviders = createProviders(open);
+    expect(previewProviders.sync).toBeNull();
+    expect(previewProviders.storage).toBeNull();
+    expect(previewProviders.pronunciation?.mode).toBe('mock');
     expect(() => loadConfig({ ...base, APP_ENV: 'preview', HANDWRITING_ADAPTER: 'mock' })).toThrow(
       /mocks/,
     );

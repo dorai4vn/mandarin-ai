@@ -47,7 +47,7 @@ describe('IndexedDB store + outbox (D-021)', () => {
       }
       return res;
     };
-    const engine = new SyncEngine(store, flaky, undefined);
+    const engine = new SyncEngine(store, flaky, undefined, true);
     const s1 = await engine.syncNow();
     expect(s1.error).toBe('connection reset');
     expect(await store.listOutbox()).toHaveLength(2);
@@ -68,6 +68,7 @@ describe('IndexedDB store + outbox (D-021)', () => {
         return fakeServer().push(ops);
       },
       undefined,
+      true,
     ).syncNow();
     expect(clocks).toEqual([1, 2, 3]);
   });
@@ -83,7 +84,7 @@ describe('fallback when IndexedDB is unavailable (D-028)', () => {
       expect(store.kind).toBe('memory');
       await store.addNote('山');
       const server = fakeServer();
-      const s = await new SyncEngine(store, server.push, undefined).syncNow();
+      const s = await new SyncEngine(store, server.push, undefined, true).syncNow();
       expect(s.applied).toBe(1);
       expect(await store.listOutbox()).toHaveLength(0);
     } finally {
@@ -106,6 +107,7 @@ describe('fallback when IndexedDB is unavailable (D-028)', () => {
         })),
       }),
       undefined,
+      true,
     ).syncNow();
     expect(s.rejected).toBe(1);
     expect((await store.listOutbox())[0]?.status).toBe('rejected');
@@ -126,7 +128,7 @@ describe('sync engine concurrency', () => {
       if (reads === 1) await gate; // the running sync is "busy" after reading
       return snapshot;
     };
-    const engine = new SyncEngine(store, server.push, undefined);
+    const engine = new SyncEngine(store, server.push, undefined, true);
     const first = engine.syncNow(); // e.g. the sync triggered on app start
     await new Promise((r) => setTimeout(r, 0));
     await store.addNote('queued during run');
@@ -136,5 +138,23 @@ describe('sync engine concurrency', () => {
     await second;
     expect(server.seen.size).toBe(1);
     expect(await original()).toHaveLength(0);
+  });
+});
+
+describe('mock acknowledgements are never treated as persistent (preview safety)', () => {
+  it('keeps operations pending when the server answers from a MOCK store', async () => {
+    const store = new MemoryStore();
+    await store.addNote('dữ liệu học thật');
+    const server = fakeServer(); // answers with source: 'mock'
+    const s = await new SyncEngine(
+      store,
+      server.push,
+      undefined /* acceptMockAcks = false */,
+    ).syncNow();
+    expect(s.error).toBe('server_not_persistent');
+    expect(s.applied).toBe(0);
+    const outbox = await store.listOutbox();
+    expect(outbox).toHaveLength(1);
+    expect(outbox[0]).toMatchObject({ status: 'pending', lastError: 'server_not_persistent' });
   });
 });

@@ -169,6 +169,7 @@ Quy ước:
 - **Lựa chọn:** (a) Tối thiểu hóa: chỉ lưu offline dữ liệu cần để học; ghi âm không lưu IndexedDB trừ khi đang chờ gửi và người học đồng ý; (b) trường nhạy cảm (ghi chú cá nhân, câu trả lời tự do) mã hóa AES-GCM bằng khóa Web Crypto **non-extractable** lưu trong IndexedDB; (c) phiên đăng nhập do Supabase quản lý, refresh token không đưa vào `localStorage` khi có lựa chọn cookie HttpOnly qua `@supabase/ssr`; (d) đăng xuất/xóa tài khoản xóa sạch IndexedDB, Cache Storage và service worker cache của người dùng.
 - **Giới hạn phải nói rõ:** khóa nằm cùng thiết bị/trình duyệt nên (b) chỉ chống đọc file thô, **không** tương đương Keychain/SQLCipher; ai mở được trình duyệt đã đăng nhập vẫn xem được dữ liệu.
 
+- **Hướng phiên đăng nhập (chủ dự án duyệt, 2026-11-23):** cookie HttpOnly/Secure ở M1 — thiết kế chi tiết (CSRF, SameSite, xoay vòng phiên, refresh token, web/API khác domain) tại `docs/AUTH_SESSION_DESIGN.md`.
 - **Điều kiện duyệt (chủ dự án, 2026-11-23):**
   - Chỉ lưu offline **tối thiểu** dữ liệu cần để học.
   - **Không** lưu trong IndexedDB: API secret (bất kỳ loại nào), refresh token, bản ghi âm nhạy cảm.
@@ -228,7 +229,8 @@ Quy ước:
 - **Lý do:** Giữ client không bị ràng buộc GPL; nhận dạng như nhau trên mọi trình duyệt/thiết bị.
 - **Hậu quả:** Nhận dạng chữ viết tay cần mạng (không offline). Việc dùng mã GPL phía server và phân phối dữ liệu Arphic cần chủ dự án/tư vấn pháp lý xác nhận; phương án thay thế: tự viết matcher (clean-room) trên dữ liệu Arphic, hoặc dịch vụ thương mại. Chất lượng chưa được kết luận — chỉ có kết quả trên nét tổng hợp cho tới khi có mẫu viết tay thật.
 
-- **Hiện trạng kỹ thuật sau quyết định "chưa duyệt":** adapter mặc định `HANDWRITING_ADAPTER=disabled`; API **từ chối khởi động** nếu `HANDWRITING_ADAPTER=hanzilookup` khi `APP_ENV=production`; image Docker **không** đóng gói dữ liệu `mmah.json`; chỉ môi trường development/test (và Preview nếu chủ dự án chủ động bật) mới chạy được HanziLookup. Gói npm `hanzilookup-js` vẫn còn trong `package.json` (chưa thay thư viện theo chỉ đạo).
+- **Cập nhật 2026-11-23:** chủ dự án **chưa duyệt cho production và cả public Preview**; yêu cầu nghiên cứu Hanzi Writer (kết quả: `docs/HANDWRITING_LICENSE_REVIEW.md` mục 6). API giờ từ chối `hanzilookup` ở **mọi** môi trường trừ `development`.
+- **Hiện trạng kỹ thuật sau quyết định "chưa duyệt":** adapter mặc định `HANDWRITING_ADAPTER=disabled`; API **từ chối khởi động** nếu `HANDWRITING_ADAPTER=hanzilookup` khi `APP_ENV` khác `development`; image Docker **không** đóng gói dữ liệu `mmah.json`; chỉ môi trường development/test (và Preview nếu chủ dự án chủ động bật) mới chạy được HanziLookup. Gói npm `hanzilookup-js` vẫn còn trong `package.json` (chưa thay thư viện theo chỉ đạo).
 
 ## D-030 — Responsive layout theo lớp thiết bị
 - **Ngày:** 2026-11-23 · **Trạng thái:** **Đã duyệt** (chủ dự án, 2026-11-23)
@@ -236,7 +238,7 @@ Quy ước:
 - **Hậu quả:** Test E2E kiểm tra đúng thành phần điều hướng hiển thị theo từng viewport và không có cuộn ngang.
 
 ## D-031 — Triển khai Preview: Vercel (web) + Railway (API)
-- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Ngày:** 2026-11-23 · **Trạng thái:** **Đã duyệt** (chủ dự án, 2026-11-23): Vercel cho Next.js, Railway cho Fastify API, Supabase cho PostgreSQL/Auth/Storage
 - **Bối cảnh:** Chủ dự án yêu cầu Preview trên Vercel (`apps/web`) và Railway (`apps/api`); Supabase dev tạo riêng.
 - **Lựa chọn:**
   - Vercel: Root Directory `apps/web`, cấu hình trong `apps/web/vercel.json` (install `pnpm install --frozen-lockfile --filter @mandarin/web...`, build `turbo run build --filter=@mandarin/web...`), Node 22.x. Bật **Deployment Protection** (Vercel Authentication) cho Preview.
@@ -271,3 +273,11 @@ Quy ước:
 - **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
 - **Lựa chọn:** Không giả định region nhanh nhất. Trước khi chốt region production: đo RTT/độ trễ `/health` và một truy vấn DB mẫu từ thiết bị người dùng thật (Việt Nam và nơi khác nếu có) tới các region ứng viên của Supabase và Railway; ưu tiên đặt API và database **cùng region** (độ trễ API→DB thường chiếm nhiều lần gọi mỗi request). Kết quả và lựa chọn ghi vào `docs/PERFORMANCE.md` mục 8.
 - **Hậu quả:** Region Preview có thể đổi sau khi đo; region của Supabase không đổi được sau khi tạo dự án → **đo trước khi tạo dự án Supabase production**.
+
+## D-035 — Bảo vệ dữ liệu học thật trên Preview (không ghi vào mock in-memory)
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất (thực hiện theo yêu cầu số 8 của chủ dự án)
+- **Lựa chọn:**
+  - Mock **có trạng thái** (sync store, object storage trong RAM) chỉ được tạo khi `APP_ENV=development`; ở Preview/production luôn tắt, kể cả khi `ALLOW_MOCKS_IN_PREVIEW=true` → API trả 503, dữ liệu ở lại outbox trên máy.
+  - Trình duyệt **không** coi xác nhận có `source: "mock"` là đã lưu, trừ bản build dev/E2E đặt `NEXT_PUBLIC_ALLOW_MOCK_SYNC=true`; ngược lại thao tác giữ trạng thái chờ với lỗi `server_not_persistent`.
+  - Chip trạng thái hiển thị "lỗi đồng bộ" khi có thao tác bị từ chối; chỉ báo "Đã đồng bộ" khi không còn thao tác chờ **và** không có thao tác bị từ chối (sửa G1).
+- **Hậu quả:** Trên Preview, đồng bộ chỉ hoạt động khi có backend lưu bền (Postgres `sync_operations` — M1). Trước đó, dữ liệu học trên Preview chỉ nằm trên thiết bị và luôn hiện "chờ đồng bộ".

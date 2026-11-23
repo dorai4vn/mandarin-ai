@@ -17,6 +17,8 @@ interface OfflineState {
   store: LocalStore | null;
   online: boolean;
   pending: number;
+  /** Operations the server refused — shown as an error, never as "synced" (G1). */
+  rejected: number;
   lastSync: (SyncSummary & { at: string }) | null;
   refresh: () => Promise<void>;
   syncNow: () => Promise<SyncSummary | null>;
@@ -32,12 +34,15 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   const [store, setStore] = useState<LocalStore | null>(null);
   const [online, setOnline] = useState(true);
   const [pending, setPending] = useState(0);
+  const [rejected, setRejected] = useState(0);
   const [lastSync, setLastSync] = useState<OfflineState['lastSync']>(null);
   const engine = useRef<SyncEngine | null>(null);
 
   const refresh = useCallback(async () => {
     if (!store) return;
-    setPending((await store.listOutbox()).filter((e) => e.status === 'pending').length);
+    const outbox = await store.listOutbox();
+    setPending(outbox.filter((e) => e.status === 'pending').length);
+    setRejected(outbox.filter((e) => e.status === 'rejected').length);
   }, [store]);
 
   const syncNow = useCallback(async () => {
@@ -53,7 +58,13 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     void openLocalStore().then((s) => {
       if (cancelled) return;
-      engine.current = new SyncEngine(s, (ops) => api.syncPush(ops));
+      engine.current = new SyncEngine(
+        s,
+        (ops) => api.syncPush(ops),
+        undefined,
+        // Dev/E2E builds only: accept acknowledgements from the in-memory MOCK sync server.
+        process.env.NEXT_PUBLIC_ALLOW_MOCK_SYNC === 'true',
+      );
       setStore(s);
     });
     return () => {
@@ -90,8 +101,8 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   }, [store, refresh, syncNow]);
 
   const value = useMemo(
-    () => ({ store, online, pending, lastSync, refresh, syncNow }),
-    [store, online, pending, lastSync, refresh, syncNow],
+    () => ({ store, online, pending, rejected, lastSync, refresh, syncNow }),
+    [store, online, pending, rejected, lastSync, refresh, syncNow],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

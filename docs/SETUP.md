@@ -50,7 +50,7 @@ Khi chưa có dự án Supabase: đặt `NEXT_PUBLIC_ENABLE_DEV_TOKEN=true` (ch�
 pnpm --filter "@mandarin/api..." build
 ```
 ```bash
-cd apps/web && NEXT_PUBLIC_ENABLE_DEV_TOKEN=true NEXT_PUBLIC_API_URL=http://127.0.0.1:8787 pnpm build
+cd apps/web && NEXT_PUBLIC_ENABLE_DEV_TOKEN=true NEXT_PUBLIC_ALLOW_MOCK_SYNC=true NEXT_PUBLIC_API_URL=http://127.0.0.1:8787 pnpm build
 ```
 ```bash
 cd apps/web && pnpm exec playwright install chromium firefox webkit
@@ -60,7 +60,7 @@ cd apps/web && pnpm exec playwright test --trace off
 ```
 Chỉ chạy một engine: `E2E_ENGINES=chromium pnpm exec playwright test --trace off`. Playwright tự khởi động API và web (`playwright.config.ts`). Báo cáo HTML: `apps/web/playwright-report/`.
 
-**Lưu ý:** bản build E2E bật dev token — không dùng bản build này để deploy.
+**Lưu ý:** bản build E2E bật dev token và chấp nhận xác nhận từ sync MOCK — **không** dùng bản build này để deploy.
 
 ## 5. Kiểm thử trên thiết bị thật (điện thoại + máy tính)
 
