@@ -106,12 +106,18 @@ export class MemorySyncOperationStore implements SyncOperationStore {
   private readonly ops = new Map<string, { userId: string; op: SyncOperation; version: number }>();
   private version = 0;
 
+  /** Bounded so a public preview cannot be used to exhaust server memory. Lost on restart. */
+  constructor(private readonly maxOperations = 10_000) {}
+
   async apply(userId: string, op: SyncOperation) {
     const existing = this.ops.get(op.operationId);
     if (existing) {
       return existing.userId === userId
         ? { status: 'duplicate' as const, serverVersion: existing.version, error: null }
         : { status: 'rejected' as const, serverVersion: null, error: 'operation_id_conflict' };
+    }
+    if (this.ops.size >= this.maxOperations) {
+      return { status: 'rejected' as const, serverVersion: null, error: 'mock_store_full' };
     }
     this.version += 1;
     this.ops.set(op.operationId, { userId, op, version: this.version });

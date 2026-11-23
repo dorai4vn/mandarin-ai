@@ -13,6 +13,7 @@ const config = loadConfig({
   NODE_ENV: 'test',
   SUPABASE_JWT_SECRET: SECRET,
   RATE_LIMIT_PER_MINUTE: '3',
+  HANDWRITING_ADAPTER: 'mock',
 });
 const app = buildApp({
   config,
@@ -275,5 +276,98 @@ describe('cross-platform web endpoints', () => {
       payload: 'hello',
     });
     expect(wrongType.statusCode).toBe(415);
+  });
+});
+
+describe('deployment safety (APP_ENV, D-029, preview)', () => {
+  const base = { SUPABASE_JWT_SECRET: SECRET };
+
+  it('treats containers (NODE_ENV=production) as production unless APP_ENV says otherwise', () => {
+    expect(loadConfig({ ...base, NODE_ENV: 'production' }).appEnv).toBe('production');
+    expect(loadConfig({ ...base, NODE_ENV: 'production', APP_ENV: 'preview' }).appEnv).toBe(
+      'preview',
+    );
+  });
+
+  it('refuses the unapproved HanziLookup adapter in production', () => {
+    expect(() =>
+      loadConfig({ ...base, NODE_ENV: 'production', HANDWRITING_ADAPTER: 'hanzilookup' }),
+    ).toThrow(/D-029/);
+    expect(() =>
+      loadConfig({ ...base, APP_ENV: 'preview', HANDWRITING_ADAPTER: 'hanzilookup' }),
+    ).not.toThrow();
+  });
+
+  it('disables mocks in preview unless explicitly allowed', () => {
+    const closed = loadConfig({ ...base, APP_ENV: 'preview', NODE_ENV: 'production' });
+    expect(closed.MISSING_PROVIDER_MODE).toBe('disabled');
+    expect(createProviders(closed).sync).toBeNull();
+    const open = loadConfig({
+      ...base,
+      APP_ENV: 'preview',
+      NODE_ENV: 'production',
+      ALLOW_MOCKS_IN_PREVIEW: 'true',
+    });
+    expect(open.MISSING_PROVIDER_MODE).toBe('mock');
+    expect(() => loadConfig({ ...base, APP_ENV: 'preview', HANDWRITING_ADAPTER: 'mock' })).toThrow(
+      /mocks/,
+    );
+  });
+
+  it('defaults handwriting to disabled (no implicit HanziLookup)', () => {
+    expect(
+      createProviders(loadConfig({ ...base, NODE_ENV: 'test', HANDWRITING_DATA_PATH: '/x' }))
+        .handwriting,
+    ).toBeNull();
+  });
+
+  it('accepts preview origins only through an anchored https regex', async () => {
+    expect(() => loadConfig({ ...base, WEB_ORIGIN_REGEX: '.*' })).toThrow(/anchored/);
+    const cfg = loadConfig({
+      ...base,
+      NODE_ENV: 'test',
+      WEB_ORIGIN_REGEX: '^https://mandarin-ai-[a-z0-9-]+-team\\.vercel\\.app$',
+    });
+    const a = buildApp({
+      config: cfg,
+      verifyToken: createTokenVerifier(cfg),
+      providers: createProviders(cfg),
+    });
+    const ok = await a.inject({
+      method: 'OPTIONS',
+      url: '/v1/sync/push',
+      headers: {
+        origin: 'https://mandarin-ai-git-x-team.vercel.app',
+        'access-control-request-method': 'POST',
+      },
+    });
+    expect(ok.headers['access-control-allow-origin']).toBe(
+      'https://mandarin-ai-git-x-team.vercel.app',
+    );
+    const bad = await a.inject({
+      method: 'OPTIONS',
+      url: '/v1/sync/push',
+      headers: {
+        origin: 'https://mandarin-ai-git-x-attacker.vercel.app',
+        'access-control-request-method': 'POST',
+      },
+    });
+    expect(bad.headers['access-control-allow-origin']).toBeUndefined();
+    await a.close();
+  });
+
+  it('limits requests per IP before authentication', async () => {
+    const cfg = loadConfig({ ...base, NODE_ENV: 'test', IP_RATE_LIMIT_PER_MINUTE: '10' });
+    const a = buildApp({
+      config: cfg,
+      verifyToken: createTokenVerifier(cfg),
+      providers: createProviders(cfg),
+    });
+    const codes: number[] = [];
+    for (let i = 0; i < 11; i++)
+      codes.push((await a.inject({ method: 'GET', url: '/health' })).statusCode);
+    expect(codes.slice(0, 10).every((c) => c === 200)).toBe(true);
+    expect(codes[10]).toBe(429);
+    await a.close();
   });
 });

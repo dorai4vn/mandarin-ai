@@ -154,6 +154,11 @@ describe('cross-platform handwriting + sync/storage mocks', () => {
     expect((await store.apply('user-a', op)).status).toBe('duplicate');
     expect((await store.apply('user-b', op)).status).toBe('rejected');
     expect(store.countFor('user-a')).toBe(1);
+    const tiny = new MemorySyncOperationStore(1);
+    await tiny.apply('u', op);
+    expect(
+      (await tiny.apply('u', { ...op, operationId: '01JD8Z6Q9K2V4N7P3R5T8W1Y0Z' })).error,
+    ).toBe('mock_store_full');
   });
 
   it('supabase storage writes to the private bucket path and rejects traversal', async () => {

@@ -35,14 +35,28 @@ export class PcmRecorder {
 
   async start(): Promise<void> {
     this.chunks = [];
-    this.stream = await navigator.mediaDevices.getUserMedia({
-      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
-    });
+    // Create and resume the AudioContext synchronously inside the user's click: after an
+    // `await` the gesture may be gone and autoplay policies (Firefox, Safari) keep it suspended.
     const Ctx =
       window.AudioContext ??
       (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     this.ctx = new Ctx();
-    await this.ctx.resume();
+    const resumed = this.ctx.resume();
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
+      });
+    } catch (e) {
+      await this.ctx.close().catch(() => undefined);
+      throw e;
+    }
+    // Never wait forever: report a clear error if the browser keeps audio suspended.
+    await Promise.race([resumed, new Promise((r) => setTimeout(r, 3000))]);
+    if (this.ctx.state !== 'running') {
+      this.stream.getTracks().forEach((t) => t.stop());
+      await this.ctx.close().catch(() => undefined);
+      throw new Error('audio_context_suspended');
+    }
     const source = this.ctx.createMediaStreamSource(this.stream);
     if (this.ctx.audioWorklet && typeof AudioWorkletNode !== 'undefined') {
       this.engine = 'audio-worklet';

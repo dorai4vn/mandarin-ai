@@ -77,6 +77,8 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       env: {
         NODE_ENV: 'development',
+        APP_ENV: 'development',
+        HANDWRITING_ADAPTER: 'hanzilookup',
         PORT: String(API_PORT),
         HOST: '127.0.0.1',
         SUPABASE_JWT_SECRET: E2E_JWT_SECRET,

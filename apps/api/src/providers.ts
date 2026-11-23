@@ -70,9 +70,16 @@ export function createProviders(config: AppConfig): Providers {
 }
 
 function handwriting(config: AppConfig, allowMock: boolean): Providers['handwriting'] {
-  if (config.HANDWRITING_DATA_PATH) {
-    const live = new HanziLookupRecognizer(config.HANDWRITING_DATA_PATH);
-    if (live.isReady()) return { mode: 'live', port: live };
+  switch (config.HANDWRITING_ADAPTER) {
+    case 'hanzilookup': {
+      // Licence review pending (D-029): never enabled implicitly, refused in production by config.
+      if (!config.HANDWRITING_DATA_PATH) return null;
+      const live = new HanziLookupRecognizer(config.HANDWRITING_DATA_PATH);
+      return live.isReady() ? { mode: 'live', port: live } : null;
+    }
+    case 'mock':
+      return allowMock ? { mode: 'mock', port: new MockHandwritingRecognizer() } : null;
+    default:
+      return null;
   }
-  return allowMock ? { mode: 'mock', port: new MockHandwritingRecognizer() } : null;
 }

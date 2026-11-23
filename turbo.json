@@ -19,5 +19,6 @@
       "dependsOn": ["^build"],
       "outputs": []
     }
-  }
+  },
+  "globalPassThroughEnv": ["VERCEL", "VERCEL_*", "RAILWAY_*", "CI"]
 }

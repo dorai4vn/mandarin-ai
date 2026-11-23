@@ -55,6 +55,8 @@ export default function AudioLab() {
         setPermission('denied');
         setError('Quyền micro bị từ chối.');
       } else if (name === 'NotFoundError') setError('Không tìm thấy micro trên thiết bị.');
+      else if (e instanceof Error && e.message === 'audio_context_suspended')
+        setError('Trình duyệt đang chặn xử lý âm thanh. Hãy bấm “Bắt đầu ghi” lần nữa.');
       else setError(e instanceof Error ? e.message : String(e));
     }
   };

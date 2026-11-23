@@ -31,5 +31,8 @@
     "fake-indexeddb": "6.2.8",
     "jose": "6.2.18",
     "tailwindcss": "4.3.5"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }
