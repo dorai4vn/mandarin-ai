@@ -14,7 +14,10 @@ export interface OutboxEntry {
 export function nextBatch(entries: readonly OutboxEntry[], max: number): SyncOperation[] {
   return entries
     .filter((e) => e.status === 'pending')
-    .sort((a, b) => a.op.logicalClock - b.op.logicalClock || a.op.operationId.localeCompare(b.op.operationId))
+    .sort(
+      (a, b) =>
+        a.op.logicalClock - b.op.logicalClock || a.op.operationId.localeCompare(b.op.operationId),
+    )
     .slice(0, max)
     .map((e) => e.op);
 }
@@ -32,13 +35,17 @@ export interface Reconciliation {
  * Compares a sent batch with the server answer. Missing answers are retried, so a
  * dropped response can never lose an operation; duplicates count as acknowledged.
  */
-export function reconcile(sent: readonly SyncOperation[], results: readonly SyncOperationResult[]): Reconciliation {
+export function reconcile(
+  sent: readonly SyncOperation[],
+  results: readonly SyncOperationResult[],
+): Reconciliation {
   const byId = new Map(results.map((r) => [r.operationId, r]));
   const out: Reconciliation = { acknowledged: [], rejected: [], retry: [] };
   for (const op of sent) {
     const r = byId.get(op.operationId);
     if (!r) out.retry.push(op.operationId);
-    else if (r.status === 'rejected') out.rejected.push({ operationId: op.operationId, error: r.error ?? 'rejected' });
+    else if (r.status === 'rejected')
+      out.rejected.push({ operationId: op.operationId, error: r.error ?? 'rejected' });
     else out.acknowledged.push(op.operationId);
   }
   return out;

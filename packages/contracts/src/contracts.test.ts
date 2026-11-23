@@ -69,10 +69,14 @@ describe('learning event envelope', () => {
 
 describe('handwriting contract (D-029)', () => {
   it('applies defaults and caps total points', () => {
-    const ok = HandwritingRecognitionRequestSchema.parse({ strokes: [{ points: [{ x: 1, y: 1, t: 0 }] }] });
+    const ok = HandwritingRecognitionRequestSchema.parse({
+      strokes: [{ points: [{ x: 1, y: 1, t: 0 }] }],
+    });
     expect(ok.limit).toBe(8);
     expect(ok.pointerType).toBe('unknown');
-    const many = { strokes: [{ points: Array.from({ length: 4001 }, (_, i) => ({ x: i, y: 0, t: i })) }] };
+    const many = {
+      strokes: [{ points: Array.from({ length: 4001 }, (_, i) => ({ x: i, y: 0, t: i })) }],
+    };
     expect(HandwritingRecognitionRequestSchema.safeParse(many).success).toBe(false);
   });
 });
@@ -90,8 +94,12 @@ describe('sync contract (D-021)', () => {
   };
   it('accepts a batch and rejects bad ids / oversize batches', () => {
     expect(SyncPushRequestSchema.safeParse({ operations: [op] }).success).toBe(true);
-    expect(SyncPushRequestSchema.safeParse({ operations: [{ ...op, operationId: 'x' }] }).success).toBe(false);
-    expect(SyncPushRequestSchema.safeParse({ operations: Array(101).fill(op) }).success).toBe(false);
+    expect(
+      SyncPushRequestSchema.safeParse({ operations: [{ ...op, operationId: 'x' }] }).success,
+    ).toBe(false);
+    expect(SyncPushRequestSchema.safeParse({ operations: Array(101).fill(op) }).success).toBe(
+      false,
+    );
   });
 });
 

@@ -7,7 +7,11 @@ const dataPath = fileURLToPath(new URL('../../data/mmah.json', import.meta.url))
 const hasData = existsSync(dataPath);
 
 const line = (x1: number, y1: number, x2: number, y2: number, n = 10, t0 = 0) =>
-  Array.from({ length: n + 1 }, (_, i) => ({ x: x1 + ((x2 - x1) * i) / n, y: y1 + ((y2 - y1) * i) / n, t: t0 + i * 10 }));
+  Array.from({ length: n + 1 }, (_, i) => ({
+    x: x1 + ((x2 - x1) * i) / n,
+    y: y1 + ((y2 - y1) * i) / n,
+    t: t0 + i * 10,
+  }));
 
 /** SYNTHETIC strokes for 山 (not real handwriting — see docs/HANDWRITING_EVALUATION.md). */
 const shan = [

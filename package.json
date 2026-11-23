@@ -21,7 +21,9 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
-    "db:lint": "supabase db lint --level warning"
+    "db:lint": "supabase db lint --level warning",
+    "e2e": "pnpm --filter @mandarin/web e2e",
+    "fetch:handwriting-data": "pnpm --filter @mandarin/adapters fetch:handwriting-data"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",

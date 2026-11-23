@@ -21,7 +21,10 @@ const entry = (o: SyncOperation, status: OutboxEntry['status'] = 'pending'): Out
 
 describe('outbox', () => {
   it('batches pending operations in causal order and skips rejected ones', () => {
-    const batch = nextBatch([entry(op('c', 3)), entry(op('a', 1)), entry(op('r', 0), 'rejected'), entry(op('b', 2))], 2);
+    const batch = nextBatch(
+      [entry(op('c', 3)), entry(op('a', 1)), entry(op('r', 0), 'rejected'), entry(op('b', 2))],
+      2,
+    );
     expect(batch.map((o) => o.logicalClock)).toEqual([1, 2]);
   });
 
@@ -37,7 +40,14 @@ describe('outbox', () => {
 
   it('keeps rejected operations out of the retry loop', () => {
     const sent = [op('a', 1)];
-    const r = reconcile(sent, [{ operationId: sent[0]!.operationId, status: 'rejected', serverVersion: null, error: 'forbidden' }]);
+    const r = reconcile(sent, [
+      {
+        operationId: sent[0]!.operationId,
+        status: 'rejected',
+        serverVersion: null,
+        error: 'forbidden',
+      },
+    ]);
     expect(r.rejected).toEqual([{ operationId: sent[0]!.operationId, error: 'forbidden' }]);
     expect(r.retry).toEqual([]);
   });

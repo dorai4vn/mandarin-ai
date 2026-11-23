@@ -40,7 +40,13 @@ describe('config', () => {
       MISSING_PROVIDER_MODE: 'mock',
     });
     expect(prod.MISSING_PROVIDER_MODE).toBe('disabled');
-    expect(createProviders(prod)).toEqual({ conversation: null, pronunciation: null, handwriting: null, storage: null, sync: null });
+    expect(createProviders(prod)).toEqual({
+      conversation: null,
+      pronunciation: null,
+      handwriting: null,
+      storage: null,
+      sync: null,
+    });
   });
 
   it('reports invalid variable names without leaking values', () => {
@@ -187,7 +193,12 @@ describe('cross-platform web endpoints', () => {
 
   it('recognizes handwriting via the configured adapter (mock here) and validates input', async () => {
     const h = await auth('44444444-2222-4333-8444-555555555555');
-    const bad = await app.inject({ method: 'POST', url: '/v1/handwriting/recognize', headers: h, payload: { strokes: [] } });
+    const bad = await app.inject({
+      method: 'POST',
+      url: '/v1/handwriting/recognize',
+      headers: h,
+      payload: { strokes: [] },
+    });
     expect(bad.statusCode).toBe(400);
     const res = await app.inject({
       method: 'POST',
@@ -211,13 +222,28 @@ describe('cross-platform web endpoints', () => {
       payload: { text: '山' },
     };
     const a = await auth('55555555-2222-4333-8444-555555555555');
-    const first = await app.inject({ method: 'POST', url: '/v1/sync/push', headers: a, payload: { operations: [op] } });
-    const replay = await app.inject({ method: 'POST', url: '/v1/sync/push', headers: a, payload: { operations: [op] } });
+    const first = await app.inject({
+      method: 'POST',
+      url: '/v1/sync/push',
+      headers: a,
+      payload: { operations: [op] },
+    });
+    const replay = await app.inject({
+      method: 'POST',
+      url: '/v1/sync/push',
+      headers: a,
+      payload: { operations: [op] },
+    });
     expect(first.json().results[0].status).toBe('applied');
     expect(replay.json().results[0].status).toBe('duplicate');
     expect(replay.json().source).toBe('mock');
     const b = await auth('66666666-2222-4333-8444-555555555555');
-    const other = await app.inject({ method: 'POST', url: '/v1/sync/push', headers: b, payload: { operations: [op] } });
+    const other = await app.inject({
+      method: 'POST',
+      url: '/v1/sync/push',
+      headers: b,
+      payload: { operations: [op] },
+    });
     expect(other.json().results[0].status).toBe('rejected');
   });
 
@@ -231,7 +257,9 @@ describe('cross-platform web endpoints', () => {
       payload: pdf,
     });
     expect(ok.statusCode).toBe(201);
-    expect(ok.json().storagePath).toMatch(/^77777777-2222-4333-8444-555555555555\/imports\/[0-9a-f-]{36}\.pdf$/);
+    expect(ok.json().storagePath).toMatch(
+      /^77777777-2222-4333-8444-555555555555\/imports\/[0-9a-f-]{36}\.pdf$/,
+    );
     expect(ok.json().source).toBe('mock');
     const fake = await app.inject({
       method: 'POST',

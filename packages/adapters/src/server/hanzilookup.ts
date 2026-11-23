@@ -1,4 +1,7 @@
-import type { HandwritingRecognitionRequestParsed, HandwritingRecognitionResult } from '@mandarin/contracts';
+import type {
+  HandwritingRecognitionRequestParsed,
+  HandwritingRecognitionResult,
+} from '@mandarin/contracts';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import type * as HanziLookup from 'hanzilookup-js';
@@ -39,15 +42,22 @@ export class HanziLookupRecognizer implements HandwritingRecognitionPort {
     const started = performance.now();
     const strokes = req.strokes.map((s) => s.points.map((p) => [p.x, p.y]));
     return new Promise((resolve) => {
-      new hanzi.Matcher(DATA_KEY).match(new hanzi.AnalyzedCharacter(strokes), req.limit, (matches) => {
-        resolve({
-          source: 'live',
-          adapterId: this.id,
-          candidates: matches.map((m) => ({ text: m.character, score: Math.round(m.score * 1000) / 1000 })),
-          scoreOrder: 'higher_is_better',
-          latencyMs: Math.round(performance.now() - started),
-        });
-      });
+      new hanzi.Matcher(DATA_KEY).match(
+        new hanzi.AnalyzedCharacter(strokes),
+        req.limit,
+        (matches) => {
+          resolve({
+            source: 'live',
+            adapterId: this.id,
+            candidates: matches.map((m) => ({
+              text: m.character,
+              score: Math.round(m.score * 1000) / 1000,
+            })),
+            scoreOrder: 'higher_is_better',
+            latencyMs: Math.round(performance.now() - started),
+          });
+        },
+      );
     });
   }
 }

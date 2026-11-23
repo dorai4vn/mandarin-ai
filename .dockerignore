@@ -9,3 +9,7 @@ apps/mobile/android
 **/.env.*
 !**/.env.example
 supabase/.temp
+**/.next
+**/playwright-report
+**/test-results
+packages/adapters/data

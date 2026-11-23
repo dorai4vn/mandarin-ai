@@ -145,6 +145,7 @@ Quy ước:
 - **Lựa chọn:** `apps/web` dùng Next.js 16 (App Router, `output: 'standalone'`), React 19, Tailwind CSS 4, service worker bằng Serwist 9 (`@serwist/next`), IndexedDB qua Dexie 4, `@supabase/ssr` + `@supabase/supabase-js` cho Auth (chỉ publishable key). Test: Vitest (+ `fake-indexeddb`) cho logic, Playwright với **WebKit** + mô phỏng iPhone cho E2E; kiểm thử Safari iOS thật là thủ công, có bằng chứng.
 - **Lý do:** Phiên bản ổn định mới nhất tại thời điểm lập kế hoạch (npm `latest`: next 16.4.6, @serwist/next 9.5.15, dexie 4.4.7, tailwindcss 4.3.5). Dexie đã xử lý nhiều lỗi IndexedDB của Safari; Serwist là công cụ PWA được duy trì cho Next.js.
 - **Hậu quả:** Bản build production của Next.js phải dùng webpack nếu `@serwist/next` chưa hỗ trợ Turbopack cho production — kiểm chứng ở M0-PWA; phương án dự phòng là service worker viết tay biên dịch bằng `@serwist/cli`/esbuild.
+- **Cập nhật khi triển khai M0-PWA:** dùng phương án dự phòng — service worker **viết tay** `apps/web/public/sw.js` (~60 dòng: network-first cho trang, cache-first cho asset tĩnh có hash, không cache API), không dùng plugin Serwist, để giữ build Turbopack mặc định của Next 16 và tránh thêm phụ thuộc. Playwright dùng bản 1.63.0 (trùng bản trình duyệt có sẵn trong môi trường cloud).
 
 ## D-020 — Nhận dạng chữ viết tay trên web qua `HandwritingRecognitionPort`
 - **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất; bổ sung bởi D-029 (vị trí chạy adapter và giấy phép)

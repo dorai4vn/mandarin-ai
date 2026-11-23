@@ -26,25 +26,79 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Guards (secrets, package layering, Expo versions)
+      - name: Guards (secrets, package layering, Expo versions of frozen apps/mobile)
         run: |
           pnpm check:secrets
           pnpm check:deps
           pnpm check:expo
+      - name: Fetch handwriting data (pinned sha256, D-029)
+        run: pnpm fetch:handwriting-data
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
-      - name: Build (packages, API, iOS JS bundle)
+      - name: Build (packages, API, web, frozen mobile bundle)
         run: pnpm build
+      - name: Container images build (generic OCI, Railway candidate)
+        run: |
+          docker build -f apps/api/Dockerfile -t mandarin-api:ci .
+          docker build -f apps/web/Dockerfile --build-arg NEXT_PUBLIC_API_URL=https://api.invalid -t mandarin-web:ci .
+
+  e2e:
+    name: E2E ${{ matrix.engine }} (mobile · tablet · desktop)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm fetch:handwriting-data
+      - name: Install Playwright browser
+        working-directory: apps/web
+        run: pnpm exec playwright install --with-deps ${{ matrix.engine }}
+      - name: Build API + web (E2E configuration, dev token enabled)
+        env:
+          NEXT_PUBLIC_ENABLE_DEV_TOKEN: 'true'
+          NEXT_PUBLIC_API_URL: http://127.0.0.1:8787
+        run: pnpm turbo run build --filter "@mandarin/web..." --filter "@mandarin/api..."
+      - name: Playwright
+        working-directory: apps/web
+        env:
+          E2E_ENGINES: ${{ matrix.engine }}
+        run: pnpm exec playwright test --trace off
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-${{ matrix.engine }}
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          retention-days: 14
+
+  mobile-legacy:
+    name: Frozen apps/mobile (Expo) — removed after M0-PWA approval
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter "./packages/*" build
       - name: Expo prebuild (iOS native project generation)
         working-directory: apps/mobile
         run: pnpm prebuild:ios
-      - name: API container image builds (generic OCI, Railway candidate)
-        run: docker build -f apps/api/Dockerfile -t mandarin-api:ci .
-      - name: expo-doctor (needs Expo API network)
-        working-directory: apps/mobile
-        run: npx --yes expo-doctor@1.21.8
 
   database:
     name: Supabase migrations + RLS tests

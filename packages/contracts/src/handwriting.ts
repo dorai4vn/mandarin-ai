@@ -12,16 +12,23 @@ export const HANDWRITING_LIMITS = { maxStrokes: 64, maxPointsTotal: 4000 } as co
 export const HandwritingRecognitionRequestSchema = z
   .object({
     strokes: z.array(InkStrokeSchema).min(1).max(HANDWRITING_LIMITS.maxStrokes),
-    writingArea: z.object({ width: z.number().positive(), height: z.number().positive() }).optional(),
+    writingArea: z
+      .object({ width: z.number().positive(), height: z.number().positive() })
+      .optional(),
     /** Pointer type the strokes came from — analytics/evaluation only, never changes grading. */
     pointerType: z.enum(['touch', 'mouse', 'pen', 'unknown']).default('unknown'),
     limit: z.number().int().min(1).max(20).default(8),
   })
-  .refine((r) => r.strokes.reduce((n, s) => n + s.points.length, 0) <= HANDWRITING_LIMITS.maxPointsTotal, {
-    message: `At most ${HANDWRITING_LIMITS.maxPointsTotal} points`,
-  });
+  .refine(
+    (r) => r.strokes.reduce((n, s) => n + s.points.length, 0) <= HANDWRITING_LIMITS.maxPointsTotal,
+    {
+      message: `At most ${HANDWRITING_LIMITS.maxPointsTotal} points`,
+    },
+  );
 export type HandwritingRecognitionRequest = z.input<typeof HandwritingRecognitionRequestSchema>;
-export type HandwritingRecognitionRequestParsed = z.output<typeof HandwritingRecognitionRequestSchema>;
+export type HandwritingRecognitionRequestParsed = z.output<
+  typeof HandwritingRecognitionRequestSchema
+>;
 
 export const HandwritingCandidateSchema = z.object({
   text: z.string(),

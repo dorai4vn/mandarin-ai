@@ -1,16 +1,16 @@
-# Hướng dẫn cài đặt & chạy (M0)
+# Hướng dẫn cài đặt & chạy (M0-PWA, web cross-platform)
 
 ## 1. Yêu cầu
 | Công cụ | Phiên bản | Ghi chú |
 |---|---|---|
-| Node.js | 22.x (xem `.nvmrc`) | `engine-strict` bật — sai phiên bản sẽ báo lỗi khi cài |
-| pnpm | 10.28.x | `corepack enable` rồi dùng `packageManager` trong `package.json` |
-| Docker | bản mới | Chỉ cần cho Supabase local (`pnpm db:*`) |
-| macOS + Xcode | chỉ khi build iOS cục bộ | Không bắt buộc: có thể dùng EAS Build trên cloud |
-| Tài khoản Expo (EAS) | — | Để build development client cho iPhone |
-| Apple Developer Program | — | Để ký bản build cài lên iPhone thật |
+| Node.js | 22.x (`.nvmrc`) | `engine-strict` bật |
+| pnpm | 10.28.x | `corepack enable` |
+| Docker | bản mới | Chỉ cho Supabase local (`pnpm db:*`) và build image |
+| Trình duyệt | Chrome/Edge/Firefox/Safari bản hiện đại | Bất kỳ hệ điều hành nào |
 
-## 2. Cài đặt
+Không cần Apple Developer, Xcode, EAS hay app store.
+
+## 2. Cài đặt & kiểm tra
 ```bash
 corepack enable
 ```
@@ -18,72 +18,76 @@ corepack enable
 pnpm install --frozen-lockfile
 ```
 ```bash
-pnpm build && pnpm lint && pnpm typecheck && pnpm test
+pnpm fetch:handwriting-data
+```
+(tải `mmah.json` + giấy phép Arphic vào `packages/adapters/data/`, kiểm tra SHA-256; giấy phép đang chờ duyệt — D-029)
+```bash
+pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```
 
-Cấu trúc: `packages/contracts` ← `packages/domain` ← `packages/adapters` ← `apps/api`, `apps/mobile` (D-010). Kiểm tra ranh giới module: `pnpm check:deps`.
+## 3. Chạy cục bộ
+API (terminal 1):
+```bash
+cp apps/api/.env.example apps/api/.env
+```
+Điền `SUPABASE_URL` hoặc `SUPABASE_JWT_SECRET`, `WEB_ORIGINS`, `HANDWRITING_DATA_PATH`. Key OpenAI/Azure/Supabase service role là tùy chọn; thiếu thì API trả kết quả gắn nhãn **MOCK** (chỉ ở development).
+```bash
+pnpm --filter @mandarin/api dev
+```
+Web (terminal 2):
+```bash
+cp apps/web/.env.example apps/web/.env.local
+```
+```bash
+pnpm --filter @mandarin/web dev
+```
+Mở http://localhost:3000 trên trình duyệt máy tính. Kiểm tra API: `curl http://localhost:8787/health` (trường `providers` báo `live`/`mock`/`disabled`).
 
-## 3. Supabase local (cần Docker)
+Khi chưa có dự án Supabase: đặt `NEXT_PUBLIC_ENABLE_DEV_TOKEN=true` (chỉ môi trường dev) và dán access token ký bằng `SUPABASE_JWT_SECRET` của API ở trang **Hồ sơ → Phiên đăng nhập**.
+
+## 4. Kiểm thử E2E (Playwright: Chromium, Firefox, WebKit × mobile/tablet/desktop)
+```bash
+pnpm --filter "@mandarin/api..." build
+```
+```bash
+cd apps/web && NEXT_PUBLIC_ENABLE_DEV_TOKEN=true NEXT_PUBLIC_API_URL=http://127.0.0.1:8787 pnpm build
+```
+```bash
+cd apps/web && pnpm exec playwright install chromium firefox webkit
+```
+```bash
+cd apps/web && pnpm exec playwright test --trace off
+```
+Chỉ chạy một engine: `E2E_ENGINES=chromium pnpm exec playwright test --trace off`. Playwright tự khởi động API và web (`playwright.config.ts`). Báo cáo HTML: `apps/web/playwright-report/`.
+
+**Lưu ý:** bản build E2E bật dev token — không dùng bản build này để deploy.
+
+## 5. Kiểm thử trên thiết bị thật (điện thoại + máy tính)
+Micro và service worker yêu cầu **HTTPS** (riêng `localhost` được coi là an toàn). Để điện thoại truy cập được, cần một trong hai cách:
+- **Preview deploy** của web + API trên host đã chọn (Railway là ứng viên, D-026) — dùng `apps/web/Dockerfile` và `apps/api/Dockerfile`.
+- **Tunnel HTTPS** từ máy phát triển tới cổng 3000 (web) và 8787 (API); đặt `NEXT_PUBLIC_API_URL` và `WEB_ORIGINS` theo URL tunnel.
+
+Kịch bản (ghi lại thiết bị, hệ điều hành, trình duyệt + phiên bản, URL, ảnh/video):
+1. **Layout:** mở trang chủ trên điện thoại (tab bar dưới), tablet (rail), máy tính (sidebar). Không có thanh cuộn ngang.
+2. **Viết tay:** Phòng thử → Viết chữ Hán: viết 山 bằng ngón tay (điện thoại) và bằng chuột/trackpad (máy tính); trang không cuộn/zoom khi viết; ghi lại ứng viên và độ trễ.
+3. **Micro:** Phòng thử → Micro: cho phép → ghi 2–3 giây → Nghe lại (thử 0.5×) → Gửi chấm. Lặp lại khi **từ chối** quyền → có hướng dẫn bật lại.
+4. **PDF:** chọn PDF mẫu từ ứng dụng Tệp (điện thoại) và kéo-thả (máy tính).
+5. **Offline:** Phòng thử → Offline: bật chế độ máy bay → lưu ghi chú → đóng hẳn trình duyệt → mở lại → tắt chế độ máy bay → "chờ=0", `applied=1`.
+6. **PWA (tùy chọn):** Thêm vào Màn hình chính (iPhone) / Cài đặt (Chrome, Edge) → mở từ icon → app chạy standalone; tắt mạng → trang chủ vẫn mở.
+7. **Đăng nhập OTP** (khi có Supabase): đăng nhập trong tab và trong app đã cài.
+
+## 6. Supabase local (cần Docker)
 ```bash
 pnpm db:start
 ```
 ```bash
 pnpm db:reset && pnpm db:test
 ```
-`pnpm exec supabase status` in ra URL, publishable key và JWT secret local. **Chỉ dùng cho máy local**; không commit.
-
-## 4. API (`apps/api`)
-```bash
-cp apps/api/.env.example apps/api/.env
-```
-Điền `SUPABASE_URL` (hoặc `SUPABASE_JWT_SECRET` cho local), tùy chọn `OPENAI_API_KEY`, `AZURE_SPEECH_KEY`, `AZURE_SPEECH_REGION`. Thiếu key → API trả kết quả gắn nhãn **MOCK** (chỉ môi trường development) hoặc HTTP 503 (`MISSING_PROVIDER_MODE=disabled`, và luôn như vậy ở production).
-```bash
-pnpm --filter @mandarin/api dev
-```
-Kiểm tra: `curl http://localhost:8787/health` — trường `providers` cho biết từng nhà cung cấp đang `live` hay `mock`.
-
-Hosting: image Docker chung `apps/api/Dockerfile` (Railway là ứng viên, D-009). **Không deploy production trong M0.**
-
-## 5. App iOS (`apps/mobile`) — development build
-Expo Go **không** chạy được ML Kit Digital Ink và SQLCipher; bắt buộc dùng development build.
-
-1. Đăng nhập EAS và liên kết dự án (một lần):
-   ```bash
-   cd apps/mobile && npx eas-cli@27.11.0 login
-   ```
-   ```bash
-   npx eas-cli@27.11.0 init
-   ```
-   Ghi `projectId` vào biến `EAS_PROJECT_ID` (file `apps/mobile/.env` và GitHub repository variable).
-2. Chọn bundle identifier thật (ví dụ `vn.<tên-bạn>.mandarinai.dev`) → `IOS_BUNDLE_IDENTIFIER`.
-3. Đăng ký iPhone cho internal distribution:
-   ```bash
-   npx eas-cli@27.11.0 device:create
-   ```
-4. Build:
-   ```bash
-   npx eas-cli@27.11.0 build --platform ios --profile development
-   ```
-   Hoặc chạy workflow GitHub **EAS iOS development build** (cần secret `EXPO_TOKEN`).
-5. Cài bản build lên iPhone (link/QR từ EAS), bật **Developer Mode** (Cài đặt → Quyền riêng tư & Bảo mật).
-6. Chạy Metro trên máy tính cùng mạng Wi-Fi:
-   ```bash
-   cd apps/mobile && EXPO_PUBLIC_API_URL=http://<IP-LAN>:8787 pnpm start
-   ```
-
-## 6. Kịch bản kiểm thử thủ công trên iPhone (M0)
-Ghi lại: model iPhone, phiên bản iOS, build ID EAS, ảnh chụp/quay màn hình cho từng bước.
-
-1. **Khởi động**: app mở được, màn hình chính hiện "máy thật", "Digital Ink native: đã link", "QuizType: 6 loại".
-2. **Viết tay 山**: vào spike 1, viết 山 bằng ngón tay (3 nét), bấm *Gửi & nhận dạng*. Lần đầu sẽ tải model `zh-Hani-CN` (cần mạng). Kỳ vọng: nhãn **LIVE**, ứng viên đầu tiên là 山, kết quả "Đúng". Viết sai một chữ khác → không được tính đúng.
-3. **Ghi âm**: spike 2 → *Bắt đầu ghi* → hệ thống hỏi quyền micro (thông báo tiếng Việt) → đọc 你好 → *Dừng* → *Nghe lại*. Thử từ chối quyền micro → app hiện nút mở Cài đặt, không crash.
-4. **Azure** (khi API có `AZURE_SPEECH_KEY`): dán access token Supabase của tài khoản test vào ô token → *Gửi chấm phát âm*. Kỳ vọng nhãn **LIVE** và điểm từ Azure; thiếu chiều điểm nào thì hiện "không có".
-5. **OpenAI Realtime** (khi API có `OPENAI_API_KEY`): spike 3 → *Xin client secret*. Kỳ vọng nhãn **LIVE**, `expiresAt` trong tương lai, secret bị che.
-6. **SQLCipher**: spike 4 → *Chạy kiểm tra*. Kỳ vọng: `cipher_version` có giá trị, ghi/đọc ✅, "Mở không có khóa → không đọc được ✅".
-
-Lấy access token test (tạm thời đến khi có màn hình đăng nhập ở M1): tạo user trong Supabase Studio/Dashboard rồi đăng nhập bằng REST `POST /auth/v1/token?grant_type=password` với publishable key; **không** dùng service role key.
 
 ## 7. Bí mật
-- Chỉ commit `*.env.example`. `pnpm check:secrets` chạy trong CI.
-- `EXPO_PUBLIC_*` bị nhúng vào app → chỉ chứa giá trị công khai.
-- OpenAI/Azure key và Supabase service role chỉ đặt ở môi trường của `apps/api` (và GitHub/Railway secrets khi có).
+- Chỉ commit `*.env.example`; `pnpm check:secrets` chạy trong CI.
+- `NEXT_PUBLIC_*` bị nhúng vào JavaScript gửi cho trình duyệt → chỉ chứa giá trị công khai (URL API, URL Supabase, publishable key).
+- OpenAI/Azure key và Supabase service role chỉ đặt ở môi trường của `apps/api`.
+
+## 8. Ứng dụng Expo cũ (`apps/mobile`)
+Đã đóng băng theo D-018; giữ lại cho tới khi chủ dự án duyệt gỡ bỏ (`docs/MIGRATION_M0_PWA.md` bước 7). Không cần chạy để phát triển web.

@@ -18,6 +18,22 @@ Cập nhật lần cuối: 2026-11-23 — web app cross-platform (D-018, D-028).
 | PRD-10 | Nhắc nhở & lịch ôn | M7 | Chưa bắt đầu | Web Push nơi hỗ trợ + nhắc trong app mọi nơi (D-024, chờ duyệt) |
 | PRD-11 | Learning Library & import giáo trình | M2 / M4 | Chưa bắt đầu | Starter fixture (D-012) |
 
+## Hạ tầng M0-PWA (web cross-platform)
+
+| Hạng mục | Trạng thái | Bằng chứng / ghi chú |
+|---|---|---|
+| `apps/web` Next.js 16 + Tailwind 4, layout phone/tablet/desktop | VERIFIED (Chromium tự động) | E2E layout 3 viewport; Firefox/WebKit chạy ở CI |
+| Capability detection + thông báo tương thích | VERIFIED (Chromium tự động) | `src/platform/capabilities.ts` + test |
+| Canvas Pointer Events (chạm, chuột, bút) | VERIFIED (Chromium tự động) | Thiết bị thật: MANUAL |
+| Nhận dạng chữ viết tay (server, HanziLookup) | Chạy được, **chưa đo chất lượng** | Chỉ nét tổng hợp; giấy phép chờ duyệt (D-029) |
+| Ghi âm → WAV 16 kHz | VERIFIED (Chromium micro giả) | Safari thật: MANUAL |
+| Chấm phát âm Azure / Realtime OpenAI | MOCKED | Thiếu key |
+| Upload PDF (chọn tệp, kéo-thả) | VERIFIED với storage MOCK | Supabase Storage thật: BLOCKED (chưa có dự án) |
+| IndexedDB outbox + sync idempotent + fallback bộ nhớ | VERIFIED (unit + Chromium) | Server store hiện là in-memory (MOCK) tới M1 |
+| Service worker + manifest (tùy chọn) | VERIFIED (Chromium) | Cài đặt thật trên thiết bị: MANUAL |
+| Đăng nhập OTP email | BLOCKED | Chưa có dự án Supabase |
+| CI: 3 engine × 3 viewport | Đã cấu hình | Kết quả xem trên PR |
+
 ## Hạ tầng M0 (native — lịch sử, PR #1)
 
 | Hạng mục | Trạng thái | Bằng chứng / ghi chú |

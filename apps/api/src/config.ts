@@ -27,7 +27,10 @@ const EnvSchema = z.object({
   HANDWRITING_DATA_PATH: optional,
   /** Server-only key for Supabase Storage writes. */
   SUPABASE_SERVICE_ROLE_KEY: optional,
-  STORAGE_BUCKET: z.string().regex(/^[a-z0-9-]{3,63}$/).default('documents'),
+  STORAGE_BUCKET: z
+    .string()
+    .regex(/^[a-z0-9-]{3,63}$/)
+    .default('documents'),
 });
 
 export type AppConfig = z.infer<typeof EnvSchema> & { version: string; webOrigins: string[] };
@@ -45,9 +48,17 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   }
   // Mocks are never allowed to stand in for providers in production.
   const mode = cfg.NODE_ENV === 'production' ? 'disabled' : cfg.MISSING_PROVIDER_MODE;
-  const webOrigins = cfg.WEB_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean);
+  const webOrigins = cfg.WEB_ORIGINS.split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
   for (const o of webOrigins) {
-    if (!/^https?:\/\/[a-zA-Z0-9.-]+(:\d+)?$/.test(o)) throw new Error('Invalid API configuration: WEB_ORIGINS');
+    if (!/^https?:\/\/[a-zA-Z0-9.-]+(:\d+)?$/.test(o))
+      throw new Error('Invalid API configuration: WEB_ORIGINS');
   }
-  return { ...cfg, MISSING_PROVIDER_MODE: mode, webOrigins, version: env.npm_package_version ?? '0.1.0' };
+  return {
+    ...cfg,
+    MISSING_PROVIDER_MODE: mode,
+    webOrigins,
+    version: env.npm_package_version ?? '0.1.0',
+  };
 }

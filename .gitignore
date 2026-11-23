@@ -28,3 +28,9 @@ supabase/.branches/
 
 # Third-party handwriting data (D-029), fetched by script
 packages/adapters/data/
+
+# Next.js / Playwright
+.next/
+apps/web/next-env.d.ts
+apps/web/playwright-report/
+apps/web/test-results/

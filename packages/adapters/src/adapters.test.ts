@@ -158,9 +158,16 @@ describe('cross-platform handwriting + sync/storage mocks', () => {
 
   it('supabase storage writes to the private bucket path and rejects traversal', async () => {
     const fetchMock = vi.fn(async () => new Response('{}', { status: 200 }));
-    const s = new SupabaseObjectStorage({ url: 'https://x.supabase.co/', serviceRoleKey: 'k', bucket: 'documents', fetch: fetchMock });
+    const s = new SupabaseObjectStorage({
+      url: 'https://x.supabase.co/',
+      serviceRoleKey: 'k',
+      bucket: 'documents',
+      fetch: fetchMock,
+    });
     await s.put('u/abc.pdf', new Uint8Array([1]), 'application/pdf');
-    expect((fetchMock.mock.calls[0] as unknown as [string])[0]).toBe('https://x.supabase.co/storage/v1/object/documents/u/abc.pdf');
+    expect((fetchMock.mock.calls[0] as unknown as [string])[0]).toBe(
+      'https://x.supabase.co/storage/v1/object/documents/u/abc.pdf',
+    );
     await expect(s.put('../etc/passwd', new Uint8Array([1]), 'application/pdf')).rejects.toThrow();
   });
 });

@@ -98,16 +98,22 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
     },
   }));
 
-  app.post('/v1/voice/realtime-session', { preHandler: [requireUser, limitCost] }, async (req, reply) => {
-    if (!providers.conversation) {
-      return reply.code(503).send(err('provider_unavailable', 'Voice sessions are not configured'));
-    }
-    try {
-      return await providers.conversation.port.createSessionGrant({ userId: req.user!.id });
-    } catch (e) {
-      return providerFailure(reply, e);
-    }
-  });
+  app.post(
+    '/v1/voice/realtime-session',
+    { preHandler: [requireUser, limitCost] },
+    async (req, reply) => {
+      if (!providers.conversation) {
+        return reply
+          .code(503)
+          .send(err('provider_unavailable', 'Voice sessions are not configured'));
+      }
+      try {
+        return await providers.conversation.port.createSessionGrant({ userId: req.user!.id });
+      } catch (e) {
+        return providerFailure(reply, e);
+      }
+    },
+  );
 
   app.post(
     '/v1/speech/pronunciation-assessment',
@@ -132,49 +138,68 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
 
   app.post('/v1/handwriting/recognize', { preHandler: requireUser }, async (req, reply) => {
     const parsed = HandwritingRecognitionRequestSchema.safeParse(req.body);
-    if (!parsed.success) return reply.code(400).send(err('invalid_request', 'Body does not match contract'));
+    if (!parsed.success)
+      return reply.code(400).send(err('invalid_request', 'Body does not match contract'));
     if (!providers.handwriting) {
-      return reply.code(503).send(err('provider_unavailable', 'Handwriting recognition is not configured'));
+      return reply
+        .code(503)
+        .send(err('provider_unavailable', 'Handwriting recognition is not configured'));
     }
     return providers.handwriting.port.recognize(parsed.data);
   });
 
-  app.post('/v1/sync/push', { preHandler: requireUser }, async (req, reply): Promise<SyncPushResponse | void> => {
-    const parsed = SyncPushRequestSchema.safeParse(req.body);
-    if (!parsed.success) return reply.code(400).send(err('invalid_request', 'Body does not match contract'));
-    if (!providers.sync) return reply.code(503).send(err('provider_unavailable', 'Sync store is not configured'));
-    const results = [];
-    for (const op of parsed.data.operations) {
-      const r = await providers.sync.apply(req.user!.id, op);
-      results.push({ operationId: op.operationId, ...r });
-    }
-    return { source: providers.sync.mode, results };
-  });
+  app.post(
+    '/v1/sync/push',
+    { preHandler: requireUser },
+    async (req, reply): Promise<SyncPushResponse | void> => {
+      const parsed = SyncPushRequestSchema.safeParse(req.body);
+      if (!parsed.success)
+        return reply.code(400).send(err('invalid_request', 'Body does not match contract'));
+      if (!providers.sync)
+        return reply.code(503).send(err('provider_unavailable', 'Sync store is not configured'));
+      const results = [];
+      for (const op of parsed.data.operations) {
+        const r = await providers.sync.apply(req.user!.id, op);
+        results.push({ operationId: op.operationId, ...r });
+      }
+      return { source: providers.sync.mode, results };
+    },
+  );
 
-  app.post('/v1/uploads/pdf', { preHandler: requireUser, bodyLimit: PDF_UPLOAD_LIMITS.maxBytes }, async (req, reply) => {
-    if (req.headers['content-type'] !== PDF_UPLOAD_LIMITS.mimeType || !Buffer.isBuffer(req.body)) {
-      return reply.code(415).send(err('unsupported_media_type', 'Only application/pdf is accepted'));
-    }
-    const body = req.body;
-    if (body.length === 0 || !looksLikePdf(body.subarray(0, 5))) {
-      return reply.code(422).send(err('not_a_pdf', 'File content is not a PDF'));
-    }
-    if (!providers.storage) return reply.code(503).send(err('provider_unavailable', 'Storage is not configured'));
-    // Server-chosen path: the client never decides where private files go.
-    const storagePath = `${req.user!.id}/imports/${randomUUID()}.pdf`;
-    try {
-      await providers.storage.put(storagePath, body, PDF_UPLOAD_LIMITS.mimeType);
-    } catch (e) {
-      return providerFailure(reply, e);
-    }
-    const result: PdfUploadResult = {
-      source: providers.storage.mode,
-      storagePath,
-      sizeBytes: body.length,
-      sha256: createHash('sha256').update(body).digest('hex'),
-    };
-    return reply.code(201).send(result);
-  });
+  app.post(
+    '/v1/uploads/pdf',
+    { preHandler: requireUser, bodyLimit: PDF_UPLOAD_LIMITS.maxBytes },
+    async (req, reply) => {
+      if (
+        req.headers['content-type'] !== PDF_UPLOAD_LIMITS.mimeType ||
+        !Buffer.isBuffer(req.body)
+      ) {
+        return reply
+          .code(415)
+          .send(err('unsupported_media_type', 'Only application/pdf is accepted'));
+      }
+      const body = req.body;
+      if (body.length === 0 || !looksLikePdf(body.subarray(0, 5))) {
+        return reply.code(422).send(err('not_a_pdf', 'File content is not a PDF'));
+      }
+      if (!providers.storage)
+        return reply.code(503).send(err('provider_unavailable', 'Storage is not configured'));
+      // Server-chosen path: the client never decides where private files go.
+      const storagePath = `${req.user!.id}/imports/${randomUUID()}.pdf`;
+      try {
+        await providers.storage.put(storagePath, body, PDF_UPLOAD_LIMITS.mimeType);
+      } catch (e) {
+        return providerFailure(reply, e);
+      }
+      const result: PdfUploadResult = {
+        source: providers.storage.mode,
+        storagePath,
+        sizeBytes: body.length,
+        sha256: createHash('sha256').update(body).digest('hex'),
+      };
+      return reply.code(201).send(result);
+    },
+  );
 
   return app;
 }

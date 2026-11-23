@@ -5,3 +5,7 @@ pnpm-lock.yaml
 **/android
 supabase/.temp
 docs/*.md
+**/.next
+**/playwright-report
+**/test-results
+apps/web/public/sw.js

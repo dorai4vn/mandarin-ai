@@ -54,7 +54,11 @@ export interface SyncOperationStore {
   apply(
     userId: string,
     op: SyncOperation,
-  ): Promise<{ status: 'applied' | 'duplicate' | 'rejected'; serverVersion: number | null; error: string | null }>;
+  ): Promise<{
+    status: 'applied' | 'duplicate' | 'rejected';
+    serverVersion: number | null;
+    error: string | null;
+  }>;
 }
 
 /** Minimal fetch signature so adapters can be tested without network access. */

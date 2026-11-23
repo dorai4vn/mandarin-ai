@@ -7,7 +7,11 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 
 const BASE = 'https://raw.githubusercontent.com/gugray/HanziLookupJS/master';
 const FILES = [
-  { name: 'mmah.json', path: 'dist/mmah.json', sha256: '287943446fe52cef43df1ba47619a3c040e5924b6031b90939e880711dbc70ae' },
+  {
+    name: 'mmah.json',
+    path: 'dist/mmah.json',
+    sha256: '287943446fe52cef43df1ba47619a3c040e5924b6031b90939e880711dbc70ae',
+  },
   { name: 'LICENSE-APL', path: 'LICENSE-APL', sha256: null },
 ];
 const dir = new URL('../data/', import.meta.url);

@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
 /** PDF upload limits for the M0 spike (resumable uploads for large files arrive in M4). */
-export const PDF_UPLOAD_LIMITS = { maxBytes: 20 * 1024 * 1024, mimeType: 'application/pdf' } as const;
+export const PDF_UPLOAD_LIMITS = {
+  maxBytes: 20 * 1024 * 1024,
+  mimeType: 'application/pdf',
+} as const;
 
 /** Every PDF starts with `%PDF-`. Used on both client and server. */
 export function looksLikePdf(firstBytes: Uint8Array): boolean {

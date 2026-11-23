@@ -19,7 +19,8 @@ export class SupabaseObjectStorage implements ObjectStoragePort {
   }
 
   async put(path: string, body: Uint8Array, contentType: string): Promise<void> {
-    if (!SAFE_PATH.test(path) || path.includes('..')) throw new ProviderError('supabase-storage', 'bad_path', 'Invalid path');
+    if (!SAFE_PATH.test(path) || path.includes('..'))
+      throw new ProviderError('supabase-storage', 'bad_path', 'Invalid path');
     const url = `${this.config.url.replace(/\/$/, '')}/storage/v1/object/${this.config.bucket}/${path}`;
     const res = await this.fetchImpl(url, {
       method: 'POST',
@@ -31,6 +32,12 @@ export class SupabaseObjectStorage implements ObjectStoragePort {
       body: body as unknown as BodyInit,
       signal: AbortSignal.timeout(60_000),
     });
-    if (!res.ok) throw new ProviderError('supabase-storage', 'http_error', `Storage returned ${res.status}`, res.status);
+    if (!res.ok)
+      throw new ProviderError(
+        'supabase-storage',
+        'http_error',
+        `Storage returned ${res.status}`,
+        res.status,
+      );
   }
 }
