@@ -99,7 +99,7 @@ export default function SessionLab() {
                 autoComplete="username"
                 aria-label="Email"
                 data-testid="login-email"
-                className="rounded-xl border border-line bg-paper px-3 py-2"
+                className="rounded-xl border border-line-strong bg-surface px-3 py-2"
               />
               <input
                 type="password"
@@ -112,7 +112,7 @@ export default function SessionLab() {
                 autoComplete="current-password"
                 aria-label="Mật khẩu"
                 data-testid="login-password"
-                className="rounded-xl border border-line bg-paper px-3 py-2"
+                className="rounded-xl border border-line-strong bg-surface px-3 py-2"
               />
               <Button type="submit" disabled={!ready || busy} data-testid="login-submit">
                 {!ready ? 'Đang tải…' : busy ? 'Đang đăng nhập…' : 'Đăng nhập'}
@@ -140,7 +140,7 @@ export default function SessionLab() {
               onChange={(e) => setDevToken(e.target.value)}
               type="password"
               aria-label="Access token"
-              className="mt-2 w-full rounded-xl border border-line bg-paper px-3 py-2"
+              className="mt-2 w-full rounded-xl border border-line-strong bg-surface px-3 py-2"
             />
             <div className="mt-2 flex gap-2">
               <Button

@@ -29,6 +29,7 @@ jobs:
       - name: Guards (secrets, package layering, Expo versions of frozen apps/mobile)
         run: |
           pnpm check:secrets
+          pnpm check:contrast
           pnpm check:deps
           pnpm check:expo
       - name: Fetch handwriting data (pinned sha256, D-029)
@@ -39,6 +40,19 @@ jobs:
       - run: pnpm test
       - name: Build (packages, API, web, frozen mobile bundle)
         run: pnpm build
+      - name: Browser bundle has no server secrets (bait build)
+        # next build directly (not turbo) so a cached artifact cannot replace the bait build.
+        working-directory: apps/web
+        env:
+          SUPABASE_SECRET_KEY: BAIT_SECRET_SUPABASE_7F3A
+          SUPABASE_SERVICE_ROLE_KEY: BAIT_SECRET_SERVICE_ROLE_7F3A
+          SUPABASE_JWT_SECRET: BAIT_SECRET_JWT_7F3A
+          OPENAI_API_KEY: BAIT_SECRET_OPENAI_7F3A
+          AZURE_SPEECH_KEY: BAIT_SECRET_AZURE_7F3A
+          NEXT_PUBLIC_SUPABASE_URL: https://example-ref.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_public_value
+          NEXT_PUBLIC_API_URL: https://api.example.invalid
+        run: pnpm exec next build && node ../../scripts/check-bundle-secrets.mjs .next
       - name: Container images build (generic OCI, Railway candidate)
         run: |
           docker build -f apps/api/Dockerfile -t mandarin-api:ci .

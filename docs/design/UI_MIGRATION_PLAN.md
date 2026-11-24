@@ -158,3 +158,24 @@ PR-1 → PR-6: khoảng 6 PR nhỏ, mỗi PR một vòng review; PR-3 và PR-5 r
 | 9   | Thứ tự với M1        | UI Foundation + M0 Visual Refresh **trước** M1                                                                                          | PR UI-1 → UI-5 trước M1; UI-6 (Dark), UI-7 (logo), UI-8 (dọn dẹp) có thể sau                 |
 
 Quy tắc cho mọi PR UI: phạm vi rõ, checklist QC (mục 8) và kết quả kiểm thử trong mô tả PR; giữ `data-testid`; không đổi Auth (D-037/D-038), API, Railway, Supabase, database, RLS; không merge/deploy thay đổi lớn khi chưa duyệt.
+
+## 11. Trạng thái triển khai
+
+### UI-1 — Tokens & fonts (Light) · nhánh `feat/ui-1-tokens-fonts` · chờ review
+
+- `apps/web/src/design/tokens.css`: token semantic Light (nguồn duy nhất); `app/globals.css`: ánh xạ `@theme inline` (`bg-page`, `bg-surface`, `text-fg-muted`, `bg-primary`, `text-link`, `border-line-strong`, `bg-error`, …), alias tạm cho tên M0 (`paper`, `paper-2`, `ink`, `ink-2`, `line`, `jade`, `amber`, `sky`), focus ring 2 px, `prefers-reduced-motion`.
+- `seal` (21 chỗ) thay theo nghĩa: thương hiệu → `primary*`, lỗi (chấm lỗi đồng bộ, BLOCKED, khả năng cốt lõi thiếu) → `error*`, logo → token `logo` **giữ nguyên màu cũ** (logo chưa được duyệt thay — D-039 quyết định 6).
+- Font: Inter (preload `latin` + `vietnamese` ≈ 58 KB; `latin-ext` cho dấu thanh pinyin tải theo nhu cầu) + Noto Sans SC (lát `unicode-range`, không preload) qua `next/font` — tự host, không gọi Google lúc chạy. `HanziText`/`Pinyin`; mọi chữ Hán trên trang có `lang="zh-Hans"`.
+- CI: `pnpm check:contrast` (44 cặp, đọc giá trị thật từ `tokens.css`), quét bundle trình duyệt với giá trị mồi (`scripts/check-bundle-secrets.mjs`).
+- E2E mới: `typography.spec.ts` (glyph tiếng Việt/pinyin/Hanzi do đúng font đã tải, font tự host, `lang` cho chữ Hán), `ui1-viewports.spec.ts` (320/390/768/1024/1440: điều hướng không đổi, không cuộn ngang, token V2 có hiệu lực).
+
+### Follow-up phát hiện trong UI-1 (không sửa — ngoài phạm vi)
+
+| ID   | Vấn đề                                                                                                                                                                                                         | Đề xuất                                                |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| FU-1 | Tràn ngang ở 320 px **có từ M0** (đo trên `main`): `/lab` 23 px (bảng khả năng), `/lab/offline` 73 px (khối trạng thái; V2 giảm còn 59 px); `/lab/session` 93 px khi chưa cấu hình Supabase                    | Sửa trong UI-3/UI-5 (`min-w-0`, xuống dòng chuỗi dài)  |
+| FU-2 | `public/offline.html` đã đổi màu V2 nhưng thiết bị đã cài giữ bản cũ trong cache của service worker tới lần đổi phiên bản SW; câu "Dữ liệu học chưa gửi sẽ tự đồng bộ khi có mạng" chưa đúng khi sync đang tắt | PR có phạm vi SW riêng (bump `VERSION`) + sửa nội dung |
+| FU-3 | M0 có dark mode theo hệ thống; UI-1 chỉ Light → người dùng đặt hệ điều hành ở chế độ tối thấy giao diện sáng (đã chấp nhận, D-039 quyết định 5)                                                                | UI-6 Dark mode                                         |
+| FU-4 | Alias token M0 còn trong code                                                                                                                                                                                  | Thay dần (UI-2→UI-5), xóa ở UI-8                       |
+| FU-5 | Chữ Hán trong nội dung người dùng nhập (ghi chú offline) và placeholder `Ví dụ: 山 = núi` không gắn `lang` theo đoạn                                                                                           | Tách đoạn tự động khi làm Input/HanziText ở UI-2+      |
+| FU-6 | Thang radius V2 (12/16/20/24) chưa áp vào thang Tailwind (giữ để không đổi hình logo/thành phần)                                                                                                               | UI-2 khi dựng component                                |

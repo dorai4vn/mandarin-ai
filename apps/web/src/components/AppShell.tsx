@@ -66,7 +66,7 @@ function SyncChip({ compact = false }: { compact?: boolean }) {
     >
       <span
         aria-hidden
-        className={`h-2 w-2 rounded-full ${rejected > 0 ? 'bg-seal' : !online ? 'bg-amber' : localOnly ? 'bg-ink-2' : pending ? 'bg-sky' : 'bg-jade'}`}
+        className={`h-2 w-2 rounded-full ${rejected > 0 ? 'bg-error-base' : !online ? 'bg-warning' : localOnly ? 'bg-fg-subtle' : pending ? 'bg-primary-base' : 'bg-success'}`}
       />
       {compact && ok ? '' : text}
       <span className="sr-only">{description}</span>
@@ -83,7 +83,10 @@ function CompatibilityNotice() {
   }, []);
   if (missing.length === 0) return null;
   return (
-    <div role="alert" className="mb-4 rounded-xl border-2 border-amber p-3 text-sm">
+    <div
+      role="alert"
+      className="mb-4 rounded-xl border-2 border-warning bg-warning-subtle p-3 text-sm"
+    >
       <strong>Trình duyệt này thiếu một số khả năng:</strong>{' '}
       {missing.map((m) => `${m.label} — ${m.note}`).join(' · ')} Các phần khác của ứng dụng vẫn dùng
       được.
@@ -102,10 +105,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Desktop sidebar */}
       <aside
         data-testid="nav-sidebar"
-        className="sticky top-0 hidden h-dvh flex-col border-r border-line bg-paper-2/70 p-4 xl:flex"
+        className="sticky top-0 hidden h-dvh flex-col border-r border-line bg-surface p-4 xl:flex"
       >
         <Link href="/" className="mb-6 flex items-center gap-2 px-2 text-xl font-bold">
-          <span className="hanzi grid h-9 w-9 place-items-center rounded-lg bg-seal text-seal-ink">
+          <span
+            lang="zh-Hans"
+            className="hanzi grid h-9 w-9 place-items-center rounded-lg bg-logo text-logo-ink"
+          >
             学
           </span>{' '}
           Mandarin AI
@@ -116,7 +122,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               key={href}
               href={href}
               aria-current={isActive(path, href) ? 'page' : undefined}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium hover:bg-paper ${i === PRIMARY.length ? 'mt-4 border-t border-line pt-4' : ''} ${isActive(path, href) ? 'bg-paper text-seal' : ''}`}
+              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium hover:bg-subtle ${i === PRIMARY.length ? 'mt-4 border-t border-line pt-4' : ''} ${isActive(path, href) ? 'bg-primary-subtle text-primary-strong' : 'text-fg'}`}
             >
               <Icon /> {label}
             </Link>
@@ -130,10 +136,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Tablet rail */}
       <aside
         data-testid="nav-rail"
-        className="sticky top-0 hidden h-dvh flex-col items-center gap-2 border-r border-line bg-paper-2/70 py-4 md:flex xl:hidden"
+        className="sticky top-0 hidden h-dvh flex-col items-center gap-2 border-r border-line bg-surface py-4 md:flex xl:hidden"
       >
         <span
-          className="hanzi mb-3 grid h-10 w-10 place-items-center rounded-lg bg-seal text-lg text-seal-ink"
+          lang="zh-Hans"
+          className="hanzi mb-3 grid h-10 w-10 place-items-center rounded-lg bg-logo text-lg text-logo-ink"
           aria-hidden
         >
           学
@@ -144,7 +151,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               key={href}
               href={href}
               aria-current={isActive(path, href) ? 'page' : undefined}
-              className={`flex w-[4.75rem] flex-col items-center gap-1 rounded-xl px-1 py-2 text-[11px] font-medium hover:bg-paper ${isActive(path, href) ? 'bg-paper text-seal' : ''}`}
+              className={`flex w-[4.75rem] flex-col items-center gap-1 rounded-xl px-1 py-2 text-[11px] font-medium hover:bg-subtle ${isActive(path, href) ? 'bg-primary-subtle text-primary-strong' : 'text-fg'}`}
             >
               <Icon /> <span className="text-center leading-tight">{label}</span>
             </Link>
@@ -157,9 +164,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className="flex min-w-0 flex-col">
         {/* Phone top bar */}
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-paper/90 px-4 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur md:hidden">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-surface/90 px-4 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur md:hidden">
           <Link href="/" className="flex items-center gap-2 font-bold">
-            <span className="hanzi grid h-8 w-8 place-items-center rounded-lg bg-seal text-seal-ink">
+            <span
+              lang="zh-Hans"
+              className="hanzi grid h-8 w-8 place-items-center rounded-lg bg-logo text-logo-ink"
+            >
               学
             </span>{' '}
             Mandarin AI
@@ -179,14 +189,14 @@ export function AppShell({ children }: { children: ReactNode }) {
       <nav
         data-testid="nav-bottom"
         aria-label="Điều hướng chính"
-        className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-5 border-t border-line bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-5 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       >
         {PRIMARY.map(({ href, label, Icon }) => (
           <Link
             key={href}
             href={href}
             aria-current={isActive(path, href) ? 'page' : undefined}
-            className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium ${isActive(path, href) ? 'text-seal' : 'text-ink-2'}`}
+            className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium ${isActive(path, href) ? 'text-primary-text' : 'text-fg-muted'}`}
           >
             <Icon width={22} height={22} /> {label}
           </Link>

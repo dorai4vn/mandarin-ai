@@ -12,6 +12,7 @@ import {
   type Recording,
 } from '@/platform/audio-capture';
 import { parseWavHeader, toBase64 } from '@/platform/wav';
+import { HanziText, Pinyin } from '@/components/Hanzi';
 
 const REFERENCE = '你好';
 
@@ -101,7 +102,12 @@ export default function AudioLab() {
     <>
       <PageHeader
         title="Micro & phát âm"
-        lead={`Đọc to câu mẫu: ${REFERENCE} (nǐ hǎo). Âm thanh chỉ nằm trong bộ nhớ, không lưu vào thiết bị.`}
+        lead={
+          <>
+            Đọc to câu mẫu: <HanziText>{REFERENCE}</HanziText> (<Pinyin>nǐ hǎo</Pinyin>). Âm thanh
+            chỉ nằm trong bộ nhớ, không lưu vào thiết bị.
+          </>
+        }
       />
       <div className="grid gap-4 xl:grid-cols-2">
         <Card title="Ghi âm">
@@ -137,7 +143,7 @@ export default function AudioLab() {
                   <select
                     value={rate}
                     onChange={(e) => setRate(Number(e.target.value))}
-                    className="rounded border border-line bg-paper px-2 py-1"
+                    className="rounded border border-line-strong bg-surface px-2 py-1"
                   >
                     <option value={1}>1×</option>
                     <option value={0.75}>0.75×</option>

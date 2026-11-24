@@ -1,11 +1,11 @@
 import type { Label } from '@/lib/status';
 
 const STYLES: Record<Label['status'], string> = {
-  VERIFIED: 'border-jade text-jade',
-  LIVE_UNCONFIRMED: 'border-sky text-sky',
-  MOCKED: 'border-amber text-amber',
-  BLOCKED: 'border-seal text-seal',
-  UNTESTED: 'border-line text-ink-2',
+  VERIFIED: 'border-success bg-success-subtle text-success-strong',
+  LIVE_UNCONFIRMED: 'border-primary-base bg-primary-subtle text-primary-strong',
+  MOCKED: 'border-warning bg-warning-subtle text-warning-text',
+  BLOCKED: 'border-error bg-error-subtle text-error-strong',
+  UNTESTED: 'border-line bg-surface text-fg-muted',
 };
 
 export function StatusBadge({ label }: { label: Label }) {

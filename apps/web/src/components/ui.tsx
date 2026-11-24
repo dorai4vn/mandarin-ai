@@ -12,7 +12,7 @@ export function PageHeader({
   return (
     <header className="mb-6 flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{title}</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-fg md:text-3xl">{title}</h1>
         {lead && <p className="mt-2 max-w-prose text-ink-2">{lead}</p>}
       </div>
       {aside}
@@ -30,7 +30,7 @@ export function Card({
   className?: string;
 }) {
   return (
-    <section className={`rounded-2xl border border-line bg-paper-2/60 p-4 md:p-5 ${className}`}>
+    <section className={`rounded-2xl border border-line bg-surface p-4 md:p-5 ${className}`}>
       {title && <h2 className="mb-3 text-lg font-semibold">{title}</h2>}
       {children}
     </section>
@@ -44,8 +44,8 @@ export function Button({
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'ghost' }) {
   const styles =
     variant === 'primary'
-      ? 'bg-seal text-seal-ink hover:brightness-110'
-      : 'border border-line bg-transparent text-ink hover:bg-paper-2';
+      ? 'bg-primary text-on-primary shadow-xs hover:bg-primary-hover active:bg-primary-active'
+      : 'border border-line-strong bg-surface text-fg hover:bg-subtle active:bg-subtle';
   return (
     <button
       type="button"
@@ -57,7 +57,7 @@ export function Button({
 
 export function Mono({ children }: { children: ReactNode }) {
   return (
-    <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-paper-2 p-3 font-mono text-xs leading-relaxed">
+    <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-sunken p-3 font-mono text-xs leading-relaxed">
       {children}
     </pre>
   );

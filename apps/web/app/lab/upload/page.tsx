@@ -92,7 +92,7 @@ export default function UploadLab() {
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
           data-testid="dropzone"
-          className={`flex min-h-48 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-6 text-center ${dragging ? 'border-seal bg-paper-2' : 'border-line'}`}
+          className={`flex min-h-48 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-6 text-center ${dragging ? 'border-primary-base bg-primary-subtle' : 'border-line'}`}
         >
           <span className="text-lg font-semibold">
             {!ready ? 'Đang tải…' : busy ? 'Đang tải lên…' : 'Chọn tệp PDF'}

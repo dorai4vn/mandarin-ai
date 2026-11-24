@@ -31,7 +31,7 @@ export default function Practice() {
       </ul>
       <p className="mt-6">
         Thử khung viết ngay:{' '}
-        <Link className="text-seal underline" href="/lab/handwriting">
+        <Link className="text-link underline" href="/lab/handwriting">
           Phòng thử › Viết chữ Hán
         </Link>
       </p>

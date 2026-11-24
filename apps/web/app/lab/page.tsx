@@ -74,7 +74,7 @@ export default function LabOverview() {
                   >
                     <td className="py-2 pr-3">{c.label}</td>
                     <td
-                      className={`py-2 pr-3 font-semibold ${c.state === 'supported' ? 'text-jade' : c.kind === 'core' ? 'text-seal' : 'text-amber'}`}
+                      className={`py-2 pr-3 font-semibold ${c.state === 'supported' ? 'text-jade' : c.kind === 'core' ? 'text-error-text' : 'text-amber'}`}
                     >
                       {STATE_TEXT[c.state]}
                     </td>
