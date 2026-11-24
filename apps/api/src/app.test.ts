@@ -458,4 +458,50 @@ describe('deployment safety (APP_ENV, D-029, preview)', () => {
     expect(foreign.headers['access-control-allow-origin']).toBeUndefined();
     await a.close();
   });
+
+  // FU-7: POST/upload calls need a CORS preflight. A rate-limited preflight (non-2xx, no
+  // Allow-Methods/Headers) fails in the browser exactly like a network error, so preflights are
+  // answered by CORS before the IP guard; the actual request then gets a readable 429.
+  it('answers CORS preflights even when the IP limit is reached; the request gets a readable 429', async () => {
+    const cfg = loadConfig({ ...base, NODE_ENV: 'test', IP_RATE_LIMIT_PER_MINUTE: '10' });
+    const a = buildApp({
+      config: cfg,
+      verifyToken: createTokenVerifier(cfg),
+      providers: createProviders(cfg),
+    });
+    for (let i = 0; i < 10; i++) await a.inject({ method: 'GET', url: '/health' });
+    const origin = 'http://localhost:3000';
+    const pre = await a.inject({
+      method: 'OPTIONS',
+      url: '/v1/uploads/pdf',
+      headers: {
+        origin,
+        'access-control-request-method': 'POST',
+        'access-control-request-headers': 'authorization,content-type',
+      },
+    });
+    expect(pre.statusCode).toBe(204);
+    expect(pre.headers['access-control-allow-origin']).toBe(origin);
+    expect(String(pre.headers['access-control-allow-methods'])).toMatch(/POST/);
+    expect(String(pre.headers['access-control-allow-headers']).toLowerCase()).toMatch(
+      /authorization/,
+    );
+    const post = await a.inject({
+      method: 'POST',
+      url: '/v1/uploads/pdf',
+      headers: { origin, 'content-type': 'application/pdf' },
+      payload: Buffer.from('%PDF-1.4'),
+    });
+    expect(post.statusCode).toBe(429);
+    expect(post.headers['access-control-allow-origin']).toBe(origin);
+    expect(post.json().error.code).toBe('rate_limited');
+    // A disallowed origin still gets no CORS grant on the preflight.
+    const foreign = await a.inject({
+      method: 'OPTIONS',
+      url: '/v1/uploads/pdf',
+      headers: { origin: 'https://evil.example', 'access-control-request-method': 'POST' },
+    });
+    expect(foreign.headers['access-control-allow-origin']).toBeUndefined();
+    await a.close();
+  });
 });

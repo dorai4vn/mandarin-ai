@@ -49,25 +49,25 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
     origin !== undefined &&
     (config.webOrigins.includes(origin) || config.webOriginRegex?.test(origin) === true);
 
-  // Per-IP guard for every request (including unauthenticated ones), before any other work.
-  // It runs before the CORS plugin's hook, so the 429 sets the CORS headers itself for allowed
-  // origins: without them the browser cannot read the response, fetch() rejects and the web app
-  // reports "cannot reach the API" instead of "too many requests" (FU-7, issue #6).
-  const ipLimiter = new FixedWindowLimiter(config.IP_RATE_LIMIT_PER_MINUTE);
-  app.addHook('onRequest', async (req, reply) => {
-    if (!ipLimiter.take(`ip:${req.ip}`)) {
-      const origin = req.headers.origin;
-      if (allowOrigin(origin)) {
-        void reply.header('Access-Control-Allow-Origin', origin).header('Vary', 'Origin');
-      }
-      return reply.code(429).send(err('rate_limited', 'Too many requests'));
-    }
-  });
+  // CORS is registered BEFORE the per-IP guard (Fastify runs onRequest hooks in registration
+  // order): it answers preflights itself and sets Access-Control-Allow-Origin + Vary: Origin on
+  // every response, including the guard's 429. Without that a 429 (or a rate-limited preflight)
+  // is unreadable for the browser: fetch() rejects and the web app reports "cannot reach the
+  // API" instead of "too many requests" (FU-7, issue #6). Preflights carry no body and do no
+  // work beyond this plugin's reply.
   void app.register(cors, {
     origin: (origin, cb) => cb(null, allowOrigin(origin)),
     methods: ['GET', 'POST'],
     allowedHeaders: ['Authorization', 'Content-Type'],
     maxAge: 600,
+  });
+
+  // Per-IP guard for every non-preflight request (including unauthenticated ones), before auth.
+  const ipLimiter = new FixedWindowLimiter(config.IP_RATE_LIMIT_PER_MINUTE);
+  app.addHook('onRequest', async (req, reply) => {
+    if (!ipLimiter.take(`ip:${req.ip}`)) {
+      return reply.code(429).send(err('rate_limited', 'Too many requests'));
+    }
   });
 
   app.addContentTypeParser(
