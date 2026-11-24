@@ -44,18 +44,25 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
   const costLimiter = new FixedWindowLimiter(config.RATE_LIMIT_PER_MINUTE);
   const generalLimiter = new FixedWindowLimiter(config.RATE_LIMIT_PER_MINUTE * 10);
 
-  // Per-IP guard for every request (including unauthenticated ones), before any other work.
-  const ipLimiter = new FixedWindowLimiter(config.IP_RATE_LIMIT_PER_MINUTE);
-  app.addHook('onRequest', async (req, reply) => {
-    if (!ipLimiter.take(`ip:${req.ip}`)) {
-      return reply.code(429).send(err('rate_limited', 'Too many requests'));
-    }
-  });
-
   // Browsers on any platform call the API cross-origin; only the web app origins are allowed.
   const allowOrigin = (origin: string | undefined) =>
     origin !== undefined &&
     (config.webOrigins.includes(origin) || config.webOriginRegex?.test(origin) === true);
+
+  // Per-IP guard for every request (including unauthenticated ones), before any other work.
+  // It runs before the CORS plugin's hook, so the 429 sets the CORS headers itself for allowed
+  // origins: without them the browser cannot read the response, fetch() rejects and the web app
+  // reports "cannot reach the API" instead of "too many requests" (FU-7, issue #6).
+  const ipLimiter = new FixedWindowLimiter(config.IP_RATE_LIMIT_PER_MINUTE);
+  app.addHook('onRequest', async (req, reply) => {
+    if (!ipLimiter.take(`ip:${req.ip}`)) {
+      const origin = req.headers.origin;
+      if (allowOrigin(origin)) {
+        void reply.header('Access-Control-Allow-Origin', origin).header('Vary', 'Origin');
+      }
+      return reply.code(429).send(err('rate_limited', 'Too many requests'));
+    }
+  });
   void app.register(cors, {
     origin: (origin, cb) => cb(null, allowOrigin(origin)),
     methods: ['GET', 'POST'],

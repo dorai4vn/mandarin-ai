@@ -427,4 +427,35 @@ describe('deployment safety (APP_ENV, D-029, preview)', () => {
     expect(codes[10]).toBe(429);
     await a.close();
   });
+
+  // FU-7 (issue #6): a 429 without CORS headers is unreadable for the browser — fetch() rejects
+  // and the web app shows "cannot reach the API" instead of "too many requests".
+  it('IP rate-limit responses carry CORS headers for allowed origins only', async () => {
+    const cfg = loadConfig({ ...base, NODE_ENV: 'test', IP_RATE_LIMIT_PER_MINUTE: '10' });
+    const a = buildApp({
+      config: cfg,
+      verifyToken: createTokenVerifier(cfg),
+      providers: createProviders(cfg),
+    });
+    for (let i = 0; i < 10; i++) await a.inject({ method: 'GET', url: '/health' });
+    const allowed = await a.inject({
+      method: 'GET',
+      url: '/health',
+      headers: { origin: 'http://localhost:3000' },
+    });
+    expect(allowed.statusCode).toBe(429);
+    expect(allowed.headers['access-control-allow-origin']).toBe('http://localhost:3000');
+    expect(String(allowed.headers.vary)).toMatch(/Origin/);
+    expect(allowed.json()).toEqual({
+      error: { code: 'rate_limited', message: 'Too many requests' },
+    });
+    const foreign = await a.inject({
+      method: 'GET',
+      url: '/health',
+      headers: { origin: 'https://evil.example' },
+    });
+    expect(foreign.statusCode).toBe(429);
+    expect(foreign.headers['access-control-allow-origin']).toBeUndefined();
+    await a.close();
+  });
 });
