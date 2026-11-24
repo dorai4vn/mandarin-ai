@@ -19,15 +19,19 @@ export default function SessionLab() {
   const [msg, setMsg] = useState<string | null>(null);
   const [devToken, setDevToken] = useState('');
   const [hasDevToken, setHasDevToken] = useState(false);
+  // X1: the server-rendered form is inert until React has hydrated and owns onSubmit. Before that
+  // the inputs and the button are disabled, so the browser can never submit credentials natively.
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
+    setReady(true);
     setHasDevToken(Boolean(readDevToken()));
     void sb?.auth.getSession().then(({ data }) => data.session && setSignedIn(true));
   }, [sb]);
 
   const signIn = async () => {
-    if (!sb || busy) return;
+    if (!sb || busy || !ready) return;
     setBusy(true);
     const res = await signInWithEmailPassword(sb.auth, email, password);
     // The password never outlives the attempt in component state.
@@ -68,16 +72,27 @@ export default function SessionLab() {
             </div>
           ) : (
             <form
+              // X1 defence in depth: even if a native submission were forced (e.g. the disabled
+              // attributes removed by hand), POST keeps it out of the URL and the fields carry no
+              // `name`, so the browser serializes nothing — there is no server handler either.
+              method="post"
+              aria-busy={!ready}
               className="flex flex-col gap-2"
               onSubmit={(e) => {
                 e.preventDefault();
                 void signIn();
               }}
             >
+              <noscript>
+                <p role="alert" className="text-sm">
+                  Cần bật JavaScript để đăng nhập.
+                </p>
+              </noscript>
               <input
                 type="email"
-                name="email"
+                id="login-email"
                 required
+                disabled={!ready}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="email@vidu.vn"
@@ -88,8 +103,9 @@ export default function SessionLab() {
               />
               <input
                 type="password"
-                name="password"
+                id="login-password"
                 required
+                disabled={!ready}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mật khẩu"
@@ -98,8 +114,8 @@ export default function SessionLab() {
                 data-testid="login-password"
                 className="rounded-xl border border-line bg-paper px-3 py-2"
               />
-              <Button type="submit" disabled={busy} data-testid="login-submit">
-                {busy ? 'Đang đăng nhập…' : 'Đăng nhập'}
+              <Button type="submit" disabled={!ready || busy} data-testid="login-submit">
+                {!ready ? 'Đang tải…' : busy ? 'Đang đăng nhập…' : 'Đăng nhập'}
               </Button>
               <p className="text-sm text-ink-2" data-testid="invite-only-note">
                 Chưa có tài khoản? Mandarin AI chỉ dành cho người được chủ ứng dụng cấp quyền — hãy

@@ -1,18 +1,37 @@
 # Checklist nghiệm thu M0-PWA trước khi merge PR #2
 
-Ngày lập: 2026-11-24 · Commit tham chiếu: `claude/m0-pwa` HEAD (code giống `80ff911`; các commit sau chỉ là tài liệu) · PR: https://github.com/dorai4vn/mandarin-ai/pull/2
+Ngày lập: 2026-11-24 · Commit tham chiếu: `claude/m0-pwa` HEAD (gồm bản sửa X1) · PR: https://github.com/dorai4vn/mandarin-ai/pull/2
 Tiêu chí gốc: `docs/MILESTONES_CLAUDE_CODE.md` mục M0-PWA (Exit). Bước kiểm tay chi tiết: `docs/SMOKE_TEST.md`. Cấu hình: `docs/DEPLOY_PREVIEW.md`.
 
 **Nguyên tắc:** CI chứng minh **mã** đúng trong môi trường giả lập (trình duyệt headless, micro giả, API local chế độ development, dev token, Supabase **local**). CI **không** chứng minh website thật (Vercel Preview + Railway + Supabase Cloud `mandarin-ai-dev`) hay thiết bị thật. Mỗi mục dưới đây ghi rõ đã có bằng chứng loại nào.
 
 Ký hiệu: ✅ có bằng chứng · ⏳ cần kiểm tay trên website thật · ⚠️ cần chủ dự án quyết định · — không áp dụng.
 
-## 0. Lỗi chặn nghiệm thu (phát hiện 2026-11-24, CI run 45398341533)
-| # | Lỗi | Bằng chứng | Mức độ | Đề xuất sửa (chờ chủ dự án cho phép sửa code) |
-|---|---|---|---|---|
-| X1 | Form đăng nhập `/lab/session` không có `method` và nút bấm được **trước khi React hydrate**. Bấm sớm → trình duyệt gửi form kiểu HTML gốc (GET) → **email và mật khẩu nằm trên URL** (lịch sử trình duyệt, log Vercel, Referer) và không gọi `signInWithPassword` | (1) CI `0b8299a`: E2E WebKit tablet "wrong password and unknown e-mail…" FAIL lần đầu (không có thông báo lỗi), PASS khi chạy lại → job FAIL do `failOnFlakyTests`. (2) Tái hiện tại máy với JavaScript tắt: sau khi bấm, URL = `/lab/session?email=…&password=…` | **Cao** (lộ mật khẩu khi mạng/thiết bị chậm) | (a) `method="post"` + `action` trỏ về chính trang để submit gốc không bao giờ đưa mật khẩu lên URL; (b) ô nhập và nút **vô hiệu cho tới khi hydrate xong** (cùng cách đã sửa form offline trước đây); (c) E2E mới: submit khi JS tắt → URL không chứa `password`; chạy `--repeat-each` trên 3 engine. Không đổi `auth-password.ts`, testid hay luồng Supabase |
+## 0. Lỗi bảo mật X1 — ĐÃ SỬA (commit sửa: xem `docs/M0_PWA_REPORT.md`)
+**Nguyên nhân gốc:** form đăng nhập ở `/lab/session` (thêm trong `80ff911`, D-038) (1) không khai báo `method` → mặc định **GET**; (2) ô nhập có thuộc tính `name="email"`/`name="password"` → trình duyệt đưa giá trị vào query string; (3) ô nhập và nút dùng được ngay khi HTML hiển thị, **trước khi React hydrate** và gắn `onSubmit` (`preventDefault`). Bấm sớm (mạng/thiết bị chậm, JS lỗi hoặc bị tắt) → trình duyệt tự gửi form → URL `/lab/session?email=…&password=…`. Phát hiện qua E2E WebKit thất bại ở lần chạy đầu (CI run 45398341533), tái hiện khi tắt JavaScript. Ngoài ra service worker cache mọi điều hướng GET theo nguyên URL → URL chứa mật khẩu có thể nằm trong Cache Storage của thiết bị.
 
-Mục X1 phải được sửa và CI xanh trở lại trước khi merge. Các commit trước (`80ff911`, `0867d49`) xanh vì race này không xảy ra ở các lần chạy đó — lỗi có từ `80ff911` (D-038).
+**Cách sửa (nhiều lớp, không đổi luồng `signInWithPassword`, testid hay Supabase):**
+| Lớp | Thay đổi | Tác dụng |
+|---|---|---|
+| 1 | Ô email, mật khẩu và nút **bị vô hiệu cho tới khi React hydrate** (`ready` đặt trong `useEffect`); nút hiện "Đang tải…" | Trước khi JS sẵn sàng không thể nhập/gửi (chuột, chạm, Enter) |
+| 2 | Bỏ thuộc tính `name` (giữ `id`, `autocomplete="username"`/`current-password"` cho trình quản lý mật khẩu) | Nếu form vẫn bị gửi gốc (ví dụ ai đó gỡ `disabled`), trình duyệt **không tuần tự hóa** giá trị nào |
+| 3 | `method="post"`, không có handler phía server | Không bao giờ có query string từ form; request rỗng, không phản chiếu/ghi mật khẩu |
+| 4 | `<noscript>` "Cần bật JavaScript để đăng nhập." | Không có fallback không-JS; từ chối rõ ràng |
+| 5 | Service worker: không cache điều hướng có query string; tăng phiên bản cache `m0-pwa-1` → `m0-pwa-2` | Xóa mọi cache điều hướng cũ trên thiết bị khi SW mới kích hoạt (gồm URL lộ, nếu có) |
+
+**Kiểm thử:** `e2e/auth-credential-leak.spec.ts` (5 test × 9 project) — JS tắt: form vô hiệu, bấm/chạm/Enter không điều hướng, không request Auth, URL sạch; hydrate bị giữ chậm: như trên + **giả lập gỡ `disabled` rồi submit gốc** → request POST, không query, body không chứa email/mật khẩu; sau khi sẵn sàng: đăng nhập bằng chạm (mobile/tablet), Enter (desktop), click → đúng 1 request password grant, URL sạch; Enter trong ô mật khẩu vẫn đăng nhập. `e2e/pwa.spec.ts`: SW không cache URL có query, chỉ còn cache `m0-pwa-2`. CI thêm bước lặp test Auth **×5, không retry** trên Chromium/Firefox/WebKit. Trên code cũ, 4/5 test mới FAIL (đã kiểm).
+
+### Rà soát phơi nhiễm
+- **Khoảng thời gian có lỗi:** chỉ từ `80ff911` (2026-11-24 12:03 UTC) tới commit sửa. Form OTP trước đó không có `name` → submit gốc không mang dữ liệu.
+- **CI/E2E:** chỉ dùng mật khẩu giả tới host giả `supabase-e2e.invalid` — không có mật khẩu thật.
+- **Preview thật:** Claude **không có quyền đọc** log Vercel/Railway hay lịch sử trình duyệt nên **không thể khẳng định** đã xảy ra hay chưa. Chỉ xảy ra nếu ai đó mở `/lab/session` trên bản Preview build từ `80ff911`–`da5869e` và bấm Đăng nhập **trước khi trang tải xong JS**. Preview có Vercel Deployment Protection → chỉ thành viên team Vercel truy cập được.
+- **Nơi URL có thể còn lại:** lịch sử/gợi ý thanh địa chỉ của trình duyệt trên thiết bị đó; Cache Storage của service worker (được xóa khi SW `m0-pwa-2` kích hoạt); log request của Vercel (có thể ghi đường dẫn kèm query). **Không** gửi sang Supabase/Railway qua `Referer` vì `Referrer-Policy: strict-origin-when-cross-origin` chỉ gửi origin khi khác site. Không có analytics.
+
+### Giảm thiểu (chủ dự án làm; không gửi mật khẩu qua chat)
+1. Vercel → Project → **Logs**: lọc đường dẫn `/lab/session` có chuỗi `password=` trong khoảng thời gian từ 12:03 UTC 2026-11-24 (log Vercel chỉ giữ trong thời gian giới hạn theo gói). Có kết quả → coi mật khẩu đó đã lộ.
+2. **Đổi mật khẩu tạm** của mọi tài khoản thử nghiệm đã đăng nhập trên Preview trong khoảng thời gian trên (cách đơn giản và chắc chắn nhất, kể cả khi không kiểm được log): xóa và tạo lại theo `docs/ACCESS_CONTROL.md` mục 8.
+3. Trên thiết bị đã dùng để thử: xóa lịch sử duyệt web của URL Preview; mở lại app khi có mạng để SW mới xóa cache cũ (hoặc xóa dữ liệu trang web).
+4. Không dùng mật khẩu thật (dùng ở nơi khác) cho tài khoản thử nghiệm.
 
 ## A. Đã có kết quả CI (run 45394939456 trên `0867d49`, 6/6 job xanh)
 | # | Hạng mục | Bằng chứng CI | Giới hạn của bằng chứng |
@@ -21,7 +40,7 @@ Mục X1 phải được sửa và CI xanh trở lại trước khi merge. Các 
 | A2 | Không có secret trong file được commit; tách lớp package | `check:secrets` (212 file), `check:deps` | Chỉ quét file git |
 | A3 | Không có secret server trong bundle trình duyệt | Build thủ công 2026-11-24 với giá trị mồi cho `SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_JWT_SECRET`, `OPENAI_API_KEY`, `AZURE_SPEECH_KEY` → **0** lần xuất hiện trong `.next` | Kiểm tại máy build, chưa phải bước CI (đề xuất thêm vào CI ở PR UI-1) |
 | A4 | Đăng nhập email + mật khẩu trên **Supabase Auth thật (GoTrue local)**, không dev token, không Mailpit | Job *database*: 10/10 — signup 422 `signup_disabled`; anonymous 422 `anonymous_provider_disabled`; user do admin tạo đăng nhập 200 (JWT `authenticated`); sai mật khẩu = email lạ = 400 `invalid_credentials`; mật khẩu 11 ký tự 422 `weak_password`; không tạo tài khoản thừa | GoTrue **local** theo `config.toml`, không phải dự án Cloud |
-| A5 | Giao diện đăng nhập không có đăng ký, lỗi chung, mật khẩu không lưu ở web storage | E2E `auth-invite-only.spec.ts` × 9 project (3 engine × 3 viewport) | Chặn request tới host giả — chỉ hành vi client |
+| A5 | Giao diện đăng nhập không có đăng ký, lỗi chung, mật khẩu không lưu ở web storage; **X1: thông tin đăng nhập không bao giờ vào URL** (JS tắt, hydrate chậm, submit gốc cưỡng bức) | E2E `auth-invite-only.spec.ts` + `auth-credential-leak.spec.ts` × 9 project, thêm bước lặp ×5 không retry | Chặn request tới host giả — chỉ hành vi client |
 | A6 | Migration từ đầu, RLS `profiles` | Job *database*: `db reset`, pgTAP 9/9, `db lint` | Supabase local |
 | A7 | Responsive: đúng điều hướng theo viewport, không cuộn ngang, desktop không phải layout điện thoại kéo giãn, điều hướng bằng bàn phím | E2E `layout.spec.ts` 390×844 / 820×1180 / 1440×900 × Chromium/Firefox/WebKit | Trình duyệt headless; breakpoint hiện tại của D-030 (768/1280) |
 | A8 | Canvas viết: chạm, chuột, bút (mô phỏng), nhận dạng 山, chữ khác không bị chấm đúng, chưa đăng nhập có thông báo | E2E `handwriting.spec.ts` | Nhận dạng chạy bằng HanziLookup **chế độ development**; trên Preview/production nhận dạng **TẮT** (D-029) |
@@ -95,22 +114,22 @@ Ghi cho mỗi thiết bị: tên máy, hệ điều hành + phiên bản, trình
 | Performance budget có baseline lab | ✅ (`PERFORMANCE.md` mục 5) | Baseline HTTPS thật: chưa (không bắt buộc cho M0) |
 | Không có secret trong bundle client | ✅ (A3) + ⏳ B10 | Xác nhận trên website thật |
 | Spike 1 Canvas | ✅ CI · ⏳ thiết bị thật (B5) | iPhone + desktop thật |
-| Spike 2 Nhận dạng: báo cáo đo + **chủ dự án chọn adapter và giấy phép** | ⚠️ | D-029 **chưa duyệt** cho production; nhận dạng TẮT trên Preview. Cần quyết định: (a) chấp nhận đóng M0 với spike 2 = "BLOCKED — chờ quyết định giấy phép", chuyển việc chọn adapter sang M5; hoặc (b) giữ M0 mở tới khi quyết định |
-| Spike 3 Micro + Azure | ✅ CI (Chromium/Firefox) · ⏳ Safari thật (B6) · ⚠️ Azure **MOCKED/TẮT** cần chủ dự án chấp thuận | Chấp thuận "MOCKED" vì chưa có khóa |
-| Spike 4 OpenAI Realtime | ✅ CI (MOCK) · ⚠️ chấp thuận MOCKED | Như trên |
+| Spike 2 Nhận dạng: báo cáo đo + chủ dự án chọn adapter và giấy phép | ✅ **Đóng ở M0 với trạng thái BLOCKED** (chủ dự án quyết định 2026-11-24) | Đánh giá giấy phép và chọn adapter chuyển sang **M5** (D-029); nhận dạng giữ **TẮT** trên Preview/production |
+| Spike 3 Micro + Azure | ✅ CI ghi âm (Chromium/Firefox) · ⏳ Safari thật (B6) · ✅ Azure **chưa kích hoạt** trong M0 (chủ dự án chấp nhận 2026-11-24) | Trên Preview: `disabled` (503) hoặc `mock` nếu bật `ALLOW_MOCKS_IN_PREVIEW` — không bao giờ ghi là live |
+| Spike 4 OpenAI Realtime | ✅ CI (MOCK) · ✅ **chưa kích hoạt** trong M0 (chủ dự án chấp nhận) | Như trên: `disabled`/`mock`, phân biệt theo `/health` |
 | Spike 5 PDF | ✅ CI · ⏳ B7 (Storage thật) | — |
 | Spike 6 IndexedDB + outbox | ✅ CI · ⏳ B8 | Đồng bộ thật là M1 (đã thống nhất D-035) |
 | Spike 7 PWA tùy chọn | ✅ CI · ⏳ B9 (B10 Safari) | — |
 | Spike 8 Auth email + mật khẩu, không đăng ký | ✅ CI (GoTrue thật local + client) · ⏳ B3 trên Cloud | Bằng chứng trên `mandarin-ai-dev` + iPhone app đã cài |
 | Spike 9 Responsive | ✅ CI · ⏳ B4 | — |
 
-**Đủ điều kiện nghiệm thu dựa trên CI (chờ xác nhận trên thiết bị thật):** 1, 5, 6, 7, 8, 9 về mặt mã; tiêu chí CI và performance baseline. **Chưa đủ:** mọi bằng chứng thiết bị thật (B1–B10), quyết định spike 2, chấp thuận MOCKED cho spike 3–4.
+**Đủ điều kiện nghiệm thu dựa trên CI (chờ xác nhận trên thiết bị thật):** spike 1, 5, 6, 7, 8, 9 về mặt mã; spike 2 đóng BLOCKED; spike 3–4 chấp nhận chưa kích hoạt; tiêu chí CI và performance baseline; X1 đã sửa. **Chưa đủ:** mọi bằng chứng trên website/thiết bị thật (B1–B10).
 
 ## D. Các bước chính xác trước khi cho phép merge
-0. **Cho phép sửa lỗi X1 (mục 0)**; Claude sửa, CI phải xanh 6/6 trên HEAD.
+0. ✅ X1 đã sửa — CI phải xanh 6/6 trên HEAD (xem báo cáo). Làm các bước *Giảm thiểu* ở mục 0.
 1. Hoàn tất B1 (cấu hình) và chạy B2–B10 trên **iPhone Safari thật** và **một desktop thật**; gửi kết quả theo mẫu (thiết bị/phiên bản/URL/commit/ĐẠT–KHÔNG ĐẠT + ảnh lỗi). Claude tổng hợp vào `docs/M0_PWA_REPORT.md`.
-2. Quyết định spike 2 (D-029) theo mục C — (a) hoặc (b).
-3. Xác nhận chấp thuận Azure và OpenAI Realtime ở trạng thái **MOCKED** cho M0.
+2. ✅ Spike 2: đóng BLOCKED, chuyển M5 (đã quyết định).
+3. ✅ Azure + Realtime: chấp nhận chưa kích hoạt trong M0 (đã quyết định).
 4. Xác nhận các giới hạn đã biết chuyển sang M1: chưa có `app_members`, chưa bắt buộc đổi mật khẩu, phiên trong `localStorage`, sync server TẮT trên Preview, access token sống ≤ 1 giờ sau khi khóa.
 5. **Chuẩn bị deploy trước khi merge** (merge vào `main` có thể kích hoạt build mới):
    - Vercel: `main` thường là *Production Branch* → merge sẽ tạo **Production deployment** dùng biến phạm vi Production (đang để trống theo DEPLOY_PREVIEW). Chưa có production → chọn một: (i) Settings → Git → *Ignored Build Step* bỏ qua build production, hoặc (ii) chấp nhận một bản production không cấu hình (chỉ hiện BLOCKED, không có secret) và bật Deployment Protection cho cả production. Khuyến nghị (i).

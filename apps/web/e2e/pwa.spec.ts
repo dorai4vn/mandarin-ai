@@ -55,3 +55,30 @@ test('service worker registers where supported and the shell opens offline', asy
   await expect(page.locator('h1')).toBeVisible();
   await context.setOffline(false);
 });
+
+test('service worker never caches a navigation that carries a query string (X1)', async ({
+  page,
+  browserName,
+}) => {
+  await page.goto('/profile');
+  const status = page.getByTestId('sw-status');
+  await expect(status).toContainText(/active|unsupported|error/, { timeout: 20_000 });
+  const text = (await status.textContent()) ?? '';
+  test.skip(
+    !text.includes('active'),
+    `service worker not active in Playwright ${browserName}: ${text}`,
+  );
+  await page.goto('/lab/session?probe=x1-should-not-be-cached');
+  await page.goto('/lab'); // a clean navigation is still cached (network-first + cache)
+  await expect
+    .poll(() => page.evaluate(async () => Boolean(await caches.match('/lab'))))
+    .toBe(true);
+  const keys = await page.evaluate(async () => {
+    const urls: string[] = [];
+    for (const name of await caches.keys())
+      for (const req of await (await caches.open(name)).keys()) urls.push(req.url);
+    return { names: await caches.keys(), urls };
+  });
+  expect(keys.urls.filter((u) => new URL(u).search !== '')).toEqual([]);
+  expect(keys.names.every((n) => n.endsWith('m0-pwa-2'))).toBe(true);
+});

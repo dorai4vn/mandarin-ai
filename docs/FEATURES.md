@@ -27,10 +27,10 @@ Phân loại: **THẬT** = chạy bằng mã/hạ tầng thật · **MOCK** = ad
 | Layout responsive phone/tablet/desktop (D-030) | THẬT | E2E Chromium/Firefox/WebKit × 3 viewport |
 | Phát hiện khả năng trình duyệt + thông báo tương thích | THẬT | Chạy hoàn toàn trên trình duyệt |
 | Canvas viết tay (chạm/chuột/bút) | THẬT | Chỉ thu nét; nhận dạng là mục riêng |
-| Nhận dạng chữ viết tay | **TẮT** trên Preview/production (API từ chối `hanzilookup` ngoài development) | HanziLookup chỉ chạy ở dev/test; **chưa duyệt giấy phép** (D-029); chất lượng **chưa đo** (chỉ có nét tổng hợp) |
+| Nhận dạng chữ viết tay | **BLOCKED** (đóng ở M0, 2026-11-24) · TẮT trên Preview/production | HanziLookup chỉ chạy ở dev/test; giấy phép chưa duyệt (D-029) → đánh giá và chọn adapter ở **M5**; chất lượng chưa đo trên mẫu thật |
 | Ghi âm → WAV 16 kHz, nghe lại, tốc độ chậm | THẬT (trên trình duyệt) | E2E Chromium/Firefox bằng micro giả; Safari: kiểm tay |
-| Chấm phát âm Azure | MOCK / TẮT | Không có khóa; Preview mặc định TẮT (503) |
-| OpenAI Realtime (khóa tạm thời) | MOCK / TẮT | Không có khóa; không có hội thoại thật |
+| Chấm phát âm Azure | **Chưa kích hoạt trong M0** (chủ dự án chấp nhận) | Không có khóa; Preview: `disabled` (503) hoặc `mock` có nhãn khi bật `ALLOW_MOCKS_IN_PREVIEW`; `live` chỉ khi có khóa — M6 |
+| OpenAI Realtime (khóa tạm thời) | **Chưa kích hoạt trong M0** (chủ dự án chấp nhận) | Không có khóa; `disabled`/`mock` như trên; không có hội thoại thật — M6/M7 |
 | Upload PDF | THẬT ở phía trình duyệt + API; lưu trữ MOCK in-memory **chỉ ở development**; Preview/production cần Supabase (không có thì 503) | Với `SUPABASE_SERVICE_ROLE_KEY` + bucket private → lưu thật vào Supabase Storage (chưa kiểm vì chưa có dự án) |
 | Lưu offline cục bộ (IndexedDB) + hàng đợi outbox | THẬT (trên trình duyệt) | Có fallback bộ nhớ tạm khi không có IndexedDB |
 | Đồng bộ lên server | **MOCK (chỉ development)** · **TẮT trên Preview/production** | Server dev lưu trong RAM (`MemorySyncOperationStore`): không phải database, mất khi khởi động lại. Trên Preview/production API trả 503 và trình duyệt **không** coi xác nhận mock là đã lưu (D-035) → dữ liệu ở lại máy, hiện "chờ đồng bộ". Postgres `sync_operations` thuộc M1 |

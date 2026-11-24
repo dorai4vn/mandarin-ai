@@ -2,8 +2,11 @@
  * - Navigations: network first, fall back to cached page, then /offline.html.
  * - Next static assets (immutable hashes) and icons: cache first.
  * - Never caches API calls (different origin) or non-GET requests.
+ * - Never caches a navigation that has a query string (X1: a URL can carry form data).
  */
-const VERSION = 'm0-pwa-1';
+// Bumped for X1: activating this worker deletes every older cache, including any navigation
+// cached under a URL that carried credentials.
+const VERSION = 'm0-pwa-2';
 const SHELL = `shell-${VERSION}`;
 const STATIC = `static-${VERSION}`;
 const PRECACHE = ['/', '/offline.html', '/manifest.webmanifest', '/icons/icon-192.png'];
@@ -32,7 +35,7 @@ self.addEventListener('fetch', (event) => {
       fetch(req)
         .then((res) => {
           const copy = res.clone();
-          if (res.ok) caches.open(SHELL).then((c) => c.put(req, copy));
+          if (res.ok && url.search === '') caches.open(SHELL).then((c) => c.put(req, copy));
           return res;
         })
         .catch(async () => (await caches.match(req)) || (await caches.match('/offline.html'))),

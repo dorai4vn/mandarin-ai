@@ -81,3 +81,10 @@ Skip có chủ đích (không phải để làm CI xanh): chuột trên điện 
 - Checklist nghiệm thu trước merge: `docs/M0_PWA_ACCEPTANCE.md` — tách phần đã có bằng chứng CI và phần phải kiểm tay trên website thật (Vercel Preview + Railway + `mandarin-ai-dev`, iPhone Safari + desktop thật).
 - Kiểm tra bundle với giá trị mồi trên HEAD (2026-11-24): 0 secret server trong `.next`.
 - `docs/SMOKE_TEST.md` A13 sửa cho đúng D-035: trên Preview sync server TẮT, thao tác giữ trạng thái "chờ".
+
+## Cập nhật 2026-11-24 — Sửa lỗi bảo mật X1 (được chủ dự án duyệt)
+- **Lỗi:** form đăng nhập `/lab/session` (từ `80ff911`) không có `method`, ô nhập có `name`, và dùng được trước khi React hydrate → bấm sớm thì trình duyệt gửi GET, đưa email + mật khẩu lên URL. Service worker còn cache điều hướng theo nguyên URL.
+- **Sửa:** ô nhập/nút vô hiệu cho tới khi hydrate; bỏ `name` (giữ `id` + `autocomplete`); `method="post"`; `<noscript>`; SW không cache URL có query, đổi phiên bản cache sang `m0-pwa-2` (xóa cache cũ). Luồng `signInWithPassword`, testid, Supabase/Railway/Vercel không đổi.
+- **Test:** `e2e/auth-credential-leak.spec.ts` (JS tắt, hydrate chậm, submit gốc cưỡng bức, chạm/click/Enter sau khi sẵn sàng); `e2e/pwa.spec.ts` (không cache URL có query); CI lặp test Auth ×5 không retry trên 3 engine. Trên code cũ 4/5 test mới FAIL. Chromium tại máy: toàn bộ E2E 98 pass / 7 skip; Auth ×5 = 120/120; PWA ×3 = 27/27.
+- **Phơi nhiễm:** không kiểm được log Vercel/thiết bị từ phía Claude; hướng dẫn giảm thiểu trong `docs/M0_PWA_ACCEPTANCE.md` mục 0 (lọc log `password=`, đổi mật khẩu tạm của tài khoản thử nghiệm, xóa lịch sử).
+- **Quyết định:** spike 2 đóng BLOCKED → M5 (D-029); Azure/Realtime chưa kích hoạt trong M0.
