@@ -23,7 +23,7 @@ Ký hiệu cột "Cần": `—` = không cần tài khoản/khóa · `SB` = cầ
 | A12c | Trong app không có nút/đường dẫn "Đăng ký", không có ô "mã 6 số"; mở `/signup`, `/register` | Chỉ có form email + mật khẩu và ghi chú "chỉ dành cho người được chủ ứng dụng cấp quyền"; hai đường dẫn trả trang 404 | — | |
 | A12d | Email **đã được cấp** + mật khẩu **sai** | **Cùng** thông báo như A12a; ô mật khẩu được xóa | SB | |
 | A12 | Email đã được cấp + mật khẩu tạm đúng (Hồ sơ → Phiên đăng nhập) | "Đã đăng nhập"; không cần mở email. DevTools → Application → Local/Session Storage: **không** có mật khẩu (chỉ có phiên của Supabase — giới hạn M0) | SB | |
-| A13 | Sau khi đăng nhập: Offline → Đồng bộ ngay | Trên Preview sync server **TẮT** (D-035): thao tác vẫn "chờ", **không** hiện "Đã đồng bộ", không mất dữ liệu. (Chỉ môi trường development mới có sync mock in-memory.) | SB | |
+| A13 | Sau khi đăng nhập: Offline → lưu ghi chú → Đồng bộ ngay | Trên Preview sync server **TẮT** (D-035): chip "Lưu trên thiết bị" + thông báo "Dữ liệu đã lưu trên thiết bị. Đồng bộ đám mây chưa được kích hoạt."; thao tác vẫn "chờ", **không** hiện "Đã đồng bộ", không mất dữ liệu; DevTools Network **không** có `POST /v1/sync/push`, Console không có 503. (Chỉ môi trường development mới có sync mock in-memory.) | SB | |
 | A14 | Sau khi đăng nhập: Tải PDF | Nhãn LIVE, đường dẫn `…/imports/….pdf`; tệp có trong bucket private `documents` | SB | |
 | A15 | Viết chữ → Nộp bài sau khi đăng nhập | Nhãn MOCK (adapter mock) hoặc thông báo "chưa được cấu hình" (adapter tắt) | SB (+MOCK) | |
 | A16 | Micro → Gửi chấm / Realtime → Xin khóa | MOCK có nhãn hoặc "chưa được cấu hình"; LIVE chỉ khi có khóa | SB (+MOCK/KEY) | |

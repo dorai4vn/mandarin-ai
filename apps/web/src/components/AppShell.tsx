@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
 import { detectCapabilities, missingCore, type Capability } from '@/platform/capabilities';
 import { DictionaryIcon, HomeIcon, LabIcon, LibraryIcon, PracticeIcon, ProfileIcon } from './icons';
-import { useOffline } from './OfflineProvider';
+import { SYNC_DISABLED_MESSAGE, useOffline } from './OfflineProvider';
 
 interface NavItem {
   href: string;
@@ -25,29 +25,51 @@ const isActive = (path: string, href: string) =>
   href === '/' ? path === '/' : path === href || path.startsWith(`${href}/`);
 
 function SyncChip({ compact = false }: { compact?: boolean }) {
-  const { online, pending, rejected, store } = useOffline();
-  // "Đã đồng bộ" only when nothing is pending AND nothing was refused by the server (G1).
+  const { online, pending, rejected, store, syncAvailability } = useOffline();
+  // "Đã đồng bộ" only when nothing is pending AND nothing was refused by the server (G1), and
+  // never while the server has cloud sync switched off (then data is on this device only).
+  const localOnly = syncAvailability === 'disabled';
   const text =
     rejected > 0
       ? `${rejected} lỗi đồng bộ`
       : !online
         ? 'Offline'
-        : pending > 0
-          ? `${pending} chờ đồng bộ`
-          : 'Đã đồng bộ';
-  const ok = rejected === 0 && online && pending === 0;
+        : localOnly
+          ? 'Lưu trên thiết bị'
+          : pending > 0
+            ? `${pending} chờ đồng bộ`
+            : 'Đã đồng bộ';
+  const description = localOnly && rejected === 0 && online ? SYNC_DISABLED_MESSAGE : text;
+  const ok = rejected === 0 && online && pending === 0 && !localOnly;
   return (
     <span
       data-testid="sync-chip"
-      title={store?.kind === 'memory' ? 'Không có lưu trữ offline trên trình duyệt này' : undefined}
+      data-sync-state={
+        rejected > 0
+          ? 'error'
+          : !online
+            ? 'offline'
+            : localOnly
+              ? 'local-only'
+              : pending
+                ? 'pending'
+                : 'synced'
+      }
+      title={
+        store?.kind === 'memory'
+          ? 'Không có lưu trữ offline trên trình duyệt này'
+          : localOnly
+            ? SYNC_DISABLED_MESSAGE
+            : undefined
+      }
       className={`inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1 text-xs font-medium ${compact ? '' : 'w-fit'}`}
     >
       <span
         aria-hidden
-        className={`h-2 w-2 rounded-full ${rejected > 0 ? 'bg-seal' : !online ? 'bg-amber' : pending ? 'bg-sky' : 'bg-jade'}`}
+        className={`h-2 w-2 rounded-full ${rejected > 0 ? 'bg-seal' : !online ? 'bg-amber' : localOnly ? 'bg-ink-2' : pending ? 'bg-sky' : 'bg-jade'}`}
       />
       {compact && ok ? '' : text}
-      <span className="sr-only">{text}</span>
+      <span className="sr-only">{description}</span>
     </span>
   );
 }

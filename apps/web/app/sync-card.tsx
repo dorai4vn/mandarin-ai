@@ -1,9 +1,9 @@
 'use client';
-import { useOffline } from '@/components/OfflineProvider';
+import { SYNC_DISABLED_MESSAGE, useOffline } from '@/components/OfflineProvider';
 import { Card } from '@/components/ui';
 
 export function SyncCard() {
-  const { online, pending, store, lastSync } = useOffline();
+  const { online, pending, store, lastSync, syncAvailability } = useOffline();
   return (
     <Card title="Đồng bộ">
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
@@ -21,15 +21,22 @@ export function SyncCard() {
         <dd>{pending}</dd>
         <dt className="text-ink-2">Máy chủ</dt>
         <dd>
-          {lastSync?.source === 'mock'
-            ? 'MOCK (RAM, không lưu lâu dài)'
-            : lastSync?.source === 'live'
-              ? 'Cơ sở dữ liệu'
-              : '—'}
+          {syncAvailability === 'disabled'
+            ? 'Chưa kích hoạt'
+            : lastSync?.source === 'mock'
+              ? 'MOCK (RAM, không lưu lâu dài)'
+              : lastSync?.source === 'live'
+                ? 'Cơ sở dữ liệu'
+                : '—'}
         </dd>
         <dt className="text-ink-2">Lần cuối</dt>
         <dd>{lastSync ? new Date(lastSync.at).toLocaleTimeString('vi-VN') : '—'}</dd>
       </dl>
+      {syncAvailability === 'disabled' && (
+        <p className="mt-3 text-sm text-ink-2" role="note" data-testid="sync-disabled-note">
+          {SYNC_DISABLED_MESSAGE}
+        </p>
+      )}
     </Card>
   );
 }

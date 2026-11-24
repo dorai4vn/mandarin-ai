@@ -101,14 +101,14 @@ Chuẩn bị 3 tệp: một PDF thật nhỏ (< 5 MB), một PDF thật **gần 
 
 ### B8. Offline/IndexedDB — A10, A13, B8, C5
 - [ ] Lưu ghi chú khi offline (DevTools Offline / Chế độ máy bay) → đóng hẳn trình duyệt → mở lại → ghi chú còn, "chờ" đúng số.
-- [ ] Có mạng lại + đã đăng nhập → "Đồng bộ ngay": **trên Preview sync TẮT** → thao tác vẫn "chờ" (không bao giờ hiện "Đã đồng bộ"), không mất dữ liệu (D-035). Đồng bộ thật thuộc M1.
+- [ ] Có mạng lại + đã đăng nhập → "Đồng bộ ngay": **trên Preview sync TẮT** → chip hiện **"Lưu trên thiết bị"** (màu trung tính, không phải lỗi), trang Offline và Trang chủ hiện "Dữ liệu đã lưu trên thiết bị. Đồng bộ đám mây chưa được kích hoạt."; thao tác vẫn "chờ" (không bao giờ "Đã đồng bộ"), không mất dữ liệu (D-035); Network **không** có `POST /v1/sync/push` (chỉ `GET /health` 200). Đồng bộ thật thuộc M1.
 
 ### B9. PWA (tùy chọn) — A11, B9, B10, C6
 - [ ] Cài đặt (Chrome/Edge; iPhone *Thêm vào MH chính*) → mở từ icon chạy standalone; **không cài vẫn dùng được**.
 - [ ] iPhone app đã cài, bật Chế độ máy bay → mở lại → trang chủ vẫn hiện (B10 — bắt buộc kiểm tay).
 
 ### B10. Console và bảo mật trên website thật
-- [ ] Mở DevTools Console trên desktop (Chrome) ở các trang: Trang chủ, Phiên đăng nhập, Viết, Micro, PDF, Offline → **không có lỗi đỏ** ngoài lỗi mạng mong đợi (ví dụ 503 sync trên Preview, 401 khi chưa đăng nhập). Ghi lại nếu có. iPhone: Safari Web Inspector (nếu có Mac) — tùy chọn.
+- [ ] Mở DevTools Console trên desktop (Chrome) ở các trang: Trang chủ, Phiên đăng nhập, Viết, Micro, PDF, Offline → **không có lỗi đỏ**. Từ commit sửa sync (xem `docs/M0_PWA_REPORT.md`), app không còn gọi `POST /v1/sync/push` khi `/health` báo `sync: disabled` → không còn 503 sync. Chỉ chấp nhận: 401 khi gọi API chưa đăng nhập, 503 khi bấm chức năng chưa cấu hình (chấm phát âm, Realtime, nộp chữ viết) — ghi lại nếu có lỗi khác.
 - [ ] DevTools → Sources/Network: tìm chuỗi `sb_secret_` trong JavaScript tải về → chỉ xuất hiện trong code thư viện kiểm tra tiền tố, **không** có khóa thật; không có `service_role`/khóa OpenAI/Azure.
 - [ ] Network: request tới Supabase chỉ dùng publishable key; request tới API dùng `Authorization: Bearer <access token>`.
 

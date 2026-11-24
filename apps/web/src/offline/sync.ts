@@ -1,6 +1,7 @@
 import { SYNC_MAX_BATCH, type SyncOperation, type SyncPushResponse } from '@mandarin/contracts';
 import { nextBatch, reconcile } from '@mandarin/domain';
 import type { LocalStore } from './store';
+import type { SyncAvailability } from './sync-availability';
 
 export interface SyncSummary {
   applied: number;
@@ -12,6 +13,14 @@ export interface SyncSummary {
 }
 
 export type PushFn = (ops: SyncOperation[]) => Promise<SyncPushResponse>;
+
+/** Optional gate: never push while the server reports sync as not enabled (M0 Preview, D-035). */
+export interface SyncGate {
+  check(force?: boolean): Promise<SyncAvailability>;
+  markUnavailable(): void;
+  /** True when a push error means "sync is not enabled on this server" (503 provider_unavailable). */
+  isUnavailableError(e: unknown): boolean;
+}
 
 interface LockManagerLike {
   request<T>(
@@ -42,13 +51,17 @@ export class SyncEngine {
      * a mock ack is treated as a failure so real study data is never dropped as "synced".
      */
     private readonly acceptMockAcks = false,
+    private readonly gate?: SyncGate,
   ) {}
+
+  private forceCheck = false;
 
   /**
    * Starts a sync, or — if one is already running — schedules exactly one follow-up run so
    * operations queued during the current run are not left waiting for the next trigger.
    */
-  syncNow(): Promise<SyncSummary> {
+  syncNow(opts: { force?: boolean } = {}): Promise<SyncSummary> {
+    if (opts.force) this.forceCheck = true;
     if (this.running) {
       this.rerun ??= this.running.then(() => {
         this.rerun = null;
@@ -71,6 +84,18 @@ export class SyncEngine {
 
   private async runOnce(): Promise<SyncSummary> {
     const summary = empty(null);
+    if (this.gate) {
+      // Nothing queued → nothing to ask the server (no request at all).
+      if (nextBatch(await this.store.listOutbox(), 1).length === 0) return summary;
+      const force = this.forceCheck;
+      this.forceCheck = false;
+      const availability = await this.gate.check(force);
+      if (availability !== 'available') {
+        // Outbox untouched: still pending, no attempt counted, nothing marked as synced.
+        summary.error = availability === 'disabled' ? 'sync_unavailable' : 'sync_status_unknown';
+        return summary;
+      }
+    }
     for (let round = 0; round < 50; round++) {
       const batch = nextBatch(await this.store.listOutbox(), SYNC_MAX_BATCH);
       if (batch.length === 0) break;
@@ -78,6 +103,12 @@ export class SyncEngine {
       try {
         res = await this.push(batch);
       } catch (e) {
+        if (this.gate?.isUnavailableError(e)) {
+          // Sync was switched off since the last check: remember it, keep the outbox as it is.
+          this.gate.markUnavailable();
+          summary.error = 'sync_unavailable';
+          break;
+        }
         // Response lost or network down: keep everything pending; the server dedupes on replay.
         await this.store.recordFailure(
           batch.map((o) => o.operationId),

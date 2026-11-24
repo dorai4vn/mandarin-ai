@@ -1,12 +1,12 @@
 'use client';
 import type { OutboxEntry } from '@mandarin/domain';
 import { useCallback, useEffect, useState } from 'react';
-import { useOffline } from '@/components/OfflineProvider';
+import { SYNC_DISABLED_MESSAGE, useOffline } from '@/components/OfflineProvider';
 import { Button, Card, Mono, PageHeader } from '@/components/ui';
 import type { SpikeNote } from '@/offline/store';
 
 export default function OfflineLab() {
-  const { store, online, pending, lastSync, refresh, syncNow } = useOffline();
+  const { store, online, pending, lastSync, syncAvailability, refresh, syncNow } = useOffline();
   const [text, setText] = useState('');
   const [notes, setNotes] = useState<SpikeNote[]>([]);
   const [outbox, setOutbox] = useState<OutboxEntry[]>([]);
@@ -96,6 +96,16 @@ export default function OfflineLab() {
               <span data-testid="last-sync">{`\nlần cuối: applied=${lastSync.applied} duplicate=${lastSync.duplicate} rejected=${lastSync.rejected} retried=${lastSync.retried} source=${lastSync.source ?? '—'}${lastSync.error ? ` lỗi=${lastSync.error}` : ''}`}</span>
             )}
           </Mono>
+          {syncAvailability === 'disabled' && (
+            <p
+              role="note"
+              data-testid="sync-disabled-note"
+              className="mt-2 rounded-lg border border-line p-2 text-sm"
+            >
+              {SYNC_DISABLED_MESSAGE} Các ghi chú vẫn nằm trong hàng đợi và sẽ được gửi khi máy chủ
+              bật đồng bộ (M1).
+            </p>
+          )}
           {lastSync?.source === 'mock' && (
             <p
               role="note"
@@ -107,7 +117,11 @@ export default function OfflineLab() {
             </p>
           )}
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button onClick={() => void syncNow()} disabled={!online} data-testid="sync-now">
+            <Button
+              onClick={() => void syncNow({ force: true })}
+              disabled={!online}
+              data-testid="sync-now"
+            >
               Đồng bộ ngay
             </Button>
             <Button variant="ghost" onClick={() => void askPersist()}>

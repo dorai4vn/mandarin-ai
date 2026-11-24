@@ -96,6 +96,11 @@ export const api = {
     }),
 };
 
+/** The server answered that a feature is not enabled there (503 provider_unavailable). */
+export function isProviderUnavailable(e: unknown): boolean {
+  return e instanceof ApiCallError && e.status === 503 && e.code === 'provider_unavailable';
+}
+
 /** Vietnamese message for an API error. */
 export function describeApiError(e: unknown): string {
   if (!(e instanceof ApiCallError)) return e instanceof Error ? e.message : String(e);
