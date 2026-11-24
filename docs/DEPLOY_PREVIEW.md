@@ -96,8 +96,12 @@ Vercel **không** chứa khóa bí mật nào.
 4. Bấm **Create new project**, chờ trạng thái xanh.
 5. **SQL Editor** → **New query** → mở file `supabase/migrations/20261123000000_m0_profiles_baseline.sql` trên GitHub (nút *Raw*), sao chép toàn bộ, dán vào → **Run**. Kết quả mong đợi: "Success. No rows returned".
 6. **Storage** → **New bucket** → tên `documents` → **Public bucket: TẮT** → **Save**.
-7. **Authentication → Sign In / Providers → Email:** bật *Enable Email provider*; bật *Confirm email*.
-8. **Authentication → Emails → Templates → Magic Link:** thêm vào nội dung email dòng `Mã đăng nhập Mandarin AI: {{ .Token }}` → **Save** (app dùng mã 6 số, D-025).
+7. **Authentication → Sign In / Providers** (ứng dụng riêng tư — D-037, `docs/ACCESS_CONTROL.md`):
+   - **Allow new users to sign up: TẮT** ← quan trọng nhất; nếu dự án đang bật thì tắt **ngay**, kể cả khi Preview đã online.
+   - **Allow anonymous sign-ins: TẮT**.
+   - **Email:** bật *Enable Email provider* (để người đã được cấp đăng nhập); bật *Confirm email*.
+   - Mọi provider khác (Google, GitHub, Phone…): **TẮT**.
+8. **Authentication → Emails → Templates → Magic Link:** thêm vào nội dung email dòng `Mã đăng nhập Mandarin AI: {{ .Token }}` → **Save** (app dùng mã 6 số, D-025). Làm tương tự với mẫu **Invite user** và **Reset Password** (thêm `{{ .Token }}`).
 9. **Authentication → Sessions** (nếu có): kiểm tra *Detect and revoke potentially compromised refresh tokens* đang bật. **Authentication → Sign In / Providers:** để **tắt** *Allow anonymous sign-ins* (API cũng từ chối phiên ẩn danh).
 10. **Project Settings → API Keys:** ghi lại (cho bước 2–3) Project URL, publishable key (công khai); secret key chỉ dán thẳng vào Railway ở bước 2. Nếu trang chỉ có "Legacy API keys" (anon/service_role): bấm tạo **publishable key** và **secret key** mới (khuyến nghị) — hoặc dùng anon/service_role kiểu cũ (API vẫn hỗ trợ).
 11. **Project Settings → JWT Keys** — xác định cách Supabase ký token người dùng:
@@ -155,13 +159,16 @@ Vercel **không** chứa khóa bí mật nào.
 1. **Railway → Variables:** sửa `WEB_ORIGINS` = URL ở 5.7 (có `https://`, không `/` cuối). Tùy chọn thêm `WEB_ORIGIN_REGEX` (2.2). Railway tự redeploy.
 2. **Supabase → Authentication → URL Configuration:** *Site URL* = URL ở 5.7; *Redirect URLs* thêm cùng URL.
 3. Mở URL web → **Phòng thử M0 → Khả năng trình duyệt**: không có cảnh báo đỏ.
-4. **Hồ sơ → Phiên đăng nhập:** nhập email → nhận mã 6 số → đăng nhập (giới hạn email mặc định của Supabase rất thấp — chỉ thử vài lần). Lưu ý: ở M0 phiên đăng nhập do thư viện Supabase giữ trong `localStorage` của trình duyệt; phiên cookie HttpOnly làm ở M1 (`docs/AUTH_SESSION_DESIGN.md`) → **chỉ dùng tài khoản thử nghiệm** trên Preview.
-5. Chạy `docs/SMOKE_TEST.md` và gửi kết quả.
+4. **Cấp tài khoản thử nghiệm (admin):** Supabase → Authentication → Users → **Add user** → **Send invitation** (hoặc *Create new user* + *Auto Confirm User*) với **email thật của từng người**; không tạo tài khoản dùng chung. Chi tiết: `docs/ACCESS_CONTROL.md` mục 5.
+5. **Kiểm tra chặn đăng ký:** ở trang Phiên đăng nhập, nhập một email **chưa được mời** → phải **không** nhận được mã và không có user mới xuất hiện trong Supabase → Users. (Lưu ý: spike M0 hiện gọi OTP với `shouldCreateUser: true`; nếu signup trên Supabase đã TẮT thì Supabase vẫn từ chối — đây là lý do cấu hình Supabase là lớp chặn chính.)
+6. **Hồ sơ → Phiên đăng nhập:** nhập email **đã được mời** → nhận mã 6 số → đăng nhập (giới hạn email mặc định của Supabase rất thấp — chỉ thử vài lần). Lưu ý: ở M0 phiên đăng nhập do thư viện Supabase giữ trong `localStorage` của trình duyệt; phiên cookie HttpOnly làm ở M1 (`docs/AUTH_SESSION_DESIGN.md`) → **chỉ dùng tài khoản thử nghiệm** trên Preview.
+7. Chạy `docs/SMOKE_TEST.md` và gửi kết quả.
 
 ## 7. Kiểm tra an toàn Preview
 | Lớp | Biện pháp | Trạng thái |
 |---|---|---|
 | Truy cập web | Vercel Deployment Protection (Standard) | Anh/chị bật ở 5.8 |
+| Tài khoản | Ứng dụng riêng tư: Supabase **signup TẮT**, anonymous TẮT, chỉ admin mời/cấp tài khoản (D-037) | Anh/chị cấu hình ở 3.7; membership ở API là M1 |
 | API | Mọi endpoint trừ `/health` yêu cầu JWT Supabase hợp lệ (`aud=authenticated`, `sub` là UUID) | Có test |
 | Dữ liệu học | Mock lưu dữ liệu (sync/storage) **không bao giờ** chạy ngoài development; trình duyệt không coi xác nhận mock là đã lưu (D-035) | Có test |
 | Nhận dạng chữ viết tay | `hanzilookup` bị từ chối ngoài development (D-029) | Có test |

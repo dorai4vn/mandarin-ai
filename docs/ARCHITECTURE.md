@@ -76,6 +76,8 @@ Package dependency direction (no cycles, enforced by lint/CI): `contracts` <- `d
 This is the target model. M0 ships only the migration template and the `profiles` baseline with RLS tests; the remaining tables are created by reviewed migrations in M1 (identity/sync), M2 (lexicon, vocabulary, tags/topics, course/library), M3 (quiz/review) and later milestones.
 
 ### Identity & content
+`app_members(user_id PK→auth.users, role owner|admin|member, status invited|active|disabled, invited_by, invited_at, activated_at, disabled_at, disabled_reason)` — invitation-only access (D-037); readable only by the member, writable only by service role/admin SQL; `is_active_member()` used by every learner-data policy.
+`admin_audit_log(id, actor_id, action, target_user_id, details_json, created_at)` — admin actions (M1).
 `profiles(id auth.uid FK, settings, created_at)`
 `courses(id, owner_id, title, language_level, visibility, latest_version_id)`
 `course_versions(id, course_id, version_number, status, source_document_id)`
@@ -188,6 +190,15 @@ All rows carry `user_id`/`owner_id`; RLS: owner only. Composite foreign keys `(i
 | Touch gestures (scroll, zoom, edge swipe) vs mouse/pen | phones/tablets | Canvas `touch-action: none`, Pointer Events with `pointerType`, pressure when present |
 | `100vh`, on-screen keyboards, notches | phones/tablets | `dvh`, `viewport-fit=cover`, `env(safe-area-inset-*)`, inputs ≥ 16 px |
 
+## Access control — private, invitation-only (D-037)
+
+Details and admin runbook: `docs/ACCESS_CONTROL.md`.
+- Supabase Auth with sign-ups **disabled**, anonymous sign-ins disabled, only the Email provider enabled; accounts are created/invited by administrators (Dashboard first, admin scripts with the secret key on the server/admin machine later). There is no sign-up UI or API.
+- Deny by default: a valid Supabase JWT (D-036) is necessary but **not sufficient**; the user must be an `active` row in `app_members`. Enforced twice: RLS (`and public.is_active_member()` on all learner-data policies) and the Fastify API (membership lookup cached ≤ 60 s → 403 `not_a_member`).
+- Sign-in: 6-digit e-mail OTP for existing users only (`shouldCreateUser: false`); optional password with reauthentication and code-based recovery; neutral error messages (no account enumeration).
+- Sessions per `docs/AUTH_SESSION_DESIGN.md` (HttpOnly cookie on the web origin, Bearer to the API).
+- Disabling a member takes effect at the API within ≤ 60 s and immediately in RLS; Auth-level ban via Admin API `ban_duration` from a server-side script.
+
 ## Performance architecture (D-032, D-033, D-034)
 
 Budgets, measurement method, baseline and monitoring: `docs/PERFORMANCE.md`. Design rules:
@@ -213,5 +224,5 @@ Budgets, measurement method, baseline and monitoring: `docs/PERFORMANCE.md`. Des
 4. Offline quiz -> browser tab/installed app killed -> reopen -> reconnect -> exactly one server attempt, correct next review, one XP grant (M7).
 7. The same account's progress written on a desktop browser appears on a phone browser after sync, and vice versa.
 8. Performance budgets in `docs/PERFORMANCE.md` are measured on an HTTPS deployment (lab profiles + real devices) and reported per milestone; regressions beyond the failure threshold block acceptance.
-5. User A cannot read user B documents, attempts, audio or dictionary even with guessed UUIDs.
+5. User A cannot read user B documents, attempts, audio or dictionary even with guessed UUIDs; a signed-in Auth user who is not an active member gets nothing (API 403, RLS empty); sign-up via the public publishable key is rejected by Supabase.
 6. Failed PDF import can resume/retry; published course is not partially corrupted.

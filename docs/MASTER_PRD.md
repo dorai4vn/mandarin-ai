@@ -1,12 +1,12 @@
 # Mandarin AI — Master Product Requirements Document
 
-Version: 2.3 | Date: 2026-11-23 | Status: Product requirements approved; cross-platform web application (D-018, D-028); M0-PWA in progress
+Version: 2.4 | Date: 2026-11-24 | Status: Product requirements approved; cross-platform web application (D-018, D-028); M0-PWA in progress
 
 > v1.3 aligned this PRD with owner decisions D-001 … D-013. v2.0 changed the delivery platform from a React Native/Expo iOS app to a Next.js web app (D-018). v2.1 fixes the scope as a **cross-platform web application** for desktop, laptop, tablet and smartphone browsers; PWA install, offline and Web Push are progressive enhancements, never requirements (D-028). **All 11 functional domains are kept.** Where wording differs, `docs/DECISIONS.md` is authoritative.
 
 ## 1. Product definition
 
-Mandarin AI is a cross-platform Chinese learning web application for Vietnamese-speaking learners. It runs directly in modern browsers (Chrome, Edge, Firefox, Safari) on Windows, macOS, iOS and Android — desktop, laptop, tablet and smartphone — with one account and one learning record synchronised across all devices. Installing it (Add to Home Screen / Install app) is optional and adds conveniences only. No App Store, TestFlight or native build is required. The product starts with learner-imported HSK 3.0 teaching PDFs after the app is built; future textbooks must be addable without code changes. The learning experience is powered by a personal vocabulary dictionary, spaced-repetition reviews, handwriting games, listening and speaking practice, and explanations of Hanzi evolution grounded in verifiable historical sources.
+Mandarin AI is a cross-platform Chinese learning web application for Vietnamese-speaking learners. It is a **private, invitation-only** app for the owner and a small group of invited friends (D-037): there is no public sign-up; administrators create or invite accounts. It runs directly in modern browsers (Chrome, Edge, Firefox, Safari) on Windows, macOS, iOS and Android — desktop, laptop, tablet and smartphone — with one account and one learning record synchronised across all devices. Installing it (Add to Home Screen / Install app) is optional and adds conveniences only. No App Store, TestFlight or native build is required. The product starts with learner-imported HSK 3.0 teaching PDFs after the app is built; future textbooks must be addable without code changes. The learning experience is powered by a personal vocabulary dictionary, spaced-repetition reviews, handwriting games, listening and speaking practice, and explanations of Hanzi evolution grounded in verifiable historical sources.
 
 ### Goals
 - Enable users to study daily from personally entered words and imported textbooks.
@@ -15,7 +15,14 @@ Mandarin AI is a cross-platform Chinese learning web application for Vietnamese-
 - Support useful offline study and reliable syncing when internet returns.
 - Allow additional learning modules and content sources without rewriting the core application.
 
+### Access model (D-037)
+- No self-service sign-up, no anonymous sign-in, no social/phone providers; only accounts created or invited by an administrator can sign in.
+- Administrators can create/invite, disable and delete accounts (initially in the Supabase Dashboard; an in-app admin panel is optional).
+- One person = one account; no shared accounts. Each account's study data is private (database row-level security **and** backend checks).
+- Sign-in with a 6-digit e-mail code for invited users; optional password set after sign-in, with safe code-based recovery. Errors never reveal whether an e-mail has an account.
+
 ### Non-goals for initial release
+- Public registration, marketing landing page or self-service sign-up.
 - A public marketplace for third-party executable plugins.
 - Automatically sharing commercial uploaded textbooks with other users.
 - Guaranteeing clinical/phonetic-grade tone assessment without field validation.
@@ -120,7 +127,7 @@ Mandarin AI is a cross-platform Chinese learning web application for Vietnamese-
 ## 3. Core flows
 
 ### Onboarding
-Open the HTTPS URL in any supported browser -> (optional) install / Add to Home Screen -> sign up/login with e-mail OTP code or password (D-025) -> choose beginner/intermediate, simplified/traditional preference (initial content primarily simplified), study goal -> download starter learning data -> Home.
+Administrator invites or creates the account -> invited user opens the HTTPS URL in any supported browser -> (optional) install / Add to Home Screen -> **sign in** with the 6-digit e-mail code (or password if they set one) (D-025, D-037) — there is no sign-up screen -> choose beginner/intermediate, simplified/traditional preference (initial content primarily simplified), study goal -> download starter learning data -> Home.
 
 Starter data is a small fixture with clear origin and usage rights, loaded as ordinary course/lexicon records; HSK 3.0 content is never hard-coded (D-012).
 
@@ -155,7 +162,7 @@ Primary navigation: Home / Library / Dictionary / Practice / Profile — bottom 
 - Release gate: automated tests on Chromium, Firefox and WebKit at mobile, tablet and desktop viewports, plus manual verification on real iPhone Safari and at least one real desktop browser.
 - Offline data in IndexedDB is kept to the minimum needed for study (D-022, approved with conditions): **no API secrets, no refresh tokens and no sensitive audio recordings** in IndexedDB. Web Crypto field encryption may be used for sensitive fields but must **not** be presented as equivalent to native Keychain/SQLCipher. Sessions handled by Supabase Auth (cookie-based session planned for M1); logout clears local data; protect private PDF/audio.
 - No long-lived provider secrets in client. AI APIs via authenticated backend; time-limited voice session credentials where supported.
-- Supabase Row Level Security and automated negative authorization tests; no cross-user vocabulary/progress leaks.
+- Supabase Row Level Security and automated negative authorization tests; no cross-user vocabulary/progress leaks; only active invited members can access any data (D-037).
 - Data deletion/export, private document visibility, input sanitization, file-size/type validation, abuse/expense limits.
 - Background jobs handle expensive PDF ingestion; observability, retry policy, idempotency and cost tracking.
 - Reproducible cloud builds and migrations, CI tests and rollback plan.

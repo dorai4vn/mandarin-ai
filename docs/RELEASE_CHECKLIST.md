@@ -64,6 +64,16 @@ Phạm vi (D-028): web app chạy trên Chrome, Edge, Firefox, Safari bản hi�
 - [ ] Không tối ưu nào làm yếu bảo mật, RLS, dữ liệu offline hay tính đúng đắn của đồng bộ.
 - [ ] Không tuyên bố "đạt hiệu năng" nếu chưa có số liệu trên HTTPS thật.
 
+## C5. Truy cập riêng tư (D-037, `docs/ACCESS_CONTROL.md`)
+- [ ] Supabase: **Allow new users to sign up = TẮT**, anonymous sign-ins TẮT, chỉ bật provider Email.
+- [ ] Thử đăng ký bằng publishable key (gọi trực tiếp Auth API) → bị từ chối.
+- [ ] Thử đăng nhập OTP với email chưa được cấp → không tạo tài khoản, thông báo trung tính.
+- [ ] Không có màn hình/đường dẫn "Đăng ký" trong app.
+- [ ] Danh sách Users trên Dashboard chỉ gồm người được mời; mỗi email một người; không tài khoản dùng chung.
+- [ ] (M1+) User đăng nhập nhưng không phải thành viên active → API 403, RLS không trả dữ liệu; khóa thành viên có hiệu lực ≤ 60 s.
+- [ ] Đặt/khôi phục mật khẩu bằng mã; admin không biết mật khẩu của ai.
+- [ ] Secret key chỉ ở Railway/máy admin.
+
 ## D. Backend / dữ liệu
 - [ ] Migration chạy được từ đầu trên DB trống (`supabase db reset`).
 - [ ] Test RLS: user A không đọc/ghi được dữ liệu user B; user thường không ghi được shared lexicon.

@@ -35,8 +35,9 @@ Phân loại: **THẬT** = chạy bằng mã/hạ tầng thật · **MOCK** = ad
 | Lưu offline cục bộ (IndexedDB) + hàng đợi outbox | THẬT (trên trình duyệt) | Có fallback bộ nhớ tạm khi không có IndexedDB |
 | Đồng bộ lên server | **MOCK (chỉ development)** · **TẮT trên Preview/production** | Server dev lưu trong RAM (`MemorySyncOperationStore`): không phải database, mất khi khởi động lại. Trên Preview/production API trả 503 và trình duyệt **không** coi xác nhận mock là đã lưu (D-035) → dữ liệu ở lại máy, hiện "chờ đồng bộ". Postgres `sync_operations` thuộc M1 |
 | Đồng bộ tiến độ giữa nhiều thiết bị | CHƯA TRIỂN KHAI | Chỉ có chiều gửi lên (push); chiều tải về thuộc M1 |
-| Đăng nhập OTP email | THẬT (mã) / chưa kiểm | Cần dự án Supabase; phiên hiện lưu bởi supabase-js trong `localStorage` — M1 chuyển sang cookie (D-022) |
+| Đăng nhập OTP email (chỉ người được mời — D-037) | THẬT (mã) / chưa kiểm | Cần dự án Supabase với **signup TẮT**; spike M0 còn `shouldCreateUser: true` (sửa khi được phép); membership `app_members` + kiểm tra ở API thuộc M1 |
 | PWA: manifest, service worker, cài đặt | THẬT, tùy chọn | Offline navigation đã kiểm tự động trên Chromium/Firefox; Safari: kiểm tay |
+| Quản trị tài khoản (mời, khóa, khôi phục mật khẩu) | Dashboard Supabase (thủ công) | Runbook `docs/ACCESS_CONTROL.md`; script admin + membership M1 |
 | Nhắc học (in-app bắt buộc, Web Push tùy chọn) | CHƯA TRIỂN KHAI | M7 (D-024 đã duyệt) |
 | Từ điển, thư viện, quiz, SRS, PDF pipeline, AI tutor, XP | CHƯA TRIỂN KHAI | Chỉ có khung giao diện/placeholder; M2–M7 |
 | Supabase: bảng `profiles` + RLS | THẬT (local/CI) | Chưa áp dụng lên dự án Supabase dev |

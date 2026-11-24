@@ -2,6 +2,8 @@
 
 Ngày: 2026-11-23 · Trạng thái: **hướng đã được chủ dự án duyệt; đây là thiết kế, chưa triển khai** (M1).
 
+> **Bổ sung 2026-11-24 (D-037):** chỉ người được mời mới đăng nhập. Route handler `POST /auth/otp/request` gọi Supabase với `shouldCreateUser: false` (không bao giờ tạo tài khoản), trả thông báo trung tính dù email có tồn tại hay không; thêm `POST /auth/password/recover` và `POST /auth/password/update` (yêu cầu xác thực lại). Không có route đăng ký. Mô hình membership: `docs/ACCESS_CONTROL.md`.
+
 ## 1. Hiện trạng M0-PWA (cần thay ở M1)
 - Đăng nhập OTP dùng `@supabase/supabase-js` trên trình duyệt → phiên (access + **refresh token**) nằm trong `localStorage`, JavaScript đọc được → rủi ro nếu có XSS. Trái tinh thần D-022.
 - API (`apps/api`, Railway) xác thực bằng header `Authorization: Bearer <access token>` — **không dùng cookie**.

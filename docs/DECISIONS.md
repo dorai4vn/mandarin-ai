@@ -190,7 +190,7 @@ Quy ước:
 - **Bổ sung khi duyệt:** tiêu chí nghiệm thu PRD-10 yêu cầu nhắc trong ứng dụng hoạt động trên mọi trình duyệt; Web Push chỉ được kiểm nơi trình duyệt hỗ trợ và người dùng cho phép, thiếu Web Push không làm milestone thất bại.
 
 ## D-025 — Đăng nhập trong PWA
-- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất; **bổ sung bởi D-037** (chỉ người đã được cấp tài khoản mới đăng nhập; không đăng ký)
 - **Bối cảnh:** Web app đã thêm vào Màn hình chính trên iOS có bộ nhớ (cookie, IndexedDB) **tách riêng** khỏi Safari; link "magic link" trong email sẽ mở Safari chứ không mở app đã cài → đăng nhập không vào được app.
 - **Lựa chọn:** Supabase Auth bằng **mã OTP 6 số qua email** (nhập ngay trong app) và/hoặc mật khẩu; không dựa vào magic link hay OAuth redirect cho luồng chính.
 
@@ -287,3 +287,19 @@ Quy ước:
 - **Bối cảnh:** Dự án Supabase mới ký access token bằng **JWT signing keys bất đối xứng** (ES256), công bố khóa công khai qua JWKS; dự án cũ dùng **Legacy JWT secret** (HS256); khi xoay khóa có thể tồn tại cả hai. Code M0 chỉ dùng **một** trong hai (có secret thì bỏ JWKS). API keys mới (`sb_publishable_…`, `sb_secret_…`) **không phải JWT**.
 - **Lựa chọn:** Chọn cách kiểm tra theo `alg` của từng token: ES256/RS256 → JWKS từ `SUPABASE_URL` (cache 10 phút); HS256 → chỉ khi `SUPABASE_JWT_SECRET` được đặt; thuật toán khác/`none` → từ chối. Bắt buộc `aud=authenticated`, `iss=<SUPABASE_URL>/auth/v1`, `role=authenticated`, `exp`, `sub` là UUID; từ chối phiên ẩn danh (`is_anonymous=true`); dung sai đồng hồ 30 s. Ngoài development **bắt buộc** `SUPABASE_URL` (để luôn kiểm tra `iss`), kể cả khi dùng HS256. Thuật toán trong header chỉ chọn *nhánh* kiểm tra; mỗi nhánh chỉ dùng khóa đã cấu hình (HS256 → secret; ES256/RS256 → khóa JWKS theo `kid`) nên không thể tấn công đổi thuật toán. Storage dùng `SUPABASE_SECRET_KEY` trong header `apikey` (JWT kiểu cũ gửi thêm Bearer). `SUPABASE_URL` phải là https ngoài development; publishable key đặt nhầm vào biến secret → API từ chối khởi động. `/health` báo `auth: ["jwks"|"hs256"]` (không lộ khóa).
 - **Hậu quả:** Railway chỉ cần `SUPABASE_URL` + `SUPABASE_SECRET_KEY` với dự án mới; `SUPABASE_JWT_SECRET` chỉ dùng cho dự án/giai đoạn HS256.
+
+---
+
+## Truy cập riêng tư (2026-11-24)
+
+## D-037 — Ứng dụng riêng tư, chỉ người được mời; không đăng ký công khai
+- **Ngày:** 2026-11-24 · **Trạng thái:** **Đã duyệt** (chủ dự án)
+- **Bối cảnh:** Mandarin AI chỉ phục vụ chủ ứng dụng và một nhóm bạn được mời.
+- **Lựa chọn:**
+  - Đăng nhập bằng Supabase Auth; **không** có giao diện đăng ký; **tắt** "Allow new users to sign up", anonymous sign-in và mọi provider ngoài Email trên Supabase.
+  - Chỉ quản trị viên cấp tài khoản (Dashboard: *Invite user* hoặc *Create new user*), khóa/vô hiệu hóa, xóa. Giai đoạn đầu dùng Supabase Dashboard; admin panel không bắt buộc.
+  - Mặc định từ chối: ngoài JWT hợp lệ, người dùng phải là **thành viên active** trong `app_members` (role `owner|admin|member`, status `invited|active|disabled`); kiểm tra ở cả **RLS** (`is_active_member()`) và **API** (403 `not_a_member`, cache ≤ 60 s).
+  - Mỗi người một tài khoản; không tài khoản dùng chung.
+  - Đăng nhập mặc định bằng mã OTP 6 số qua email cho người đã được cấp (`shouldCreateUser: false`); mật khẩu tùy chọn, đặt sau khi đăng nhập (xác thực lại) và khôi phục bằng mã 6 số; thông báo lỗi không tiết lộ email có tồn tại.
+  - Secret/service role key chỉ ở server (Railway) hoặc máy admin.
+- **Hậu quả:** Hướng dẫn chi tiết + runbook admin: `docs/ACCESS_CONTROL.md`. M1 thêm `app_members`, `is_active_member()`, kiểm tra membership ở API, màn hình đăng nhập/quên mật khẩu (không có đăng ký), script admin (ban/khóa) và test âm. Trong M0-PWA: chủ dự án tắt signup trên Dashboard ngay; sửa `shouldCreateUser` trong spike M0 chờ cho phép.

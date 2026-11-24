@@ -18,7 +18,10 @@ Ký hiệu cột "Cần": `—` = không cần tài khoản/khóa · `SB` = cầ
 | A9 | Phòng thử → Tải PDF: kéo-thả một PDF vào khung; thử thêm một tệp .txt đổi tên thành .pdf | PDF thật: chuyển sang bước gửi (chưa đăng nhập → thông báo đăng nhập); tệp giả: "Tệp không phải PDF" | — | |
 | A10 | Phòng thử → Offline: DevTools → Network → Offline → lưu một ghi chú → đóng tab → mở lại tab → bỏ Offline | Ghi chú còn; "chờ" > 0 khi chưa đăng nhập (không mất dữ liệu) | — | |
 | A11 | Biểu tượng cài đặt trên thanh địa chỉ (Chrome/Edge) → Cài đặt | App mở trong cửa sổ riêng; **không cài vẫn dùng được mọi thứ** | — | |
-| A12 | Đăng nhập bằng mã OTP (Hồ sơ → Phiên đăng nhập) | Email có mã 6 số; đăng nhập thành công | SB | |
+| A12a | Nhập email **chưa được mời** ở Phiên đăng nhập | Không nhận được mã; **không** có user mới trong Supabase → Users (signup TẮT — D-037) | SB | |
+| A12b | Gọi trực tiếp Auth API đăng ký bằng publishable key (Claude cung cấp lệnh `curl` mẫu, không cần secret) | Bị từ chối (`Signups not allowed`) | SB | |
+| A12c | Trong app không có nút/đường dẫn "Đăng ký" | Chỉ có "Đăng nhập" (spike M0 sẽ đổi chữ khi được phép sửa) | — | |
+| A12 | Đăng nhập bằng mã OTP với email **đã được admin mời** (Hồ sơ → Phiên đăng nhập) | Email có mã 6 số; đăng nhập thành công | SB | |
 | A13 | Sau khi đăng nhập: Offline → Đồng bộ ngay | `applied=…`, "chờ=0", `source=mock` (sync server **in-memory**, mất khi API khởi động lại) | SB + MOCK | |
 | A14 | Sau khi đăng nhập: Tải PDF | Nhãn LIVE, đường dẫn `…/imports/….pdf`; tệp có trong bucket private `documents` | SB | |
 | A15 | Viết chữ → Nộp bài sau khi đăng nhập | Nhãn MOCK (adapter mock) hoặc thông báo "chưa được cấu hình" (adapter tắt) | SB (+MOCK) | |
@@ -38,7 +41,7 @@ Ký hiệu cột "Cần": `—` = không cần tài khoản/khóa · `SB` = cầ
 | B9 | Chia sẻ → **Thêm vào MH chính** → mở từ icon | Chạy toàn màn hình (không thanh địa chỉ); có nút điều hướng trong app | — | |
 | B10 | Trong app đã cài: bật Chế độ máy bay → mở lại app | Trang chủ vẫn hiện (app shell offline). **Bắt buộc kiểm tay** vì Playwright WebKit không tự động hóa được (CI) | — | |
 | B11 | Đăng nhập OTP **trong app đã cài** | Nhập mã 6 số ngay trong app; không phải mở link email | SB | |
-| B12 | Đăng nhập cùng tài khoản trên máy tính (A12) và iPhone | Cả hai đăng nhập được. (Đồng bộ dữ liệu giữa thiết bị: **chưa có** — M1) | SB | |
+| B12 | Đăng nhập **cùng một người** (tài khoản của chính mình) trên máy tính (A12) và iPhone — không dùng tài khoản của người khác | Cả hai đăng nhập được. (Đồng bộ dữ liệu giữa thiết bị: **chưa có** — M1) | SB | |
 
 ## C. Chrome trên Android
 | # | Bước | Kỳ vọng | Cần | Kết quả |
