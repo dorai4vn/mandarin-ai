@@ -123,10 +123,14 @@ export function CardLink({
 
 /* ---------- Study Card (pastel tiles of the reference "Hôm nay học gì?") ---------- */
 
-export type StudyTone = 'blue' | 'rose' | 'mint';
+export type StudyTone = 'blue' | 'lavender' | 'mint';
 const STUDY: Record<StudyTone, { bg: string; icon: string; Icon: typeof BookOpenFilledIcon }> = {
   blue: { bg: 'bg-study-blue', icon: 'text-study-blue-icon', Icon: BookOpenFilledIcon },
-  rose: { bg: 'bg-study-rose', icon: 'text-study-rose-icon', Icon: HeadphonesFilledIcon },
+  lavender: {
+    bg: 'bg-study-lavender',
+    icon: 'text-study-lavender-icon',
+    Icon: HeadphonesFilledIcon,
+  },
   mint: { bg: 'bg-study-mint', icon: 'text-study-mint-icon', Icon: PencilFilledIcon },
 };
 

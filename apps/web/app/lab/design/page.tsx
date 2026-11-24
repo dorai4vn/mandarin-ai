@@ -121,8 +121,9 @@ export default function DesignGallery() {
 
         <Section id="study" title="Study Card">
           <p className="text-sm text-fg-muted">
-            Màu pastel theo hình tham chiếu. Số liệu dưới tiêu đề chỉ là <strong>ví dụ</strong>;
-            trên màn hình thật chỉ hiện số liệu thật, tính năng chưa có dùng nhãn “Sắp có”.
+            Pastel: xanh (Từ vựng), lavender (Nghe hiểu), mint (Luyện viết). Số liệu dưới tiêu đề
+            chỉ là <strong>ví dụ</strong>; trên màn hình thật chỉ hiện số liệu thật, tính năng chưa
+            có dùng nhãn “Sắp có”.
           </p>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
             <StudyCard
@@ -133,11 +134,11 @@ export default function DesignGallery() {
               data-testid="study-blue"
             />
             <StudyCard
-              tone="rose"
+              tone="lavender"
               title="Nghe hiểu"
               meta="Ví dụ: 5 bài"
               href="/lab/design"
-              data-testid="study-rose"
+              data-testid="study-lavender"
             />
             <StudyCard
               tone="mint"
@@ -149,7 +150,12 @@ export default function DesignGallery() {
           </div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
             <StudyCard tone="blue" title="Từ vựng mới" comingSoon data-testid="study-soon" />
-            <StudyCard tone="rose" title="Nghe hiểu" comingSoon />
+            <StudyCard
+              tone="lavender"
+              title="Nghe hiểu"
+              comingSoon
+              data-testid="study-lavender-soon"
+            />
             <StudyCard tone="mint" title="Luyện viết" comingSoon />
           </div>
         </Section>

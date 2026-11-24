@@ -93,16 +93,16 @@ Thông tin trung tính (info) dùng nhóm `primary`. Coral (accent) chỉ cho n�
 
 ### 2.7 Study Card (UI-2, đo từ hình tham chiếu)
 
-| Token             | Light     | Ghi chú                      |
-| ----------------- | --------- | ---------------------------- |
-| `study.blue.bg`   | `#E2EDFD` | Từ vựng                      |
-| `study.blue.icon` | `#1881FE` | Icon trang trí (aria-hidden) |
-| `study.rose.bg`   | `#FEE9F2` | Nghe hiểu                    |
-| `study.rose.icon` | `#FD5C6F` | Icon trang trí               |
-| `study.mint.bg`   | `#D4F8F0` | Luyện viết                   |
-| `study.mint.icon` | `#08BD8D` | Icon trang trí               |
+| Token                 | Light     | Ghi chú                                                    |
+| --------------------- | --------- | ---------------------------------------------------------- |
+| `study.blue.bg`       | `#E2EDFD` | Từ vựng                                                    |
+| `study.blue.icon`     | `#1881FE` | Icon trang trí (aria-hidden)                               |
+| `study.lavender.bg`   | `#F0EAFE` | Nghe hiểu (chủ dự án chốt lavender; không dùng hồng/coral) |
+| `study.lavender.icon` | `#8259DD` | Icon, 4.05:1 trên nền (≥ 3:1, kiểm trong CI)               |
+| `study.mint.bg`       | `#D4F8F0` | Luyện viết                                                 |
+| `study.mint.icon`     | `#08BD8D` | Icon trang trí                                             |
 
-Chữ trên các nền này dùng `fg.default` (≥ 13:1) và `fg.muted` (≥ 5.6:1), kiểm trong CI. Icon là trang trí (tên thẻ mang nghĩa) nên không thuộc WCAG 1.4.11. Giá trị Dark: làm ở UI-6 (hình tham chiếu Dark: `#153857` / `#2C2A50` / `#0F403D`).
+Chữ trên các nền này dùng `fg.default` (≥ 13:1) và `fg.muted` (≥ 5.6:1), kiểm trong CI. Icon là trang trí (tên thẻ mang nghĩa) nên không thuộc WCAG 1.4.11. Giá trị Dark: làm ở UI-6 (hình tham chiếu Dark: `#153857` / `#2C2A50` (lavender) / `#0F403D`).
 
 ## 3. Kết quả kiểm tra độ tương phản (WCAG 2.2)
 

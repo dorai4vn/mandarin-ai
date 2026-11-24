@@ -117,7 +117,7 @@ Trạng thái: **ĐÃ DUYỆT 2026-11-24** (D-039). UI-2 đã triển khai Butto
 ## 9b. Study Card (UI-2, theo hình tham chiếu)
 
 - **Mục đích:** ô lối vào nhanh cho một kỹ năng ("Hôm nay học gì?"): Từ vựng mới · Nghe hiểu · Luyện viết.
-- **Style:** nền pastel `study.blue` `#E2EDFD` / `study.rose` `#FEE9F2` / `study.mint` `#D4F8F0`, icon đặc cùng tông (`#1881FE` / `#FD5C6F` / `#08BD8D`, trang trí, `aria-hidden`), radius 20, tỉ lệ ≈ 13:10, nội dung căn giữa; tiêu đề 18/700 (20 từ tablet), dòng phụ `fg.muted`. Không viền, không bóng; hover (khi là link): nhích lên 2 px + `shadow.md` (tắt khi reduced-motion).
+- **Style:** nền pastel `study.blue` `#E2EDFD` / `study.lavender` `#F0EAFE` (Nghe hiểu — chủ dự án chốt lavender, không dùng hồng/coral) / `study.mint` `#D4F8F0`, icon đặc cùng tông (`#1881FE` / `#8259DD` / `#08BD8D`, trang trí, `aria-hidden`; lavender đạt 4.05:1 trên nền), radius 20, tỉ lệ ≈ 13:10, nội dung căn giữa; tiêu đề 18/700 (20 từ tablet), dòng phụ `fg.muted`. Không viền, không bóng; hover (khi là link): nhích lên 2 px + `shadow.md` (tắt khi reduced-motion).
 - **Dữ liệu:** dòng phụ chỉ nhận số liệu thật; tính năng chưa có → `comingSoon` (nhãn "Sắp có", không phải link). Không bao giờ hiện số giả.
 - **Responsive:** 2 cột trên điện thoại (kể cả 320 px), 3 cột từ 768.
 - **A11y:** cả ô là một link (một vùng bấm), tên truy cập = tiêu đề + dòng phụ.

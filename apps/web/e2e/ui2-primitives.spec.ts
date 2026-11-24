@@ -172,3 +172,39 @@ test('study cards stay inside their grid at 320 px (no overlap / clipping)', asy
   expect(a.x + a.width).toBeLessThanOrEqual(b.x);
   expect(a.y).toBe(b.y);
 });
+
+test('study card "Nghe hiểu" is lavender: colours, hover, keyboard focus, coming soon', async ({
+  page,
+}) => {
+  await open(page);
+  const tile = page.getByTestId('study-lavender');
+  await expect(tile).toHaveAccessibleName(/Nghe hiểu/);
+  const colours = await tile.evaluate((el) => ({
+    bg: getComputedStyle(el).backgroundColor,
+    icon: getComputedStyle(el.firstElementChild as Element).color,
+  }));
+  expect(colours).toEqual({ bg: 'rgb(240, 234, 254)', icon: 'rgb(130, 89, 221)' });
+
+  // Hover lift + shadow only where hover exists (Tailwind 4 `hover:` = @media (hover: hover)).
+  if (await page.evaluate(() => matchMedia('(hover: hover)').matches)) {
+    await tile.hover();
+    await expect.poll(() => tile.evaluate((el) => getComputedStyle(el).boxShadow)).not.toBe('none');
+  }
+
+  await tile.focus();
+  await page.keyboard.press('Shift+Tab');
+  await page.keyboard.press('Tab');
+  await expect(tile).toBeFocused();
+  const ring = await tile.evaluate((el) => getComputedStyle(el).outlineStyle);
+  expect(ring).toBe('solid');
+
+  // Coming-soon tile: same lavender, not a link, not focusable, says "Sắp có".
+  const soon = page.getByTestId('study-lavender-soon');
+  expect(await soon.evaluate((el) => el.tagName)).toBe('DIV');
+  await expect(soon).toHaveAttribute('aria-disabled', 'true');
+  await expect(soon).toContainText('Sắp có');
+  expect(await soon.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+    'rgb(240, 234, 254)',
+  );
+  expect(await soon.evaluate((el) => (el as HTMLElement).tabIndex)).toBe(-1);
+});

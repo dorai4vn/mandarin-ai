@@ -29,8 +29,9 @@ const PAIRS = [
   // UI-2 Study Cards (pastel tiles from the reference): title + meta text
   ['fg-default', 'study-blue-bg', TEXT, 'study card title (blue)'],
   ['fg-muted', 'study-blue-bg', TEXT, 'study card meta (blue)'],
-  ['fg-default', 'study-rose-bg', TEXT, 'study card title (rose)'],
-  ['fg-muted', 'study-rose-bg', TEXT, 'study card meta (rose)'],
+  ['fg-default', 'study-lavender-bg', TEXT, 'study card title (lavender, Nghe hiểu)'],
+  ['fg-muted', 'study-lavender-bg', TEXT, 'study card meta (lavender)'],
+  ['study-lavender-icon', 'study-lavender-bg', UI, 'study card icon (lavender)'],
   ['fg-default', 'study-mint-bg', TEXT, 'study card title (mint)'],
   ['fg-muted', 'study-mint-bg', TEXT, 'study card meta (mint)'],
   ['fg-muted', 'bg-subtle', TEXT, 'neutral badge ("Sắp có") on subtle'],
