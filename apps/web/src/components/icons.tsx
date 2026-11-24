@@ -106,7 +106,7 @@ export const BookOpenFilledIcon = (p: SVGProps<SVGSVGElement>) => (
     />
     <path
       d="M15 9.2c1.3-.6 2.6-1 4-1.2M15 12.2c1.3-.6 2.6-1 4-1.2"
-      stroke="#fff"
+      stroke="var(--surface-default)"
       strokeWidth="1.4"
       strokeLinecap="round"
     />

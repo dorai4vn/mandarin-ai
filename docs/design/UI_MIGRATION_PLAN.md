@@ -173,7 +173,7 @@ Quy tắc cho mọi PR UI: phạm vi rõ, checklist QC (mục 8) và kết quả
 
 - `src/components/ui/`:
   - `Button` (primary / secondary / ghost / danger / success; sm 36 có vùng chạm 44, md 44, lg 52; hover, focus-visible, disabled, loading có spinner + `aria-busy` + chặn bấm lặp), `ButtonLink`, `IconButton` (bắt buộc `aria-label`).
-  - `Card` (default / subtle / highlight, có `title`, `action`, `footer`), `CardLink` (cả card là một link), **`StudyCard`** (pastel xanh / hồng / mint đo từ hình tham chiếu; chỉ nhận số liệu thật qua `meta`, tính năng chưa có dùng `comingSoon` → nhãn "Sắp có", không bấm được).
+  - `Card` (default / subtle / highlight, có `title`, `action`, `footer`), `CardLink` (cả card là một link), **`StudyCard`** (pastel xanh / lavender / mint — "Nghe hiểu" = lavender theo quyết định của chủ dự án; chỉ nhận số liệu thật qua `meta`, tính năng chưa có dùng `comingSoon` → nhãn "Sắp có", không bấm được).
   - `Badge` (7 biến thể), `CountBadge`, `StatusDot` (chỉ báo trạng thái chấm + chữ); `StatusBadge` dùng cùng token (giữ `role`, `data-status`, chữ của M0).
   - Form: `Input`, `Textarea`, `PasswordInput` (hiện/ẩn, `aria-pressed`), `SearchInput` (pill 48, nút xóa, `Esc`); nhãn luôn hiển thị, gợi ý/lỗi nối bằng `aria-describedby`, lỗi có `aria-invalid`.
 - `ui.tsx` giữ API M0 (`Card title`, `Button variant="ghost"` → `secondary`) nên các màn hình M0 không phải sửa.

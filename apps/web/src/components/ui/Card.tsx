@@ -186,7 +186,7 @@ export function StudyCard({
       <Link
         href={href}
         {...rest}
-        className={`${cls} transition-[box-shadow,transform] duration-[var(--duration-fast)] ease-[var(--ease-standard)] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 motion-reduce:hover:translate-y-0`}
+        className={`${cls} transition-[box-shadow,translate] duration-[var(--duration-fast)] ease-[var(--ease-standard)] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 motion-reduce:hover:translate-y-0`}
       >
         {body}
       </Link>

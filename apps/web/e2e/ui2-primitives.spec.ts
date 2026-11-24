@@ -87,13 +87,30 @@ test('buttons: focus ring on keyboard focus, disabled, loading blocks repeat', a
   await expect(page.getByTestId('btn-disabled')).toBeDisabled();
 
   const save = page.getByTestId('btn-loading');
+  await expect(save).toHaveAttribute('data-clicks', '0');
   await save.click();
   await expect(save).toHaveAttribute('aria-busy', 'true');
   await expect(save).toContainText('Đang lưu');
-  // Same width while loading (no layout jump) and a second click does not restart it.
+  await expect(save).toHaveAttribute('data-clicks', '1');
+  // A second click while loading must not run the handler again. Centre the button first: a
+  // forced click uses coordinates, and on phones the fixed bottom nav may cover the button.
+  await save.evaluate((el) => el.scrollIntoView({ block: 'center' }));
   await save.click({ force: true });
+  await expect(save).toHaveAttribute('data-clicks', '1');
   await expect(save).not.toHaveAttribute('aria-busy', 'true', { timeout: 4000 });
   await expect(save).toContainText('Lưu (bấm thử)');
+  await expect(save).toHaveAttribute('data-clicks', '1');
+
+  // A loading submit button never submits its form: not by click, not by Enter (implicit submit).
+  const form = page.getByTestId('loading-form');
+  const submit = page.getByTestId('btn-loading-submit');
+  await expect(submit).toHaveAttribute('aria-busy', 'true');
+  await submit.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  await submit.click({ force: true });
+  await submit.focus();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Space');
+  await expect(form).toHaveAttribute('data-submits', '0');
 });
 
 test('form: label, hint and error are wired for assistive tech', async ({ page }) => {
@@ -105,6 +122,12 @@ test('form: label, hint and error are wired for assistive tech', async ({ page }
   const bad = page.getByTestId('field-error');
   await expect(bad).toHaveAttribute('aria-invalid', 'true');
   await expect(bad).toHaveAccessibleDescription('Email chưa đúng định dạng.');
+
+  // A caller-provided id is kept AND still linked to the label and the hint.
+  const own = page.locator('#ten-tai-lieu');
+  await expect(own).toHaveAccessibleName(/Tên tài liệu/);
+  await expect(own).toHaveAccessibleDescription('Ví dụ dùng id riêng.');
+  await expect(page.locator('label[for="ten-tai-lieu"]')).toHaveCount(1);
 
   // Font size ≥ 16 px so iOS does not zoom on focus.
   expect(
@@ -118,11 +141,11 @@ test('password input: show / hide toggle by mouse and keyboard', async ({ page }
   await expect(pw).toHaveAttribute('type', 'password');
   await expect(pw).toHaveAttribute('autocomplete', 'current-password');
   await pw.fill('mat-khau-vi-du');
-  const toggle = page.getByRole('button', { name: 'Hiện mật khẩu' });
+  const toggle = page.getByRole('button', { name: 'Hiện mật khẩu', exact: true });
   await expect(toggle).toHaveAttribute('aria-pressed', 'false');
   await toggle.click();
   await expect(pw).toHaveAttribute('type', 'text');
-  const hide = page.getByRole('button', { name: 'Ẩn mật khẩu' });
+  const hide = page.getByRole('button', { name: 'Ẩn mật khẩu', exact: true });
   await expect(hide).toHaveAttribute('aria-pressed', 'true');
   await hide.focus();
   await page.keyboard.press('Space');
@@ -135,8 +158,10 @@ test('search: clear button and Escape empty the field', async ({ page }) => {
   const search = page.getByTestId('field-search');
   await expect(search).toHaveAccessibleName('Tìm trong từ điển');
   await expect(search).toHaveValue('nǐ hǎo');
-  await page.getByRole('button', { name: 'Xóa nội dung tìm kiếm' }).click();
+  await page.getByRole('button', { name: 'Xóa nội dung tìm kiếm', exact: true }).click();
   await expect(search).toHaveValue('');
+  // The clear button disappears with the text; keyboard focus returns to the field.
+  await expect(search).toBeFocused();
   await search.fill('shān');
   await search.press('Escape');
   await expect(search).toHaveValue('');
@@ -175,7 +200,7 @@ test('study cards stay inside their grid at 320 px (no overlap / clipping)', asy
 
 test('study card "Nghe hiểu" is lavender: colours, hover, keyboard focus, coming soon', async ({
   page,
-}) => {
+}, testInfo) => {
   await open(page);
   const tile = page.getByTestId('study-lavender');
   await expect(tile).toHaveAccessibleName(/Nghe hiểu/);
@@ -186,7 +211,10 @@ test('study card "Nghe hiểu" is lavender: colours, hover, keyboard focus, comi
   expect(colours).toEqual({ bg: 'rgb(240, 234, 254)', icon: 'rgb(130, 89, 221)' });
 
   // Hover lift + shadow only where hover exists (Tailwind 4 `hover:` = @media (hover: hover)).
-  if (await page.evaluate(() => matchMedia('(hover: hover)').matches)) {
+  const hoverCapable = await page.evaluate(() => matchMedia('(hover: hover)').matches);
+  if (testInfo.project.name.endsWith('desktop')) expect(hoverCapable).toBe(true);
+  if (hoverCapable) {
+    expect(await tile.evaluate((el) => getComputedStyle(el).boxShadow)).toBe('none');
     await tile.hover();
     await expect.poll(() => tile.evaluate((el) => getComputedStyle(el).boxShadow)).not.toBe('none');
   }

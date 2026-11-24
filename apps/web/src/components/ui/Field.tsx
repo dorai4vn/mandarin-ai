@@ -2,6 +2,7 @@
 
 import {
   useId,
+  useRef,
   useState,
   type InputHTMLAttributes,
   type ReactNode,
@@ -33,8 +34,10 @@ export const controlClasses =
   'disabled:cursor-not-allowed disabled:border-line disabled:bg-[var(--state-disabled-bg)] disabled:text-fg-disabled disabled:shadow-none ' +
   'read-only:bg-sunken';
 
-function useFieldIds(hint: unknown, error: unknown, describedBy?: string) {
-  const id = useId();
+function useFieldIds(hint: unknown, error: unknown, describedBy?: string, ownId?: string) {
+  // A caller-provided id wins, so <label htmlFor>, hint/error ids and aria-controls stay linked.
+  const generated = useId();
+  const id = ownId ?? generated;
   const hintId = hint ? `${id}-hint` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const ids = [describedBy, hintId, errorId].filter(Boolean).join(' ') || undefined;
@@ -94,12 +97,12 @@ export function Input({
   'aria-describedby': extra,
   ...props
 }: InputProps) {
-  const f = useFieldIds(hint, error, extra);
+  const f = useFieldIds(hint, error, extra, props.id);
   return (
     <FieldFrame {...{ label, hint, error, hideLabel, optional, className }} {...f}>
       <input
-        id={f.id}
         {...props}
+        id={f.id}
         aria-invalid={error ? true : props['aria-invalid']}
         aria-describedby={f.describedBy}
         className={`${controlClasses} ${size === 'lg' ? 'h-13' : 'h-11'}`}
@@ -119,13 +122,13 @@ export function Textarea({
   'aria-describedby': extra,
   ...props
 }: FieldProps & TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  const f = useFieldIds(hint, error, extra);
+  const f = useFieldIds(hint, error, extra, props.id);
   return (
     <FieldFrame {...{ label, hint, error, hideLabel, optional, className }} {...f}>
       <textarea
-        id={f.id}
         rows={rows}
         {...props}
+        id={f.id}
         aria-invalid={error ? true : props['aria-invalid']}
         aria-describedby={f.describedBy}
         className={`${controlClasses} min-h-24 resize-y py-2.5 leading-6`}
@@ -148,16 +151,16 @@ export function PasswordInput({
   'aria-describedby': extra,
   ...props
 }: FieldProps & Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'>) {
-  const f = useFieldIds(hint, error, extra);
+  const f = useFieldIds(hint, error, extra, props.id);
   const [visible, setVisible] = useState(false);
   return (
     <FieldFrame {...{ label, hint, error, hideLabel, optional, className }} {...f}>
       <div className="relative">
         <input
-          id={f.id}
           autoCapitalize="none"
           spellCheck={false}
           {...props}
+          id={f.id}
           type={visible ? 'text' : 'password'}
           aria-invalid={error ? true : props['aria-invalid']}
           aria-describedby={f.describedBy}
@@ -194,7 +197,8 @@ export function SearchInput({
     value: string;
     onValueChange: (value: string) => void;
   }) {
-  const f = useFieldIds(hint, undefined, extra);
+  const f = useFieldIds(hint, undefined, extra, props.id);
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
     <FieldFrame {...{ label, hint, hideLabel, className }} {...f}>
       <div className="relative">
@@ -204,16 +208,18 @@ export function SearchInput({
           className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-fg-subtle"
         />
         <input
-          id={f.id}
+          ref={inputRef}
           type="search"
           enterKeyHint="search"
           autoComplete="off"
           {...props}
+          id={f.id}
           value={value}
           onChange={(e) => onValueChange(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Escape' && value) {
               e.preventDefault();
+              e.stopPropagation(); // one Escape clears the field, it does not also close a dialog
               onValueChange('');
             }
             props.onKeyDown?.(e);
@@ -224,7 +230,11 @@ export function SearchInput({
         {value && (
           <button
             type="button"
-            onClick={() => onValueChange('')}
+            onClick={() => {
+              onValueChange('');
+              // The button unmounts once the field is empty: keep keyboard focus in the field.
+              inputRef.current?.focus();
+            }}
             aria-label="Xóa nội dung tìm kiếm"
             className="absolute right-0.5 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full text-fg-muted hover:bg-[var(--state-hover)] hover:text-fg"
           >

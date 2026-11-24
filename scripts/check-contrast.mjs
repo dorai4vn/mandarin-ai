@@ -34,7 +34,9 @@ const PAIRS = [
   ['study-lavender-icon', 'study-lavender-bg', UI, 'study card icon (lavender)'],
   ['fg-default', 'study-mint-bg', TEXT, 'study card title (mint)'],
   ['fg-muted', 'study-mint-bg', TEXT, 'study card meta (mint)'],
-  ['fg-muted', 'bg-subtle', TEXT, 'neutral badge ("Sắp có") on subtle'],
+  // "Sắp có" badge sits on 70 % white over the pastel tile (lighter than bg-subtle); bg-subtle is
+  // the darker bound, so passing here covers it.
+  ['fg-muted', 'bg-subtle', TEXT, 'neutral badge (and lower bound for "Sắp có" on tiles)'],
   // UI-2 Badge / form
   ['secondary-text', 'secondary-subtle', TEXT, 'secondary badge'],
   ['accent-text-strong', 'accent-subtle', TEXT, 'accent badge'],

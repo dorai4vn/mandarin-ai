@@ -46,6 +46,8 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 export default function DesignGallery() {
   const [query, setQuery] = useState('nǐ hǎo');
   const [saving, setSaving] = useState(false);
+  const [clicks, setClicks] = useState(0);
+  const [submits, setSubmits] = useState(0);
 
   return (
     <>
@@ -80,7 +82,9 @@ export default function DesignGallery() {
                 <Button
                   loading={saving}
                   data-testid="btn-loading"
+                  data-clicks={clicks}
                   onClick={() => {
+                    setClicks((n) => n + 1);
                     setSaving(true);
                     setTimeout(() => setSaving(false), 1500);
                   }}
@@ -88,6 +92,22 @@ export default function DesignGallery() {
                   {saving ? 'Đang lưu…' : 'Lưu (bấm thử)'}
                 </Button>
                 <Button loading>Đang tải</Button>
+              </Row>
+              <Row label="Nút submit đang tải trong form (không gửi lặp)">
+                <form
+                  data-testid="loading-form"
+                  data-submits={submits}
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setSubmits((n) => n + 1);
+                  }}
+                  className="flex flex-wrap items-center gap-3"
+                >
+                  <Button type="submit" loading data-testid="btn-loading-submit">
+                    Đang gửi
+                  </Button>
+                  <span className="text-sm text-fg-subtle">Lần gửi: {submits}</span>
+                </form>
               </Row>
               <Row label="Link dạng nút · Icon button">
                 <ButtonLink
@@ -238,7 +258,13 @@ export default function DesignGallery() {
                 hint="Email được quản trị viên cấp."
                 data-testid="field-email"
               />
-              <Input label="Tên tài liệu" defaultValue="Giáo trình HSK 1" optional />
+              <Input
+                id="ten-tai-lieu"
+                label="Tên tài liệu"
+                defaultValue="Giáo trình HSK 1"
+                hint="Ví dụ dùng id riêng."
+                optional
+              />
               <Input
                 label="Email (lỗi)"
                 type="email"

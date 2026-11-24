@@ -26,7 +26,7 @@ const SIZE: Record<ButtonSize, string> = {
 
 const BASE =
   'inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap font-semibold ' +
-  'transition-[background-color,box-shadow,transform] duration-[var(--duration-fast)] ease-[var(--ease-standard)] ' +
+  'transition-[background-color,box-shadow,scale] duration-[var(--duration-fast)] ease-[var(--ease-standard)] ' +
   'active:scale-[0.98] motion-reduce:active:scale-100 ' +
   'disabled:pointer-events-none disabled:border-transparent disabled:bg-[var(--state-disabled-bg)] disabled:text-fg-disabled disabled:shadow-none ' +
   'aria-disabled:pointer-events-none aria-disabled:bg-[var(--state-disabled-bg)] aria-disabled:text-fg-disabled aria-disabled:shadow-none';
