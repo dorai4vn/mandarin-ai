@@ -1,6 +1,6 @@
 # Logo Mandarin AI — bộ asset ảnh gốc (UI-7A)
 
-Trạng thái: **chờ chủ dự án duyệt** (D-041). Chưa dùng trong ứng dụng; favicon, icon PWA và logo trong app chỉ thay ở **UI-7B** sau khi duyệt.
+Trạng thái: **đã duyệt — asset logo chính thức** (D-041). Chưa dùng trong ứng dụng; favicon, icon PWA và logo trong app thay ở **UI-7B** sau khi PR nền tảng được merge. Không vẽ lại SVG; không đổi tỷ lệ hoặc màu logo; icon 512 px phóng to được dùng tạm.
 
 Phương án (theo chỉ đạo của chủ dự án, thay phương án SVG vẽ lại trước đó): **dùng trực tiếp biểu tượng trong hình tham chiếu đã duyệt** `docs/design/reference/visual-reference-v2.webp` — sách mở + chữ 草 + hai lá. Không vẽ lại, không đổi màu, không thay chữ 草 bằng font. Phần chữ bên cạnh là **text thật**.
 
@@ -23,7 +23,7 @@ Cách tách nền (`source/extract_raster.py`): cắt đúng vùng biểu tượ
 | Dòng                 | Font   | Weight | Khác                                                                   |
 | -------------------- | ------ | ------ | ---------------------------------------------------------------------- |
 | "Mandarin AI"        | Nunito | 800    | letter-spacing −0.02em, line-height 1.1                                |
-| "TỰ HỌC TIẾNG TRUNG" | Nunito | 600    | uppercase, letter-spacing 0.08em, line-height 1.3, cỡ = 38 % dòng trên |
+| "TỰ HỌC TIẾNG TRUNG" | Nunito | 600    | uppercase, letter-spacing 0.16em, line-height 1.3, cỡ = 38 % dòng trên |
 
 - Nunito: SIL Open Font License 1.1 (Copyright 2014 The Nunito Project Authors), có đủ dấu tiếng Việt ở cả 600 và 800 (đã kiểm tra toàn bộ nguyên âm có dấu + đ).
 - Trong app (UI-7B) Nunito chỉ dùng cho lockup, tải qua `next/font/google` (tự host lúc build, subset latin + vietnamese, chỉ weight 600 + 800). Font giao diện giữ nguyên: Inter (Việt, Anh, Pinyin) và Noto Sans SC (chữ Hán trong nội dung học).

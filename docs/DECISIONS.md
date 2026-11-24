@@ -345,8 +345,8 @@ Quy ước:
 - **Hậu quả:** `docs/PDF_UPLOAD.md`; test contract/API/web/E2E và test Storage thật trong CI; checklist B7.
 
 ## D-041 — Logo Mandarin AI: dùng trực tiếp biểu tượng trong hình tham chiếu + chữ thật Nunito
-- **Ngày:** 2026-11-24 · **Trạng thái:** Concept **đã duyệt** (hình tham chiếu chính thức `docs/design/reference/visual-reference-v2.webp`); **bộ asset chờ chủ dự án duyệt** (PR UI-7A).
+- **Ngày:** 2026-11-24 · **Trạng thái:** Concept **đã duyệt** (hình tham chiếu chính thức `docs/design/reference/visual-reference-v2.webp`); **bộ asset PNG/WebP Light + Dark đã duyệt** (PR UI-7A, 2026-11-24): là asset logo chính thức; icon 512 px phóng to được dùng tạm; không vẽ lại SVG; không đổi tỷ lệ hay màu logo. Tagline chỉnh letter-spacing 0.08em → 0.16em cho gần hình tham chiếu.
 - **Thay đổi phương án (chủ dự án):** bỏ phương án vẽ lại SVG bằng đường Bézier. Biểu tượng sách mở + chữ 草 + hai lá được **trích nguyên từ hình tham chiếu** (PNG/WebP nền trong suốt, Light + Dark), không vẽ lại, không đổi màu, không thay chữ 草 bằng font. Không dùng "Thảo" làm tên thương hiệu.
-- **Typography chính thức:** "Mandarin AI" = Nunito 800, letter-spacing −0.02em, line-height 1.1; "TỰ HỌC TIẾNG TRUNG" = Nunito 600, uppercase, letter-spacing 0.08em, line-height 1.3, ≈ 35–40 % cỡ dòng tên. Font giao diện giữ Inter (Việt/Anh/Pinyin) + Noto Sans SC (chữ Hán nội dung học). Nunito (OFL 1.1) chỉ dùng cho lockup.
+- **Typography chính thức:** "Mandarin AI" = Nunito 800, letter-spacing −0.02em, line-height 1.1; "TỰ HỌC TIẾNG TRUNG" = Nunito 600, uppercase, letter-spacing 0.16em, line-height 1.3, ≈ 35–40 % cỡ dòng tên. Font giao diện giữ Inter (Việt/Anh/Pinyin) + Noto Sans SC (chữ Hán nội dung học). Nunito (OFL 1.1) chỉ dùng cho lockup.
 - **Giới hạn đã biết:** ảnh gốc ≈ 205 px → icon 512 px phải phóng to (hơi mềm) cho tới khi có file logo gốc độ phân giải cao; 16 px không đọc được chữ 草.
-- **Hậu quả:** `docs/design/brand/` (asset, ảnh QC, script). Favicon, icon PWA và logo trong ứng dụng **chỉ thay ở UI-7B sau khi duyệt**. Token `logo` (đỏ cũ) giữ nguyên tới UI-7B.
+- **Hậu quả:** `docs/design/brand/` (asset, ảnh QC, script). Favicon, icon PWA và logo trong ứng dụng thay ở **UI-7B, sau khi các PR nền tảng (UI-1, UI-7A) được merge**. Token `logo` (đỏ cũ) giữ nguyên tới UI-7B.

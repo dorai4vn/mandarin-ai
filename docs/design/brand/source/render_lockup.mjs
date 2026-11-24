@@ -1,7 +1,7 @@
 // Renders lockup previews: the mark extracted from the reference image + REAL text in the official
 // brand typography (UI-7A spec):
 //   "Mandarin AI"          Nunito 800, letter-spacing -0.02em, line-height 1.1
-//   "TỰ HỌC TIẾNG TRUNG"   Nunito 600, uppercase, letter-spacing 0.08em, line-height 1.3, ~38 % of title
+//   "TỰ HỌC TIẾNG TRUNG"   Nunito 600, uppercase, letter-spacing 0.16em, line-height 1.3, ~38 % of title
 // Usage: node render_lockup.mjs <outDir>   (needs Playwright; fonts from ./fetch_fonts.sh)
 import { chromium } from 'playwright';
 import { pathToFileURL } from 'node:url';
@@ -28,7 +28,7 @@ body{margin:0;background:${themes[t].bg}}
 img{height:${h}px;width:auto;display:block}
 .t{display:flex;flex-direction:column}
 .n{font-weight:800;font-size:${h * p.title}px;letter-spacing:-0.02em;line-height:1.1;color:${themes[t].title}}
-.g{font-weight:600;font-size:${h * p.title * TAG_RATIO}px;letter-spacing:0.08em;line-height:1.3;text-transform:uppercase;color:${themes[t].tag}}
+.g{font-weight:600;font-size:${h * p.title * TAG_RATIO}px;letter-spacing:0.16em;line-height:1.3;text-transform:uppercase;color:${themes[t].tag}}
 </style><div class="l"><img src="../raster/mark-${t}.png" alt=""><div class="t"><span class="n">Mandarin AI</span><span class="g">Tự học tiếng Trung</span></div></div>`;
 
 const browser = await chromium.launch();
