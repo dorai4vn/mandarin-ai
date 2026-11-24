@@ -87,6 +87,9 @@ jobs:
           NEXT_PUBLIC_API_URL: http://127.0.0.1:8787
           # E2E only: the local API uses the in-memory MOCK sync store. Never set on Vercel.
           NEXT_PUBLIC_ALLOW_MOCK_SYNC: 'true'
+          # Placeholder Auth host: the E2E intercepts it (auth-invite-only.spec.ts). Not a real project.
+          NEXT_PUBLIC_SUPABASE_URL: https://supabase-e2e.invalid
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_e2e_placeholder
         run: pnpm turbo run build --filter "@mandarin/web..." --filter "@mandarin/api..."
       - name: Playwright
         working-directory: apps/web
@@ -120,7 +123,7 @@ jobs:
         run: pnpm prebuild:ios
 
   database:
-    name: Supabase migrations + RLS tests
+    name: Supabase migrations + RLS + invite-only Auth tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -131,11 +134,13 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Start Postgres (Supabase local)
-        run: pnpm exec supabase db start
+      - name: Start Supabase local (Postgres + Auth + Kong + Mailpit; unused services excluded)
+        run: pnpm exec supabase start -x realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
       - name: Apply migrations from scratch
         run: pnpm exec supabase db reset
       - name: RLS tests (pgTAP)
         run: pnpm exec supabase test db
       - name: Schema lint
         run: pnpm exec supabase db lint --level warning --fail-on error
+      - name: Auth is invite-only (real local GoTrue, no dev token — D-037)
+        run: node scripts/test-auth-invite-only.mjs

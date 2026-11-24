@@ -160,7 +160,7 @@ Vercel **không** chứa khóa bí mật nào.
 2. **Supabase → Authentication → URL Configuration:** *Site URL* = URL ở 5.7; *Redirect URLs* thêm cùng URL.
 3. Mở URL web → **Phòng thử M0 → Khả năng trình duyệt**: không có cảnh báo đỏ.
 4. **Cấp tài khoản thử nghiệm (admin):** Supabase → Authentication → Users → **Add user** → **Send invitation** (hoặc *Create new user* + *Auto Confirm User*) với **email thật của từng người**; không tạo tài khoản dùng chung. Chi tiết: `docs/ACCESS_CONTROL.md` mục 5.
-5. **Kiểm tra chặn đăng ký:** ở trang Phiên đăng nhập, nhập một email **chưa được mời** → phải **không** nhận được mã và không có user mới xuất hiện trong Supabase → Users. (Lưu ý: spike M0 hiện gọi OTP với `shouldCreateUser: true`; nếu signup trên Supabase đã TẮT thì Supabase vẫn từ chối — đây là lý do cấu hình Supabase là lớp chặn chính.)
+5. **Kiểm tra chặn đăng ký:** ở trang Phiên đăng nhập, nhập một email **chưa được mời** → app hiện thông báo trung tính giống hệt email được mời, **không** nhận được mã và không có user mới xuất hiện trong Supabase → Users. App gọi OTP với `shouldCreateUser: false` (từ 2026-11-24); cấu hình "Allow new users to sign up = TẮT" trên Supabase vẫn là lớp chặn chính — app chỉ là lớp thứ hai.
 6. **Hồ sơ → Phiên đăng nhập:** nhập email **đã được mời** → nhận mã 6 số → đăng nhập (giới hạn email mặc định của Supabase rất thấp — chỉ thử vài lần). Lưu ý: ở M0 phiên đăng nhập do thư viện Supabase giữ trong `localStorage` của trình duyệt; phiên cookie HttpOnly làm ở M1 (`docs/AUTH_SESSION_DESIGN.md`) → **chỉ dùng tài khoản thử nghiệm** trên Preview.
 7. Chạy `docs/SMOKE_TEST.md` và gửi kết quả.
 

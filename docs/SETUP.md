@@ -50,7 +50,7 @@ Khi chưa có dự án Supabase: đặt `NEXT_PUBLIC_ENABLE_DEV_TOKEN=true` (ch�
 pnpm --filter "@mandarin/api..." build
 ```
 ```bash
-cd apps/web && NEXT_PUBLIC_ENABLE_DEV_TOKEN=true NEXT_PUBLIC_ALLOW_MOCK_SYNC=true NEXT_PUBLIC_API_URL=http://127.0.0.1:8787 pnpm build
+cd apps/web && NEXT_PUBLIC_ENABLE_DEV_TOKEN=true NEXT_PUBLIC_ALLOW_MOCK_SYNC=true NEXT_PUBLIC_API_URL=http://127.0.0.1:8787 NEXT_PUBLIC_SUPABASE_URL=https://supabase-e2e.invalid NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_e2e_placeholder pnpm build
 ```
 ```bash
 cd apps/web && pnpm exec playwright install chromium firefox webkit

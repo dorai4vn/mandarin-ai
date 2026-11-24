@@ -18,9 +18,9 @@ Ký hiệu cột "Cần": `—` = không cần tài khoản/khóa · `SB` = cầ
 | A9 | Phòng thử → Tải PDF: kéo-thả một PDF vào khung; thử thêm một tệp .txt đổi tên thành .pdf | PDF thật: chuyển sang bước gửi (chưa đăng nhập → thông báo đăng nhập); tệp giả: "Tệp không phải PDF" | — | |
 | A10 | Phòng thử → Offline: DevTools → Network → Offline → lưu một ghi chú → đóng tab → mở lại tab → bỏ Offline | Ghi chú còn; "chờ" > 0 khi chưa đăng nhập (không mất dữ liệu) | — | |
 | A11 | Biểu tượng cài đặt trên thanh địa chỉ (Chrome/Edge) → Cài đặt | App mở trong cửa sổ riêng; **không cài vẫn dùng được mọi thứ** | — | |
-| A12a | Nhập email **chưa được mời** ở Phiên đăng nhập | Không nhận được mã; **không** có user mới trong Supabase → Users (signup TẮT — D-037) | SB | |
+| A12a | Nhập email **chưa được mời** ở Phiên đăng nhập | App hiện **cùng thông báo trung tính** như email được mời ("Nếu email này đã được quản trị viên cấp quyền…"); không nhận được mã; **không** có user mới trong Supabase → Users (D-037) | SB | |
 | A12b | Gọi trực tiếp Auth API đăng ký bằng publishable key (Claude cung cấp lệnh `curl` mẫu, không cần secret) | Bị từ chối (`Signups not allowed`) | SB | |
-| A12c | Trong app không có nút/đường dẫn "Đăng ký" | Chỉ có "Đăng nhập" (spike M0 sẽ đổi chữ khi được phép sửa) | — | |
+| A12c | Trong app không có nút/đường dẫn "Đăng ký"; mở `/signup`, `/register` | Chỉ có "Đăng nhập bằng mã qua email" + ghi chú "chỉ dành cho người được mời"; hai đường dẫn trả trang 404 | — | |
 | A12 | Đăng nhập bằng mã OTP với email **đã được admin mời** (Hồ sơ → Phiên đăng nhập) | Email có mã 6 số; đăng nhập thành công | SB | |
 | A13 | Sau khi đăng nhập: Offline → Đồng bộ ngay | `applied=…`, "chờ=0", `source=mock` (sync server **in-memory**, mất khi API khởi động lại) | SB + MOCK | |
 | A14 | Sau khi đăng nhập: Tải PDF | Nhãn LIVE, đường dẫn `…/imports/….pdf`; tệp có trong bucket private `documents` | SB | |

@@ -51,7 +51,7 @@ app_members(
 | Authentication → Sessions | Bật phát hiện & thu hồi refresh token bị dùng lại | D-022 |
 | Authentication → Policies / Password (nếu có) | Độ dài ≥ 10, bật kiểm tra mật khẩu bị lộ (nếu gói hỗ trợ) | Chất lượng mật khẩu |
 
-`supabase/config.toml` (local/CI) phải đồng bộ: `enable_signup = false`, `enable_anonymous_sign_ins = false` — thay đổi trong M1 (hoặc ngay khi chủ dự án cho phép sửa cấu hình M0).
+`supabase/config.toml` (local/CI) phải đồng bộ: `enable_signup = false`, `enable_anonymous_sign_ins = false` — **đã đổi 2026-11-24** (M0-PWA, được duyệt).
 
 ## 5. Runbook quản trị viên (Supabase Dashboard, không cần code)
 > Mỗi người bạn **một tài khoản riêng**, đúng email của họ. Không chia sẻ mật khẩu, không dùng chung tài khoản.
@@ -102,9 +102,11 @@ app_members(
 ## 8. Hiện trạng M0-PWA đối chiếu
 | Điểm | Hiện trạng | Mức độ | Xử lý |
 |---|---|---|---|
-| Supabase "Allow new users to sign up" | Mặc định **bật** khi tạo dự án | **Cao — Preview đang online** | Chủ dự án **tắt ngay** trên Dashboard (mục 4) |
-| `apps/web/app/lab/session/page.tsx` gọi OTP với `shouldCreateUser: true` | Cho phép tạo tài khoản nếu signup đang bật | Cao (được giảm khi signup tắt) | Đổi `shouldCreateUser: false` + chữ "Đăng nhập" — **chờ chủ dự án cho phép sửa M0** |
+| Supabase "Allow new users to sign up" | Chủ dự án báo đã **tắt** trên `mandarin-ai-dev` (cùng anonymous sign-ins; chỉ bật Email) — 2026-11-24 | Cao → đã xử lý | Xác nhận lại bằng smoke test A12a/A12b |
+| `/lab/session` gọi OTP với `shouldCreateUser: true` | **Đã sửa (2026-11-24):** `apps/web/src/lib/auth-otp.ts` luôn gửi `shouldCreateUser: false`; thông báo trung tính, không lộ email có tồn tại; chữ "chỉ dành cho người được mời", không có chữ/đường dẫn "Đăng ký" | — | Unit test `auth-otp.test.ts`, E2E `auth-invite-only.spec.ts` (chặn request, kiểm `create_user:false`), test Auth thật `scripts/test-auth-invite-only.mjs` (CI job database) |
 | API chấp nhận mọi user đã đăng nhập của dự án | Chưa có membership | Trung bình (chỉ có user do admin tạo khi signup tắt) | M1: kiểm tra `app_members` |
-| `supabase/config.toml` `enable_signup = true` | Chỉ ảnh hưởng local/CI | Thấp | Đổi `false` (M1 hoặc khi được phép) |
+| `supabase/config.toml` `enable_signup` | **Đã đổi `false` (2026-11-24)**; `enable_anonymous_sign_ins = false` | — | Chỉ ảnh hưởng local/CI; Supabase Cloud cấu hình trên Dashboard |
+| Phiên lưu trong `localStorage` (supabase-js) | Còn nguyên | Trung bình (XSS) | M1: cookie HttpOnly (`docs/AUTH_SESSION_DESIGN.md`) |
+| JWT còn hiệu lực tối đa ~1 giờ sau khi khóa user | Còn nguyên | Thấp–trung bình | M1: kiểm membership ở API (cache ≤ 60 s) |
 | Vercel Deployment Protection | Giới hạn người xem Preview | Hỗ trợ | Giữ bật |
 | Secret key ở frontend | Không có (đã kiểm bằng build có giá trị mồi) | — | Giữ guard |

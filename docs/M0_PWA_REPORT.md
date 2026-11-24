@@ -57,3 +57,9 @@ Skip có chủ đích (không phải để làm CI xanh): chuột trên điện 
 - Kiểm tay cấu hình Preview tối thiểu: `/health` → `environment: preview`, mọi nhà cung cấp `disabled`; endpoint cần đăng nhập → 401; origin lạ không có CORS; `hanzilookup` + production → API từ chối khởi động.
 - Mô phỏng lệnh Vercel trên bản clone sạch: `pnpm install --frozen-lockfile --filter @mandarin/web...` (2,6 s) + `turbo run build --filter=@mandarin/web...` → 3/3 task thành công.
 - Unit test: **77** (contracts 8, domain 16, adapters 11, api 19, web 16, mobile 7).
+
+## Cập nhật 2026-11-24 — D-037 trong M0-PWA (được chủ dự án duyệt)
+- `/lab/session`: OTP qua `apps/web/src/lib/auth-otp.ts`, luôn `shouldCreateUser: false`; email được mời và email lạ nhận **cùng một** thông báo trung tính (không lộ lỗi "Signups not allowed"); chữ "chỉ dành cho người được mời", không có "Đăng ký".
+- `supabase/config.toml`: `enable_signup = false` (anonymous đã `false`).
+- Test: unit `auth-otp.test.ts` (4); E2E `auth-invite-only.spec.ts` (3 × 9 project) chặn request tới host giả `supabase-e2e.invalid` — **chỉ kiểm hành vi client**, không chứng minh Supabase thật từ chối; `scripts/test-auth-invite-only.mjs` chạy trên **GoTrue local thật** trong job CI `database` (không dev token): đăng ký + anonymous bị từ chối, email lạ không tạo user/không có thư, tài khoản do admin tạo nhận mã (Mailpit) và xác minh được.
+- Chưa kiểm: dự án Supabase Cloud `mandarin-ai-dev` (smoke test A12–A12c do chủ dự án chạy). Membership `app_members`, admin panel, cookie session: M1.

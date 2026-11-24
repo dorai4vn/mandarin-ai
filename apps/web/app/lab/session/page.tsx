@@ -1,9 +1,14 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Button, Card, PageHeader } from '@/components/ui';
+import { requestSignInCode, verifySignInCode } from '@/lib/auth-otp';
 import { DEV_TOKEN_ENABLED, readDevToken, supabase, writeDevToken } from '@/lib/session';
 
-/** M0: e-mail OTP via Supabase when configured (D-025); dev token field for local testing only. */
+/**
+ * M0: sign-in with an e-mail code for accounts created/invited by an administrator (D-025, D-037).
+ * There is no sign-up: codes are only sent to existing accounts and messages stay neutral.
+ * Dev token field is for local testing only.
+ */
 export default function SessionLab() {
   const sb = supabase();
   const [email, setEmail] = useState('');
@@ -21,32 +26,26 @@ export default function SessionLab() {
 
   const sendCode = async () => {
     if (!sb) return;
-    const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
-    if (error) setMsg(`Không gửi được mã: ${error.message}`);
-    else {
-      setStage('code');
-      setMsg('Đã gửi mã 6 số tới email của bạn.');
-    }
+    const res = await requestSignInCode(sb.auth, email);
+    setMsg(res.message);
+    if (res.ok) setStage('code');
   };
 
   const verify = async () => {
     if (!sb) return;
-    const { error } = await sb.auth.verifyOtp({ email, token: code, type: 'email' });
-    if (error) setMsg(`Mã không đúng hoặc đã hết hạn: ${error.message}`);
-    else {
-      setStage('done');
-      setMsg('Đăng nhập thành công.');
-    }
+    const res = await verifySignInCode(sb.auth, email, code);
+    setMsg(res.message);
+    if (res.ok) setStage('done');
   };
 
   return (
     <>
       <PageHeader
         title="Phiên đăng nhập"
-        lead="Đăng nhập bằng mã OTP qua email — hoạt động trong tab trình duyệt và trong ứng dụng đã cài."
+        lead="Mandarin AI là ứng dụng riêng tư: chỉ tài khoản do quản trị viên mời hoặc cấp mới đăng nhập được. Đăng nhập bằng mã 6 số gửi qua email — hoạt động trong tab trình duyệt và trong ứng dụng đã cài."
       />
       <div className="grid gap-4 xl:grid-cols-2">
-        <Card title="Mã OTP qua email (Supabase)">
+        <Card title="Đăng nhập bằng mã qua email">
           {!sb ? (
             <p role="alert" data-testid="otp-blocked">
               BLOCKED — chưa cấu hình dự án Supabase (NEXT_PUBLIC_SUPABASE_URL /
@@ -78,6 +77,8 @@ export default function SessionLab() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="email@vidu.vn"
                 autoComplete="email"
+                aria-label="Email đã được cấp quyền"
+                data-testid="otp-email"
                 className="rounded-xl border border-line bg-paper px-3 py-2"
               />
               {stage === 'code' && (
@@ -88,13 +89,25 @@ export default function SessionLab() {
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   placeholder="Mã 6 số"
+                  aria-label="Mã 6 số"
+                  data-testid="otp-code"
                   className="rounded-xl border border-line bg-paper px-3 py-2"
                 />
               )}
-              <Button type="submit">{stage === 'email' ? 'Gửi mã' : 'Xác nhận'}</Button>
+              <Button type="submit" data-testid="otp-submit">
+                {stage === 'email' ? 'Gửi mã đăng nhập' : 'Xác nhận'}
+              </Button>
+              <p className="text-sm text-ink-2" data-testid="invite-only-note">
+                Chưa có tài khoản? Mandarin AI chỉ dành cho người được mời — hãy liên hệ chủ ứng
+                dụng.
+              </p>
             </form>
           )}
-          {msg && <p className="mt-2 text-sm">{msg}</p>}
+          {msg && (
+            <p className="mt-2 text-sm" role="status" data-testid="otp-message">
+              {msg}
+            </p>
+          )}
         </Card>
         {DEV_TOKEN_ENABLED && (
           <Card title="Token phát triển (chỉ môi trường dev)">

@@ -22,6 +22,7 @@
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
     "db:lint": "supabase db lint --level warning",
+    "db:test:auth": "node scripts/test-auth-invite-only.mjs",
     "e2e": "pnpm --filter @mandarin/web e2e",
     "fetch:handwriting-data": "pnpm --filter @mandarin/adapters fetch:handwriting-data"
   },
