@@ -344,7 +344,9 @@ Quy ước:
 - **Chưa làm (cần duyệt riêng, M4):** signed upload URL + upload trực tiếp resumable (TUS) lên Storage, có tiến độ và tiếp tục khi rớt mạng — xem `docs/PDF_UPLOAD.md` mục 3.
 - **Hậu quả:** `docs/PDF_UPLOAD.md`; test contract/API/web/E2E và test Storage thật trong CI; checklist B7.
 
-## D-041 — Logo Mandarin AI: sách mở + chữ 草 + hai lá (concept đã duyệt, SVG chờ duyệt)
-- **Ngày:** 2026-11-24 · **Trạng thái:** Concept **đã duyệt** theo hình tham chiếu chính thức (`docs/design/reference/visual-reference-v2.webp`); **bộ SVG chờ chủ dự án duyệt** (PR UI-7A).
-- **Lựa chọn:** Biểu tượng = quyển sách mở cách điệu + chữ giản thể 草 bên trong + hai chiếc lá; chữ thương hiệu hai dòng "Mandarin AI" / "TỰ HỌC TIẾNG TRUNG". Không dùng "Thảo" làm tên thương hiệu. Bộ Light + Dark, lockup ngang, lockup gọn cho sidebar, icon app vuông, maskable, favicon; biến thể cỡ nhỏ (16–32 px) cùng concept. Chữ 草 từ LXGW WenKai (OFL), chữ thương hiệu Inter (OFL), tất cả đã chuyển thành vector.
-- **Hậu quả:** `docs/design/brand/` (SVG, ảnh QC nhiều kích thước, script dựng lại). Favicon, icon PWA và logo trong ứng dụng **chỉ thay ở UI-7B sau khi SVG được duyệt**. Token `logo` (đỏ cũ) giữ nguyên tới UI-7B.
+## D-041 — Logo Mandarin AI: dùng trực tiếp biểu tượng trong hình tham chiếu + chữ thật Nunito
+- **Ngày:** 2026-11-24 · **Trạng thái:** Concept **đã duyệt** (hình tham chiếu chính thức `docs/design/reference/visual-reference-v2.webp`); **bộ asset chờ chủ dự án duyệt** (PR UI-7A).
+- **Thay đổi phương án (chủ dự án):** bỏ phương án vẽ lại SVG bằng đường Bézier. Biểu tượng sách mở + chữ 草 + hai lá được **trích nguyên từ hình tham chiếu** (PNG/WebP nền trong suốt, Light + Dark), không vẽ lại, không đổi màu, không thay chữ 草 bằng font. Không dùng "Thảo" làm tên thương hiệu.
+- **Typography chính thức:** "Mandarin AI" = Nunito 800, letter-spacing −0.02em, line-height 1.1; "TỰ HỌC TIẾNG TRUNG" = Nunito 600, uppercase, letter-spacing 0.08em, line-height 1.3, ≈ 35–40 % cỡ dòng tên. Font giao diện giữ Inter (Việt/Anh/Pinyin) + Noto Sans SC (chữ Hán nội dung học). Nunito (OFL 1.1) chỉ dùng cho lockup.
+- **Giới hạn đã biết:** ảnh gốc ≈ 205 px → icon 512 px phải phóng to (hơi mềm) cho tới khi có file logo gốc độ phân giải cao; 16 px không đọc được chữ 草.
+- **Hậu quả:** `docs/design/brand/` (asset, ảnh QC, script). Favicon, icon PWA và logo trong ứng dụng **chỉ thay ở UI-7B sau khi duyệt**. Token `logo` (đỏ cũ) giữ nguyên tới UI-7B.

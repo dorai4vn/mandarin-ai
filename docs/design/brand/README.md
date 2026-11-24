@@ -1,56 +1,54 @@
-# Logo Mandarin AI — bộ SVG (UI-7A)
+# Logo Mandarin AI — bộ asset ảnh gốc (UI-7A)
 
-Trạng thái: **CHỜ CHỦ DỰ ÁN DUYỆT SVG** (concept đã duyệt — D-041). Chưa dùng trong ứng dụng; favicon, icon PWA và logo trong app chỉ thay ở **UI-7B** sau khi duyệt.
-Hình tham chiếu chính thức: `docs/design/reference/visual-reference-v2.webp`.
+Trạng thái: **chờ chủ dự án duyệt** (D-041). Chưa dùng trong ứng dụng; favicon, icon PWA và logo trong app chỉ thay ở **UI-7B** sau khi duyệt.
 
-## Thành phần (theo hình tham chiếu, không thêm chi tiết)
+Phương án (theo chỉ đạo của chủ dự án, thay phương án SVG vẽ lại trước đó): **dùng trực tiếp biểu tượng trong hình tham chiếu đã duyệt** `docs/design/reference/visual-reference-v2.webp` — sách mở + chữ 草 + hai lá. Không vẽ lại, không đổi màu, không thay chữ 草 bằng font. Phần chữ bên cạnh là **text thật**.
 
-- Quyển sách mở cách điệu: trang trái có cạnh trên cong, trang phải là nét đứng nối lên thân cây, đáy sách lượn sóng + một nét lượn phụ.
-- Chữ Hán giản thể **草** (U+8349) trong sách. Hình chữ lấy từ font **LXGW WenKai TC Bold** (kiểu Khải, SIL OFL 1.1), chuyển thành đường vector và làm đậm nhẹ bằng viền cùng màu; cấu trúc 艹 + 早 (日 + 一 + 丨) giữ nguyên.
-- Hai chiếc lá mọc từ góc trên trang phải.
-- Chữ thương hiệu hai dòng: **Mandarin AI** (Inter ExtraBold) / **TỰ HỌC TIẾNG TRUNG** (Inter SemiBold, giãn chữ). Cả hai đã chuyển thành vector — SVG không phụ thuộc font. Không dùng "Thảo" làm tên.
+## Biểu tượng (`raster/`)
 
-## File (`svg/`)
+| File                                  | Nội dung                                                                                |
+| ------------------------------------- | --------------------------------------------------------------------------------------- |
+| `mark-light.png` / `.webp`            | Biểu tượng Light, nền trong suốt, 210×202 px (độ phân giải gốc trong hình tham chiếu)   |
+| `mark-dark.png` / `.webp`             | Biểu tượng Dark, nền trong suốt, 202×203 px                                             |
+| `mark-*-square.png`                   | Như trên, căn giữa trên khung vuông trong suốt                                          |
+| `favicon-16/32/48.png`                | Favicon trong suốt (biểu tượng Light)                                                   |
+| `icon-light-*.png`, `icon-dark-*.png` | Icon app 192/512 px, nền trắng / navy `#0A1F37` (màu nền đo từ hình tham chiếu), bo góc |
+| `icon-maskable-*.png`                 | Icon PWA maskable, biểu tượng nằm trong vùng an toàn                                    |
+| `apple-touch-icon-180.png`            | Icon iOS                                                                                |
 
-| File                                                  | Dùng cho                                                                                                              |
-| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `mark-light.svg`, `mark-dark.svg`                     | Biểu tượng đầy đủ (≥ 32 px), nền trong suốt                                                                           |
-| `mark-light-small.svg`, `mark-dark-small.svg`         | Biến thể cỡ nhỏ 16–32 px: cùng concept, chữ 草 chiếm nhiều diện tích hơn, nét sách dày hơn, bỏ vân lá và nét lượn phụ |
-| `lockup-light.svg`, `lockup-dark.svg`                 | Lockup ngang (tỷ lệ như hình tham chiếu) — trang đăng nhập, tài liệu                                                  |
-| `lockup-compact-light.svg`, `lockup-compact-dark.svg` | Lockup cho sidebar/header (chữ lớn hơn so với biểu tượng để tagline còn đọc được khi lockup cao 40–48 px)             |
-| `app-icon-light.svg`, `app-icon-dark.svg`             | Icon app vuông bo góc (192/512 px)                                                                                    |
-| `app-icon-maskable.svg`                               | Icon PWA maskable (biểu tượng nằm trong vùng an toàn 80 %)                                                            |
-| `favicon-small.svg`                                   | Favicon 16/32 px (biến thể cỡ nhỏ trên nền trắng)                                                                     |
+Cách tách nền (`source/extract_raster.py`): cắt đúng vùng biểu tượng; **phần thân** (sách, chữ, lá) giữ **nguyên màu từng điểm ảnh gốc** và đặc hoàn toàn; chỉ **viền khử răng cưa** (≤ 3 px) được tính độ trong suốt bằng "colour to alpha" theo màu nền đo tại chỗ, nên viền không có quầng trắng/xanh nền cũ. Đặt lại lên nền gốc, sai khác trung bình ≈ 1–1,6/255 mỗi kênh. Chạy lại script cho kết quả giống hệt từng byte.
 
-## Màu
+## Chữ thương hiệu (text thật — đặc tả chính thức)
 
-|                 | Light                             | Dark                              |
-| --------------- | --------------------------------- | --------------------------------- |
-| Sách (gradient) | `#0A8F67` → `#16A453` → `#86D41C` | `#33DDFB` → `#2FD9B0` → `#72E36A` |
-| Lá              | `#3BAA2F` → `#9BE21C`             | `#2FC45A` → `#8FEA3C`             |
-| Chữ 草          | `#0B7347`                         | `#FFFFFF`                         |
-| "Mandarin AI"   | `#0A1B2F` (navy)                  | `#FFFFFF`                         |
-| Tagline         | `#3E4E64`                         | `#B9C8DC`                         |
+| Dòng                 | Font   | Weight | Khác                                                                   |
+| -------------------- | ------ | ------ | ---------------------------------------------------------------------- |
+| "Mandarin AI"        | Nunito | 800    | letter-spacing −0.02em, line-height 1.1                                |
+| "TỰ HỌC TIẾNG TRUNG" | Nunito | 600    | uppercase, letter-spacing 0.08em, line-height 1.3, cỡ = 38 % dòng trên |
 
-## QC (ảnh trong `previews/`)
+- Nunito: SIL Open Font License 1.1 (Copyright 2014 The Nunito Project Authors), có đủ dấu tiếng Việt ở cả 600 và 800 (đã kiểm tra toàn bộ nguyên âm có dấu + đ).
+- Trong app (UI-7B) Nunito chỉ dùng cho lockup, tải qua `next/font/google` (tự host lúc build, subset latin + vietnamese, chỉ weight 600 + 800). Font giao diện giữ nguyên: Inter (Việt, Anh, Pinyin) và Noto Sans SC (chữ Hán trong nội dung học).
+- Tỷ lệ: lockup lớn — cỡ chữ tên = 0,34 × chiều cao biểu tượng; sidebar — 0,52 × (đo theo hình tham chiếu).
+- Màu chữ (đo từ hình): Light tên `#0A1B2F`, dòng phụ `#53617B`; Dark tên `#FFFFFF`, dòng phụ `#BACEED`. UI-7B sẽ kiểm tương phản WCAG AA với token thật.
 
-- `01-compare-reference.png`: đặt cạnh hình tham chiếu (Light/Dark).
-- `02-sizes-16-64.png`: 16/24/32/48/64 px, kích thước thật + phóng điểm ảnh. Kết quả: **48–64 px** chữ 草 rõ; **32 px** đọc được (biến thể nhỏ rõ hơn); **24 px** nhận ra hình dáng, nét chữ mờ; **16 px** chữ 草 thành một mảng (9 nét trong ≈ 9 điểm ảnh — giới hạn vật lý), chỉ nhận diện được qua hình sách + lá + màu.
-- `03-app-icons-192-512.png`: icon 192/512 px, Light/Dark, maskable cắt tròn.
-- `04-sidebar-lockup.png`: lockup gọn ở 44 px cạnh sidebar trong hình tham chiếu.
+## QC (`previews/`)
 
-## Khác biệt có chủ đích so với hình tham chiếu
+- `raster-01-compare-reference.png`: gốc ↔ đã tách nền (trên nền gốc, ô caro, nền hồng kiểm viền, nền app), phóng ×2.
+- `raster-02-sizes.png`: 16/32/48/64/192/512 px trên nền Light/Dark (16–64 px kèm phóng ×4).
+- `raster-03-icons.png`: icon 512/192 px, maskable cắt tròn, apple-touch, favicon trong thanh tab Light/Dark.
+- `raster-04-lockup-real-text.png`: lockup lớn và sidebar (48 px @2x, 40 px @1x) cạnh hình tham chiếu.
 
-- Hình tham chiếu là ảnh raster có nét bút thuôn, bóng nhẹ và hiệu ứng sáng (glow); bản vector dùng nét đều + gradient phẳng để sắc nét ở mọi kích thước và nhẹ (≈ 3–15 KB mỗi file).
-- Kiểu chữ "Mandarin AI" trong hình là một font hình học tròn không xác định; bản vector dùng Inter (font giao diện của app, OFL) với độ đậm và tỷ lệ đo theo hình.
+## Giới hạn của ảnh gốc (báo cáo, không tự sửa)
+
+1. **Độ phân giải gốc chỉ ≈ 205 px.** Đủ nét cho sidebar/header (40–48 px, cả màn hình 2x–3x), 192 px và nhỏ hơn. **512 px phải phóng to ≈ 2,5×** nên hơi mềm và lộ nhẹ nhiễu nén WebP của ảnh tham chiếu. Muốn icon 512 px sắc nét cần **file logo gốc độ phân giải cao** (≥ 1024 px) từ nguồn đã tạo hình tham chiếu.
+2. **16 px:** chữ 草 không đọc được (9 nét trong ≈ 9 điểm ảnh); chỉ nhận ra hình sách + lá + màu. 32 px đọc được, 48 px trở lên rõ. Không có biến thể đơn giản hoá vì yêu cầu không vẽ lại.
+3. **Bản Dark có bóng đổ tối** quanh chữ 草 và lá — đúng như ảnh gốc; trên nền tối không thấy, nhưng bản Dark không dùng được trên nền sáng (dùng bản Light).
 
 ## Dựng lại
 
 ```bash
 cd docs/design/brand/source
-./fetch_fonts.sh
-python3 extract_glyph.py fonts wenkai
-python3 build_logo.py   # ghi vào ../svg (kết quả giống hệt bản đã commit)
+./fetch_fonts.sh                  # Nunito 600/800 (chỉ cho ảnh xem trước lockup)
+python3 extract_raster.py         # -> ../raster  (cần pillow, numpy, scipy)
+node render_lockup.mjs /tmp/lk    # lockup chữ thật (Playwright)
+python3 qc_raster.py /tmp/lk      # -> ../previews
 ```
-
-Cần `fonttools`, `brotli`, `uharfbuzz` (Python). Font không commit (tải lại bằng `fetch_fonts.sh`).
