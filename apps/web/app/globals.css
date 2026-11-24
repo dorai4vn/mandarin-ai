@@ -53,6 +53,7 @@
   --color-success-subtle: var(--success-subtle);
   --color-success-text: var(--success-text);
   --color-success-strong: var(--success-text-strong);
+  --color-on-success: var(--success-on);
 
   --color-warning: var(--warning-base);
   --color-warning-subtle: var(--warning-subtle);
@@ -65,6 +66,20 @@
   --color-error-text: var(--error-text);
   --color-error-strong: var(--error-text-strong);
   --color-on-error: var(--error-on);
+
+  /* Study cards (pastel tiles from the reference) */
+  --color-study-blue: var(--study-blue-bg);
+  --color-study-blue-icon: var(--study-blue-icon);
+  --color-study-rose: var(--study-rose-bg);
+  --color-study-rose-icon: var(--study-rose-icon);
+  --color-study-mint: var(--study-mint-bg);
+  --color-study-mint-icon: var(--study-mint-icon);
+
+  /* Radius scale V2 (FU-6): rounded-control 12 · rounded-card 16 · rounded-panel 20 · rounded-sheet 24 */
+  --radius-control: var(--shape-control);
+  --radius-card: var(--shape-card);
+  --radius-panel: var(--shape-panel);
+  --radius-sheet: var(--shape-sheet);
 
   /* Logo mark — unchanged identity (not the brand primary) */
   --color-logo: var(--logo-bg);

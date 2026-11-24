@@ -91,6 +91,19 @@ Thông tin trung tính (info) dùng nhóm `primary`. Coral (accent) chỉ cho n�
 | `stroke.guide`                | `#C9D2E3`                                               | `#33405A` | Lưới 米/田 và nét mẫu mờ                                                                                |
 | `stroke.hint`                 | `#476DFF`                                               | `#8AA2FF` | Nét gợi ý, thứ tự nét                                                                                   |
 
+### 2.7 Study Card (UI-2, đo từ hình tham chiếu)
+
+| Token             | Light     | Ghi chú                      |
+| ----------------- | --------- | ---------------------------- |
+| `study.blue.bg`   | `#E2EDFD` | Từ vựng                      |
+| `study.blue.icon` | `#1881FE` | Icon trang trí (aria-hidden) |
+| `study.rose.bg`   | `#FEE9F2` | Nghe hiểu                    |
+| `study.rose.icon` | `#FD5C6F` | Icon trang trí               |
+| `study.mint.bg`   | `#D4F8F0` | Luyện viết                   |
+| `study.mint.icon` | `#08BD8D` | Icon trang trí               |
+
+Chữ trên các nền này dùng `fg.default` (≥ 13:1) và `fg.muted` (≥ 5.6:1), kiểm trong CI. Icon là trang trí (tên thẻ mang nghĩa) nên không thuộc WCAG 1.4.11. Giá trị Dark: làm ở UI-6 (hình tham chiếu Dark: `#153857` / `#2C2A50` / `#0F403D`).
+
 ## 3. Kết quả kiểm tra độ tương phản (WCAG 2.2)
 
 Phương pháp: công thức độ chói tương đối WCAG; yêu cầu 4.5:1 cho chữ thường, 3:1 cho chữ lớn (≥ 24 px hoặc ≥ 18.66 px đậm), thành phần UI và vòng focus. Kiểm ngày 2026-11-24 bằng script (công thức WCAG), **94/94 cặp đạt** — gồm mọi tổ hợp `on`/`solid`/`hover`/`active`, `text`/`subtle`, chữ/nền ở cả hai theme; bảng dưới là các cặp chính (chữ `fg.disabled` được WCAG miễn trừ, không tính). PR-1 sẽ đưa phép kiểm này vào CI (`scripts/check-contrast.mjs`) để token mới không làm giảm chuẩn.

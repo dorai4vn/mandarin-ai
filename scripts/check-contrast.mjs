@@ -26,6 +26,26 @@ const TEXT = 4.5;
 const UI = 3;
 /** [foreground token, background token, minimum, where it is used] */
 const PAIRS = [
+  // UI-2 Study Cards (pastel tiles from the reference): title + meta text
+  ['fg-default', 'study-blue-bg', TEXT, 'study card title (blue)'],
+  ['fg-muted', 'study-blue-bg', TEXT, 'study card meta (blue)'],
+  ['fg-default', 'study-rose-bg', TEXT, 'study card title (rose)'],
+  ['fg-muted', 'study-rose-bg', TEXT, 'study card meta (rose)'],
+  ['fg-default', 'study-mint-bg', TEXT, 'study card title (mint)'],
+  ['fg-muted', 'study-mint-bg', TEXT, 'study card meta (mint)'],
+  ['fg-muted', 'bg-subtle', TEXT, 'neutral badge ("Sắp có") on subtle'],
+  // UI-2 Badge / form
+  ['secondary-text', 'secondary-subtle', TEXT, 'secondary badge'],
+  ['accent-text-strong', 'accent-subtle', TEXT, 'accent badge'],
+  ['warning-text', 'warning-subtle', TEXT, 'warning badge'],
+  ['success-text-strong', 'success-subtle', TEXT, 'success badge'],
+  ['error-text-strong', 'error-subtle', TEXT, 'error badge'],
+  ['error-text', 'surface-default', TEXT, 'field error message'],
+  ['error-base', 'surface-default', UI, 'field error border'],
+  ['border-strong', 'surface-default', UI, 'input border'],
+  ['success-on', 'success-solid', TEXT, 'success button'],
+  ['error-on', 'error-solid', TEXT, 'danger button'],
+  ['error-on', 'error-hover', TEXT, 'danger button hover'],
   ['fg-default', 'bg-page', TEXT, 'body text'],
   ['fg-default', 'surface-default', TEXT, 'text in cards, sidebar'],
   ['fg-default', 'bg-subtle', TEXT, 'text on subtle panels / hover'],

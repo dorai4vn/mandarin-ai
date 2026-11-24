@@ -1,4 +1,5 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
+import { Button as V2Button, Card as V2Card, type ButtonVariant } from './ui/index';
 
 export function PageHeader({
   title,
@@ -20,6 +21,11 @@ export function PageHeader({
   );
 }
 
+/*
+ * UI-2: Card and Button come from the V2 primitives (src/components/ui/). These wrappers keep the
+ * M0 API so existing screens keep working unchanged: `Card title` → V2 default card; `Button
+ * variant="ghost"` meant the OUTLINED button in M0 → V2 `secondary` (COMPONENT_SPEC_V2 §1).
+ */
 export function Card({
   title,
   children,
@@ -30,29 +36,19 @@ export function Card({
   className?: string;
 }) {
   return (
-    <section className={`rounded-2xl border border-line bg-surface p-4 md:p-5 ${className}`}>
-      {title && <h2 className="mb-3 text-lg font-semibold">{title}</h2>}
+    <V2Card title={title} className={className}>
       {children}
-    </section>
+    </V2Card>
   );
 }
 
 export function Button({
   variant = 'primary',
-  className = '',
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'ghost' }) {
-  const styles =
-    variant === 'primary'
-      ? 'bg-primary text-on-primary shadow-xs hover:bg-primary-hover active:bg-primary-active'
-      : 'border border-line-strong bg-surface text-fg hover:bg-subtle active:bg-subtle';
-  return (
-    <button
-      type="button"
-      {...props}
-      className={`min-h-11 rounded-xl px-4 py-2 font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${styles} ${className}`}
-    />
-  );
+}: Omit<ComponentProps<typeof V2Button>, 'variant'> & {
+  variant?: 'primary' | 'ghost' | ButtonVariant;
+}) {
+  return <V2Button {...props} variant={variant === 'ghost' ? 'secondary' : variant} />;
 }
 
 export function Mono({ children }: { children: ReactNode }) {

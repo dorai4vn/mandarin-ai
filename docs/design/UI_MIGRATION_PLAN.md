@@ -161,13 +161,26 @@ Quy tắc cho mọi PR UI: phạm vi rõ, checklist QC (mục 8) và kết quả
 
 ## 11. Trạng thái triển khai
 
-### UI-1 — Tokens & fonts (Light) · nhánh `feat/ui-1-tokens-fonts` · chờ review
+### UI-1 — Tokens & fonts (Light) · PR #3 · đã merge
 
 - `apps/web/src/design/tokens.css`: token semantic Light (nguồn duy nhất); `app/globals.css`: ánh xạ `@theme inline` (`bg-page`, `bg-surface`, `text-fg-muted`, `bg-primary`, `text-link`, `border-line-strong`, `bg-error`, …), alias tạm cho tên M0 (`paper`, `paper-2`, `ink`, `ink-2`, `line`, `jade`, `amber`, `sky`), focus ring 2 px, `prefers-reduced-motion`.
 - `seal` (21 chỗ) thay theo nghĩa: thương hiệu → `primary*`, lỗi (chấm lỗi đồng bộ, BLOCKED, khả năng cốt lõi thiếu) → `error*`, logo → token `logo` **giữ nguyên màu cũ** (logo chưa được duyệt thay — D-039 quyết định 6).
 - Font: Inter (preload `latin` + `vietnamese` ≈ 58 KB; `latin-ext` cho dấu thanh pinyin tải theo nhu cầu) + Noto Sans SC (lát `unicode-range`, không preload) qua `next/font` — tự host, không gọi Google lúc chạy. `HanziText`/`Pinyin`; mọi chữ Hán trên trang có `lang="zh-Hans"`.
 - CI: `pnpm check:contrast` (44 cặp, đọc giá trị thật từ `tokens.css`), quét bundle trình duyệt với giá trị mồi (`scripts/check-bundle-secrets.mjs`).
 - E2E mới: `typography.spec.ts` (glyph tiếng Việt/pinyin/Hanzi do đúng font đã tải, font tự host, `lang` cho chữ Hán), `ui1-viewports.spec.ts` (320/390/768/1024/1440: điều hướng không đổi, không cuộn ngang, token V2 có hiệu lực).
+
+### UI-2 — Component primitives · nhánh `feat/ui-2-component-primitives` · chờ review
+
+- `src/components/ui/`:
+  - `Button` (primary / secondary / ghost / danger / success; sm 36 có vùng chạm 44, md 44, lg 52; hover, focus-visible, disabled, loading có spinner + `aria-busy` + chặn bấm lặp), `ButtonLink`, `IconButton` (bắt buộc `aria-label`).
+  - `Card` (default / subtle / highlight, có `title`, `action`, `footer`), `CardLink` (cả card là một link), **`StudyCard`** (pastel xanh / hồng / mint đo từ hình tham chiếu; chỉ nhận số liệu thật qua `meta`, tính năng chưa có dùng `comingSoon` → nhãn "Sắp có", không bấm được).
+  - `Badge` (7 biến thể), `CountBadge`, `StatusDot` (chỉ báo trạng thái chấm + chữ); `StatusBadge` dùng cùng token (giữ `role`, `data-status`, chữ của M0).
+  - Form: `Input`, `Textarea`, `PasswordInput` (hiện/ẩn, `aria-pressed`), `SearchInput` (pill 48, nút xóa, `Esc`); nhãn luôn hiển thị, gợi ý/lỗi nối bằng `aria-describedby`, lỗi có `aria-invalid`.
+- `ui.tsx` giữ API M0 (`Card title`, `Button variant="ghost"` → `secondary`) nên các màn hình M0 không phải sửa.
+- Token mới: `--study-*` (6 màu) và thang bo góc `rounded-control/card/panel/sheet` (12/16/20/24 — đóng FU-6). `check:contrast` thêm 18 cặp (62 cặp).
+- Trang gallery `/lab/design` (dữ liệu ghi rõ "Ví dụ"); E2E `ui2-primitives.spec.ts`: axe (WCAG 2.2 A/AA, 0 lỗi serious/critical), không cuộn ngang ở 320 px, vùng chạm ≥ 44, tên truy cập, focus ring, loading, form a11y, mật khẩu, tìm kiếm, Study Card. `@axe-core/playwright` (dev dependency, đã duyệt D-039 quyết định 7).
+- Chưa làm trong UI-2 (đề xuất UI-2b): Tabs, Progress Bar/Ring, Skeleton, Empty/Error State, Tooltip, PageHeader V2.
+- Ảnh duyệt: `docs/design/previews/ui2/`.
 
 ### Follow-up phát hiện trong UI-1 (không sửa — ngoài phạm vi)
 
