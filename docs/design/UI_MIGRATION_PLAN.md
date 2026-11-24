@@ -173,7 +173,7 @@ Quy tắc cho mọi PR UI: phạm vi rõ, checklist QC (mục 8) và kết quả
 
 - PR #5 (nhánh `feat/ui-2-component-primitives`, HEAD cuối `01b6ac6`), merge squash vào `main` = `5b583ca` (cây mã giống hệt `01b6ac6`).
 - CI PR (run 45485379874, HEAD `01b6ac6`): 7/7 xanh — E2E Chromium 168 pass / 27 skip, Firefox 168 / 27, WebKit 164 / 31 (skip theo engine), auth ×5 120/120 mỗi engine; Supabase/Auth, build, bundle secret scan, Vercel Preview xanh.
-- CI `main` sau merge (run 45486981038, `5b583ca`): Build/Lint/Typecheck/Test, Supabase/Auth, Expo xanh; **E2E Chromium đỏ** vì `upload.spec.ts:33` lỗi lần đầu rồi đạt khi chạy lại (1 flaky, 167 pass, 27 skip; `failOnFlakyTests` tính là thất bại) → FU-7, issue #6. Firefox/WebKit: cập nhật khi run hoàn tất. Vercel Production deploy `5b583ca`: success.
+- CI `main` sau merge (run 45486981038, `5b583ca`): Build/Lint/Typecheck/Test, Supabase/Auth, Expo xanh; **E2E Chromium đỏ** vì `upload.spec.ts:33` lỗi lần đầu rồi đạt khi chạy lại (1 flaky, 167 pass, 27 skip; `failOnFlakyTests` tính là thất bại) → FU-7, issue #6. E2E Firefox (168 pass / 27 skip; auth ×5 120/120) và WebKit (164 pass / 31 skip; auth ×5 120/120) xanh. Vercel Production deploy `5b583ca`: success.
 - Reviewer độc lập: lần 1 (`119ea87`) 0 Critical / 4 Important / 13 Minor; 4 Important (I1 id field, I2 focus tìm kiếm, I3 test loading không thể fail — kèm mutation test, I4 transition) sửa ở `01b6ac6`; lần 2 xác nhận FIXED, 0 Critical / 0 Important. Minor còn mở chuyển sang UI-2B (`docs/design/UI2B_PLAN.md`).
 - Study Card chốt **Blue / Lavender / Mint** ("Nghe hiểu" = lavender `#F0EAFE`, icon `#8259DD`).
 
