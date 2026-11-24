@@ -33,7 +33,7 @@ Ký hiệu: ✅ có bằng chứng · ⏳ cần kiểm tay trên website thật 
 3. Trên thiết bị đã dùng để thử: xóa lịch sử duyệt web của URL Preview; mở lại app khi có mạng để SW mới xóa cache cũ (hoặc xóa dữ liệu trang web).
 4. Không dùng mật khẩu thật (dùng ở nơi khác) cho tài khoản thử nghiệm.
 
-## A. Đã có kết quả CI (run 45394939456 trên `0867d49`, 6/6 job xanh)
+## A. Đã có kết quả CI (lần cuối: run 45434263302 trên `08418be`, 6/6 job xanh)
 | # | Hạng mục | Bằng chứng CI | Giới hạn của bằng chứng |
 |---|---|---|---|
 | A1 | Lint, typecheck, format, 96 unit test, build, Docker image web + API | Job *Lint · Typecheck · Test · Build* | — |
@@ -117,31 +117,63 @@ Chuẩn bị 3 tệp: một PDF thật nhỏ (< 5 MB), một PDF thật **gần 
 |---|---|---|
 | E2E xanh Chromium/Firefox/WebKit × mobile/tablet/desktop trong CI | ✅ | — |
 | Performance budget có baseline lab | ✅ (`PERFORMANCE.md` mục 5) | Baseline HTTPS thật: chưa (không bắt buộc cho M0) |
-| Không có secret trong bundle client | ✅ (A3) + ⏳ B10 | Xác nhận trên website thật |
-| Spike 1 Canvas | ✅ CI · ⏳ thiết bị thật (B5) | iPhone + desktop thật |
+| Không có secret trong bundle client | ✅ (A3) + ✅ chủ dự án xác nhận · B10 | Xác nhận trên website thật |
+| Spike 1 Canvas | ✅ CI · ✅ chủ dự án xác nhận · thiết bị thật (B5) | iPhone + desktop thật |
 | Spike 2 Nhận dạng: báo cáo đo + chủ dự án chọn adapter và giấy phép | ✅ **Đóng ở M0 với trạng thái BLOCKED** (chủ dự án quyết định 2026-11-24) | Đánh giá giấy phép và chọn adapter chuyển sang **M5** (D-029); nhận dạng giữ **TẮT** trên Preview/production |
-| Spike 3 Micro + Azure | ✅ CI ghi âm (Chromium/Firefox) · ⏳ Safari thật (B6) · ✅ Azure **chưa kích hoạt** trong M0 (chủ dự án chấp nhận 2026-11-24) | Trên Preview: `disabled` (503) hoặc `mock` nếu bật `ALLOW_MOCKS_IN_PREVIEW` — không bao giờ ghi là live |
+| Spike 3 Micro + Azure | ✅ CI ghi âm (Chromium/Firefox) · ✅ chủ dự án xác nhận · Safari thật (B6) · ✅ Azure **chưa kích hoạt** trong M0 (chủ dự án chấp nhận 2026-11-24) | Trên Preview: `disabled` (503) hoặc `mock` nếu bật `ALLOW_MOCKS_IN_PREVIEW` — không bao giờ ghi là live |
 | Spike 4 OpenAI Realtime | ✅ CI (MOCK) · ✅ **chưa kích hoạt** trong M0 (chủ dự án chấp nhận) | Như trên: `disabled`/`mock`, phân biệt theo `/health` |
-| Spike 5 PDF | ✅ CI · ⏳ B7 (Storage thật) | — |
-| Spike 6 IndexedDB + outbox | ✅ CI · ⏳ B8 | Đồng bộ thật là M1 (đã thống nhất D-035) |
-| Spike 7 PWA tùy chọn | ✅ CI · ⏳ B9 (B10 Safari) | — |
-| Spike 8 Auth email + mật khẩu, không đăng ký | ✅ CI (GoTrue thật local + client) · ⏳ B3 trên Cloud | Bằng chứng trên `mandarin-ai-dev` + iPhone app đã cài |
-| Spike 9 Responsive | ✅ CI · ⏳ B4 | — |
+| Spike 5 PDF | ✅ CI · ✅ chủ dự án xác nhận · B7 (Storage thật) | — |
+| Spike 6 IndexedDB + outbox | ✅ CI · ✅ chủ dự án xác nhận · B8 | Đồng bộ thật là M1 (đã thống nhất D-035) |
+| Spike 7 PWA tùy chọn | ✅ CI · ✅ chủ dự án xác nhận · B9 (B10 Safari) | — |
+| Spike 8 Auth email + mật khẩu, không đăng ký | ✅ CI (GoTrue thật local + client) · ✅ chủ dự án xác nhận · B3 trên Cloud | Bằng chứng trên `mandarin-ai-dev` + iPhone app đã cài |
+| Spike 9 Responsive | ✅ CI · ✅ chủ dự án xác nhận · B4 | — |
 
-**Đủ điều kiện nghiệm thu dựa trên CI (chờ xác nhận trên thiết bị thật):** spike 1, 5, 6, 7, 8, 9 về mặt mã; spike 2 đóng BLOCKED; spike 3–4 chấp nhận chưa kích hoạt; tiêu chí CI và performance baseline; X1 đã sửa. **Chưa đủ:** mọi bằng chứng trên website/thiết bị thật (B1–B10).
+**Đủ điều kiện nghiệm thu dựa trên CI (chờ xác nhận trên thiết bị thật):** spike 1, 5, 6, 7, 8, 9 về mặt mã; spike 2 đóng BLOCKED; spike 3–4 chấp nhận chưa kích hoạt; tiêu chí CI và performance baseline; X1 đã sửa. **Website/thiết bị thật (B2–B10):** chủ dự án xác nhận đạt ngày 2026-11-24 (mục D2).
 
-## D. Các bước chính xác trước khi cho phép merge
-0. ✅ X1 đã sửa — CI phải xanh 6/6 trên HEAD (xem báo cáo). Làm các bước *Giảm thiểu* ở mục 0.
-1. Hoàn tất B1 (cấu hình) và chạy B2–B10 trên **iPhone Safari thật** và **một desktop thật**; gửi kết quả theo mẫu (thiết bị/phiên bản/URL/commit/ĐẠT–KHÔNG ĐẠT + ảnh lỗi). Claude tổng hợp vào `docs/M0_PWA_REPORT.md`.
-2. ✅ Spike 2: đóng BLOCKED, chuyển M5 (đã quyết định).
-3. ✅ Azure + Realtime: chấp nhận chưa kích hoạt trong M0 (đã quyết định).
-4. Xác nhận các giới hạn đã biết chuyển sang M1: chưa có `app_members`, chưa bắt buộc đổi mật khẩu, phiên trong `localStorage`, sync server TẮT trên Preview, access token sống ≤ 1 giờ sau khi khóa.
-5. **Chuẩn bị deploy trước khi merge** (merge vào `main` có thể kích hoạt build mới):
-   - Vercel: `main` thường là *Production Branch* → merge sẽ tạo **Production deployment** dùng biến phạm vi Production (đang để trống theo DEPLOY_PREVIEW). Chưa có production → chọn một: (i) Settings → Git → *Ignored Build Step* bỏ qua build production, hoặc (ii) chấp nhận một bản production không cấu hình (chỉ hiện BLOCKED, không có secret) và bật Deployment Protection cho cả production. Khuyến nghị (i).
-   - Railway: service đang theo branch `claude/m0-pwa`. Giữ branch này (không xóa sau merge) hoặc đổi sang `main` sau khi merge; không cần đổi gì nếu giữ branch.
-6. Kiểm tra lần cuối trên PR #2: CI của HEAD xanh 6/6; không có commit mới chưa qua CI; mô tả PR khớp nội dung.
-7. Chủ dự án tự bấm merge trên GitHub (Claude không merge). Khuyến nghị **"Create a merge commit"** để giữ lịch sử từng bước có CI (hoặc *Squash* nếu muốn `main` gọn — chủ dự án chọn).
-8. Sau merge: đóng PR #1 (M0 native, đã được thay bởi hướng web — D-018) **không merge**; xác nhận Preview/Railway vẫn chạy; báo Claude để bắt đầu PR UI-1 (Design System V2) từ `main`.
+## D. Kết quả nghiệm thu (2026-11-24)
+
+### D1. Bằng chứng tự động (CI, Claude kiểm)
+| Hạng mục | Kết quả |
+|---|---|
+| CI trên `08418be` (run 45434263302) | 6/6 job xanh + check Vercel xanh |
+| Secret | `check:secrets` 223 file OK; quét lịch sử 28 commit của PR: chỉ có chuỗi giả trong test (`sb_secret_abcdefghijklmnop`, commit `2be829e`, đã thay ở `64dec7e`) — không phải khóa thật; `.env.example` không chứa giá trị bí mật; bundle trình duyệt với giá trị mồi: 0 secret |
+| Xung đột merge | Không: `main` (`10e4ee6`) là tổ tiên của `claude/m0-pwa`, `main` không có commit mới |
+| Auth thật (GoTrue local), Storage thật (local), RLS, E2E 3 engine | Xem mục A |
+
+### D2. Bằng chứng thực tế — **chủ dự án xác nhận** (không phải kiểm thử tự động)
+Chủ dự án báo đã kiểm B3–B10 trên website thật trong phạm vi được hỗ trợ và chấp nhận các giới hạn chưa kích hoạt của M0. Claude **không** tự quan sát các kết quả này; chi tiết thiết bị/phiên bản/ảnh chụp không được gửi kèm (chủ dự án chấp nhận mức bằng chứng tóm tắt).
+| Mục | Kết quả chủ dự án xác nhận |
+|---|---|
+| B2 Railway `/health` | `status: ok`, `environment: preview`, `auth: jwks`, `storage: live`, `sync: disabled` |
+| B3 Đăng nhập email + mật khẩu, chặn đăng ký | Đạt |
+| B4 Responsive | Đạt |
+| B5 Canvas viết | Đạt (nhận dạng TẮT theo D-029, đã chấp nhận) |
+| B6 Micro/ghi âm | Đạt (Azure/Realtime chưa kích hoạt, đã chấp nhận) |
+| B7 Upload PDF | Đạt |
+| B8 IndexedDB/offline | Đạt (sync đám mây TẮT, đã chấp nhận) |
+| B9 PWA | Đạt |
+| B10 Console/bảo mật | Đạt sau bản sửa `08418be` (hết 503 sync) |
+| Vercel frontend | Hoạt động |
+
+### D3. Rủi ro còn lại (không chặn merge, đã biết)
+- Tên miền Production của Vercel (`mandarin-ai-fawn.vercel.app`) **công khai trên Internet** — Deployment Protection "Standard" của Vercel không che tên miền Production. Ai cũng mở được giao diện, nhưng không đăng ký được (signup TẮT), không có secret ở trình duyệt; dữ liệu cần tài khoản do admin cấp. Muốn ẩn hẳn: bật bảo vệ cho Production (tùy gói Vercel).
+- Giới hạn M0 chuyển sang M1: chưa có `app_members`, chưa bắt buộc đổi mật khẩu, phiên trong `localStorage`, sync server TẮT, access token sống ≤ 1 giờ sau khi khóa.
+- Giảm thiểu X1 (đổi mật khẩu tạm của tài khoản thử nghiệm đã dùng trước `759e8eb`) — nên làm nếu chưa làm; không phụ thuộc vào việc merge.
+- Nhánh `main` chưa bật branch protection (không có "required checks"); merge vẫn an toàn vì mọi check xanh, nhưng nên bật sau merge.
+
+## D4. Quy trình merge và chuyển deploy về `main` (làm đúng thứ tự)
+**Hiện trạng suy ra (cần chủ dự án xác nhận ở bước 1):** bot Vercel gắn commit `08418be` với `mandarin-ai-fawn.vercel.app` — dạng tên miền Production mặc định → Production Branch của Vercel đang là `claude/m0-pwa`. Railway service API theo branch `claude/m0-pwa`.
+
+1. **Vercel — chỉ xem, chưa đổi:** Project `mandarin-ai` → **Settings** → **Environments** → **Production** → mục **Branch Tracking**: ghi lại tên branch (dự kiến `claude/m0-pwa`). Settings → **Environment Variables**: ghi lại các biến `NEXT_PUBLIC_*` đang tick môi trường nào (Production/Preview).
+2. **GitHub — đóng PR #1 trước:** mở PR #1 → kéo xuống cuối → **Close pull request** (không merge). Lý do: toàn bộ commit của PR #1 nằm trong PR #2; nếu merge PR #2 kiểu "merge commit" mà PR #1 còn mở, GitHub sẽ tự đánh dấu PR #1 là *Merged*.
+3. **GitHub — merge PR #2:** mở PR #2 → kiểm tra mọi check xanh trên commit mới nhất → nút merge chọn **Create a merge commit** → **Confirm merge**. **Không** bấm "Delete branch" (Vercel và Railway đang dùng `claude/m0-pwa`). Website **không đổi** ở bước này: Production vẫn chạy bản `claude/m0-pwa`; Vercel chỉ tạo thêm một bản Preview cho `main`; CI chạy lại trên `main`.
+4. **Xác nhận hai nhánh cùng code:** mở `https://github.com/dorai4vn/mandarin-ai/compare/claude/m0-pwa...main` → phải thấy *"There isn't anything to compare"* về nội dung (hoặc chỉ có commit merge, **0 files changed**). Tab **Actions**: lần chạy CI trên `main` xanh.
+5. **Railway — chuyển sang `main`:** service API → **Settings** → **Source** → **Branch** → chọn `main` → lưu. Railway build lại từ `main` (code giống hệt) và chỉ chuyển traffic khi `/health` đạt (đã cấu hình healthcheck) → không gián đoạn. Kiểm: tab Deployments, bản mới **Active**, commit là commit merge trên `main`; mở `https://<api-railway>/health` → giống hệt trước (`environment: preview`, `auth: jwks`, `storage: live`, `sync: disabled`). Biến môi trường gắn với service nên không đổi.
+6. **Vercel — chuyển Production sang `main`:** Settings → Environments → Production → Branch Tracking → đổi thành `main` → **Save**. Bản Production hiện tại vẫn phục vụ cho tới khi có bản mới. Tạo bản Production từ `main`: tab **Deployments** → nút **⋯/Create Deployment** → chọn branch `main` → Deploy (hoặc chờ lần push tiếp theo vào `main`). Khi bản mới **Ready**, Vercel tự gắn `mandarin-ai-fawn.vercel.app` sang bản mới — không gián đoạn. Nếu có lỗi: Deployments → bản Production cũ → **Instant Rollback**.
+   - Nếu ở bước 1 biến `NEXT_PUBLIC_*` chỉ tick *Preview*: tick thêm *Production* trước khi tạo deployment (giá trị như cũ, đều là giá trị công khai).
+7. **Kiểm sau chuyển (5 phút):** mở website → đăng nhập → Phòng thử → Offline (chip "Lưu trên thiết bị", Console không có 503) → tải 1 PDF nhỏ. Railway `/health` như bước 5.
+8. **Sau 3–7 ngày ổn định:** có thể xóa branch `claude/m0-pwa` trên GitHub (Branches → thùng rác) — chỉ khi Vercel và Railway đều đã theo `main`. Khuyến nghị bật branch protection cho `main` (Settings → Branches → Add rule → `main` → *Require status checks* → chọn 6 job CI).
+9. Báo Claude để bắt đầu PR UI-1 (Design System V2) từ `main`. M1 chưa bắt đầu.
 
 ## E. Sau merge — PR đầu tiên của Design System V2 (đề xuất)
 Xem `docs/design/UI_MIGRATION_PLAN.md`. PR UI-1 = **Tokens & fonts (Light)**, nhánh mới từ `main`:
