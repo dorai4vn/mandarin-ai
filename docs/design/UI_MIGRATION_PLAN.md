@@ -169,7 +169,13 @@ Quy tắc cho mọi PR UI: phạm vi rõ, checklist QC (mục 8) và kết quả
 - CI: `pnpm check:contrast` (44 cặp, đọc giá trị thật từ `tokens.css`), quét bundle trình duyệt với giá trị mồi (`scripts/check-bundle-secrets.mjs`).
 - E2E mới: `typography.spec.ts` (glyph tiếng Việt/pinyin/Hanzi do đúng font đã tải, font tự host, `lang` cho chữ Hán), `ui1-viewports.spec.ts` (320/390/768/1024/1440: điều hướng không đổi, không cuộn ngang, token V2 có hiệu lực).
 
-### UI-2 — Component primitives · nhánh `feat/ui-2-component-primitives` · chờ review
+### UI-2 — Component primitives · PR #5 · **Completed** (merge `5b583ca`, 2026-11-24)
+
+- PR #5 (nhánh `feat/ui-2-component-primitives`, HEAD cuối `01b6ac6`), merge squash vào `main` = `5b583ca` (cây mã giống hệt `01b6ac6`).
+- CI PR (run 45485379874, HEAD `01b6ac6`): 7/7 xanh — E2E Chromium 168 pass / 27 skip, Firefox 168 / 27, WebKit 164 / 31 (skip theo engine), auth ×5 120/120 mỗi engine; Supabase/Auth, build, bundle secret scan, Vercel Preview xanh.
+- CI `main` sau merge (run 45486981038, `5b583ca`): Build/Lint/Typecheck/Test, Supabase/Auth, Expo xanh; **E2E Chromium đỏ** vì `upload.spec.ts:33` lỗi lần đầu rồi đạt khi chạy lại (1 flaky, 167 pass, 27 skip; `failOnFlakyTests` tính là thất bại) → FU-7, issue #6. Firefox/WebKit: cập nhật khi run hoàn tất. Vercel Production deploy `5b583ca`: success.
+- Reviewer độc lập: lần 1 (`119ea87`) 0 Critical / 4 Important / 13 Minor; 4 Important (I1 id field, I2 focus tìm kiếm, I3 test loading không thể fail — kèm mutation test, I4 transition) sửa ở `01b6ac6`; lần 2 xác nhận FIXED, 0 Critical / 0 Important. Minor còn mở chuyển sang UI-2B (`docs/design/UI2B_PLAN.md`).
+- Study Card chốt **Blue / Lavender / Mint** ("Nghe hiểu" = lavender `#F0EAFE`, icon `#8259DD`).
 
 - `src/components/ui/`:
   - `Button` (primary / secondary / ghost / danger / success; sm 36 có vùng chạm 44, md 44, lg 52; hover, focus-visible, disabled, loading có spinner + `aria-busy` + chặn bấm lặp), `ButtonLink`, `IconButton` (bắt buộc `aria-label`).
@@ -182,13 +188,18 @@ Quy tắc cho mọi PR UI: phạm vi rõ, checklist QC (mục 8) và kết quả
 - Chưa làm trong UI-2 (đề xuất UI-2b): Tabs, Progress Bar/Ring, Skeleton, Empty/Error State, Tooltip, PageHeader V2.
 - Ảnh duyệt: `docs/design/previews/ui2/`.
 
+### UI-2B — Kế hoạch · chờ duyệt
+
+Xem `docs/design/UI2B_PLAN.md` (Tabs, ProgressBar/Ring, Skeleton, EmptyState/ErrorState, Tooltip, PageHeader V2 + Minor của UI-2). Chưa viết code.
+
 ### Follow-up phát hiện trong UI-1 (không sửa — ngoài phạm vi)
 
-| ID   | Vấn đề                                                                                                                                                                                                         | Đề xuất                                                |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| FU-1 | Tràn ngang ở 320 px **có từ M0** (đo trên `main`): `/lab` 23 px (bảng khả năng), `/lab/offline` 73 px (khối trạng thái; V2 giảm còn 59 px); `/lab/session` 93 px khi chưa cấu hình Supabase                    | Sửa trong UI-3/UI-5 (`min-w-0`, xuống dòng chuỗi dài)  |
-| FU-2 | `public/offline.html` đã đổi màu V2 nhưng thiết bị đã cài giữ bản cũ trong cache của service worker tới lần đổi phiên bản SW; câu "Dữ liệu học chưa gửi sẽ tự đồng bộ khi có mạng" chưa đúng khi sync đang tắt | PR có phạm vi SW riêng (bump `VERSION`) + sửa nội dung |
-| FU-3 | M0 có dark mode theo hệ thống; UI-1 chỉ Light → người dùng đặt hệ điều hành ở chế độ tối thấy giao diện sáng (đã chấp nhận, D-039 quyết định 5)                                                                | UI-6 Dark mode                                         |
-| FU-4 | Alias token M0 còn trong code                                                                                                                                                                                  | Thay dần (UI-2→UI-5), xóa ở UI-8                       |
-| FU-5 | Chữ Hán trong nội dung người dùng nhập (ghi chú offline) và placeholder `Ví dụ: 山 = núi` không gắn `lang` theo đoạn                                                                                           | Tách đoạn tự động khi làm Input/HanziText ở UI-2+      |
-| FU-6 | Thang radius V2 (12/16/20/24) chưa áp vào thang Tailwind (giữ để không đổi hình logo/thành phần)                                                                                                               | UI-2 khi dựng component                                |
+| ID   | Vấn đề                                                                                                                                                                                                                                                              | Đề xuất                                                 |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| FU-1 | Tràn ngang ở 320 px **có từ M0** (đo trên `main`): `/lab` 23 px (bảng khả năng), `/lab/offline` 73 px (khối trạng thái; V2 giảm còn 59 px); `/lab/session` 93 px khi chưa cấu hình Supabase                                                                         | Sửa trong UI-3/UI-5 (`min-w-0`, xuống dòng chuỗi dài)   |
+| FU-2 | `public/offline.html` đã đổi màu V2 nhưng thiết bị đã cài giữ bản cũ trong cache của service worker tới lần đổi phiên bản SW; câu "Dữ liệu học chưa gửi sẽ tự đồng bộ khi có mạng" chưa đúng khi sync đang tắt                                                      | PR có phạm vi SW riêng (bump `VERSION`) + sửa nội dung  |
+| FU-3 | M0 có dark mode theo hệ thống; UI-1 chỉ Light → người dùng đặt hệ điều hành ở chế độ tối thấy giao diện sáng (đã chấp nhận, D-039 quyết định 5)                                                                                                                     | UI-6 Dark mode                                          |
+| FU-4 | Alias token M0 còn trong code                                                                                                                                                                                                                                       | Thay dần (UI-2→UI-5), xóa ở UI-8                        |
+| FU-5 | Chữ Hán trong nội dung người dùng nhập (ghi chú offline) và placeholder `Ví dụ: 山 = núi` không gắn `lang` theo đoạn                                                                                                                                                | Tách đoạn tự động khi làm Input/HanziText ở UI-2+       |
+| FU-6 | Thang radius V2 (12/16/20/24) chưa áp vào thang Tailwind (giữ để không đổi hình logo/thành phần)                                                                                                                                                                    | **Đã xong ở UI-2** (`rounded-control/card/panel/sheet`) |
+| FU-7 | E2E `upload.spec.ts` "desktop drag-and-drop upload" lỗi không ổn định (máy phát triển khi chạy song song; CI `main` `5b583ca` lỗi lần đầu, đạt khi chạy lại → job đỏ do `failOnFlakyTests`; thông báo "Không kết nối được máy chủ API."). Chưa xác định nguyên nhân | Issue #6 — điều tra riêng, không sửa trong UI-2B        |
