@@ -26,6 +26,29 @@ const TEXT = 4.5;
 const UI = 3;
 /** [foreground token, background token, minimum, where it is used] */
 const PAIRS = [
+  // UI-2 Study Cards (pastel tiles from the reference): title + meta text
+  ['fg-default', 'study-blue-bg', TEXT, 'study card title (blue)'],
+  ['fg-muted', 'study-blue-bg', TEXT, 'study card meta (blue)'],
+  ['fg-default', 'study-lavender-bg', TEXT, 'study card title (lavender, Nghe hiểu)'],
+  ['fg-muted', 'study-lavender-bg', TEXT, 'study card meta (lavender)'],
+  ['study-lavender-icon', 'study-lavender-bg', UI, 'study card icon (lavender)'],
+  ['fg-default', 'study-mint-bg', TEXT, 'study card title (mint)'],
+  ['fg-muted', 'study-mint-bg', TEXT, 'study card meta (mint)'],
+  // "Sắp có" badge sits on 70 % white over the pastel tile (lighter than bg-subtle); bg-subtle is
+  // the darker bound, so passing here covers it.
+  ['fg-muted', 'bg-subtle', TEXT, 'neutral badge (and lower bound for "Sắp có" on tiles)'],
+  // UI-2 Badge / form
+  ['secondary-text', 'secondary-subtle', TEXT, 'secondary badge'],
+  ['accent-text-strong', 'accent-subtle', TEXT, 'accent badge'],
+  ['warning-text', 'warning-subtle', TEXT, 'warning badge'],
+  ['success-text-strong', 'success-subtle', TEXT, 'success badge'],
+  ['error-text-strong', 'error-subtle', TEXT, 'error badge'],
+  ['error-text', 'surface-default', TEXT, 'field error message'],
+  ['error-base', 'surface-default', UI, 'field error border'],
+  ['border-strong', 'surface-default', UI, 'input border'],
+  ['success-on', 'success-solid', TEXT, 'success button'],
+  ['error-on', 'error-solid', TEXT, 'danger button'],
+  ['error-on', 'error-hover', TEXT, 'danger button hover'],
   ['fg-default', 'bg-page', TEXT, 'body text'],
   ['fg-default', 'surface-default', TEXT, 'text in cards, sidebar'],
   ['fg-default', 'bg-subtle', TEXT, 'text on subtle panels / hover'],

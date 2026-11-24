@@ -81,6 +81,26 @@
   --state-disabled-bg: #eef2fa;
   --overlay-scrim: rgb(24 36 58 / 0.45);
 
+  /*
+   * Study cards (UI-2) — pastel tiles measured on the approved reference image
+   * (docs/design/reference/visual-reference-v2.webp, "Hôm nay học gì?"). Text on them uses
+   * fg-default / fg-muted (checked in CI). Icons are decorative (aria-hidden, the title carries the
+   * meaning); blue/mint are kept as in the reference, lavender is checked at ≥ 3:1 in CI.
+   */
+  --study-blue-bg: #e2edfd;
+  --study-blue-icon: #1881fe;
+  /* "Nghe hiểu" = lavender (owner decision, UI-2 review): icon ≥ 3:1 on its tile */
+  --study-lavender-bg: #f0eafe;
+  --study-lavender-icon: #8259dd;
+  --study-mint-bg: #d4f8f0;
+  --study-mint-icon: #08bd8d;
+
+  /* Radius (TOKENS_V2 §6) */
+  --shape-control: 12px;
+  --shape-card: 16px;
+  --shape-panel: 20px;
+  --shape-sheet: 24px;
+
   /* Handwriting canvas */
   --stroke-ink: #18243a;
   --stroke-guide: #c9d2e3;

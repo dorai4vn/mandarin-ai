@@ -1,6 +1,6 @@
 # Component specification V2
 
-Trạng thái: **ĐÃ DUYỆT 2026-11-24** (D-039) — chưa triển khai code. Token: `TOKENS_V2.md`. Breakpoint: `RESPONSIVE_V2.md`.
+Trạng thái: **ĐÃ DUYỆT 2026-11-24** (D-039). UI-2 đã triển khai Button, IconButton, Input, Password Input, Search, Card, Badge (+ Study Card) trong `apps/web/src/components/ui/`. Token: `TOKENS_V2.md`. Breakpoint: `RESPONSIVE_V2.md`.
 
 ## 0. Quy ước chung (áp dụng cho mọi component)
 
@@ -113,6 +113,14 @@ Trạng thái: **ĐÃ DUYỆT 2026-11-24** (D-039) — chưa triển khai code. 
 - **Variant:** `default` (nền `surface`, viền `border.default`, không shadow) · `interactive` (cả card là một link/nút: hover `shadow.sm` + viền `border.strong`, focus-visible vòng ngoài; chỉ **một** vùng bấm, không lồng nút trong link) · `subtle` (nền `bg.subtle`, không viền — nhóm thông tin phụ) · `highlight` (viền trái 4 px màu nhấn theo ý nghĩa — dùng cho "Gợi ý AI" (lavender) hoặc "Chuỗi ngày" (coral); tối đa một card highlight mỗi màn hình).
 - **Cấu trúc:** header (tiêu đề `h3` + hành động phụ bên phải) · nội dung · footer tùy chọn. Padding 16/20/24 theo breakpoint, radius 16.
 - **M0 → V2:** thay `Card` (`bg-paper-2/60`) — API `title`, `className` giữ nguyên; thêm `variant`, `as`.
+
+## 9b. Study Card (UI-2, theo hình tham chiếu)
+
+- **Mục đích:** ô lối vào nhanh cho một kỹ năng ("Hôm nay học gì?"): Từ vựng mới · Nghe hiểu · Luyện viết.
+- **Style:** nền pastel `study.blue` `#E2EDFD` / `study.lavender` `#F0EAFE` (Nghe hiểu — chủ dự án chốt lavender, không dùng hồng/coral) / `study.mint` `#D4F8F0`, icon đặc cùng tông (`#1881FE` / `#8259DD` / `#08BD8D`, trang trí, `aria-hidden`; lavender đạt 4.05:1 trên nền), radius 20, tỉ lệ ≈ 13:10, nội dung căn giữa; tiêu đề 18/700 (20 từ tablet), dòng phụ `fg.muted`. Không viền, không bóng; hover (khi là link): nhích lên 2 px + `shadow.md` (tắt khi reduced-motion).
+- **Dữ liệu:** dòng phụ chỉ nhận số liệu thật; tính năng chưa có → `comingSoon` (nhãn "Sắp có", không phải link). Không bao giờ hiện số giả.
+- **Responsive:** 2 cột trên điện thoại (kể cả 320 px), 3 cột từ 768.
+- **A11y:** cả ô là một link (một vùng bấm), tên truy cập = tiêu đề + dòng phụ.
 
 ## 10. Flashcard
 
