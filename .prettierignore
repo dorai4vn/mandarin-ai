@@ -1,0 +1,11 @@
+pnpm-lock.yaml
+**/dist
+**/.expo
+**/ios
+**/android
+supabase/.temp
+docs/*.md
+**/.next
+**/playwright-report
+**/test-results
+apps/web/public/sw.js

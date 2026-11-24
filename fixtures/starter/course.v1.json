@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "provenance": {
+    "author": "Mandarin AI project (self-authored)",
+    "createdAt": "2026-11-23",
+    "rights": "Project-owned starter data; not derived from any textbook"
+  },
+  "course": {
+    "title": "Khởi động: chữ Hán cơ bản",
+    "languageLevel": "beginner",
+    "visibility": "public"
+  },
+  "chapters": [
+    {
+      "ordinal": 1,
+      "title": "Thiên nhiên và con người",
+      "lessons": [
+        {
+          "ordinal": 1,
+          "title": "Núi, nước, người",
+          "vocabulary": [
+            { "simplified": "山", "traditional": "山", "pinyin": "shān", "glossVi": "núi" },
+            { "simplified": "水", "traditional": "水", "pinyin": "shuǐ", "glossVi": "nước" },
+            { "simplified": "人", "traditional": "人", "pinyin": "rén", "glossVi": "người" },
+            {
+              "simplified": "你好",
+              "traditional": "你好",
+              "pinyin": "nǐ hǎo",
+              "glossVi": "xin chào"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

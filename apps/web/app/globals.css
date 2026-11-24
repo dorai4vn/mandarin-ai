@@ -1,0 +1,62 @@
+@import 'tailwindcss';
+
+/* Design tokens: warm paper, ink, cinnabar seal red. Light + dark. */
+@theme {
+  --color-paper: #faf7f0;
+  --color-paper-2: #f1ece0;
+  --color-ink: #1d1b18;
+  --color-ink-2: #57524a;
+  --color-line: #ddd5c4;
+  --color-seal: #b8322a;
+  --color-seal-ink: #ffffff;
+  --color-jade: #2f6b4f;
+  --color-amber: #9a6200;
+  --color-sky: #2a5d9a;
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  --font-hanzi:
+    'Noto Serif SC', 'Noto Serif CJK SC', 'Songti SC', 'STSong', 'SimSun', 'Source Han Serif SC',
+    serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #171513;
+    --color-paper-2: #221f1b;
+    --color-ink: #efe9dc;
+    --color-ink-2: #b3ab9b;
+    --color-line: #3a352e;
+    --color-seal: #e0675d;
+    --color-seal-ink: #1a0d0b;
+    --color-jade: #6fbf98;
+    --color-amber: #e0a542;
+    --color-sky: #7fb0eb;
+  }
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* iOS: inputs below 16px trigger zoom-on-focus. */
+input,
+select,
+textarea {
+  font-size: max(16px, 1rem);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-sky);
+  outline-offset: 2px;
+}
+
+.hanzi {
+  font-family: var(--font-hanzi);
+}

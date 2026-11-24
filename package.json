@@ -1,0 +1,42 @@
+{
+  "name": "mandarin-ai",
+  "private": true,
+  "description": "Mandarin AI monorepo (iOS-first Expo app, Node API, shared packages)",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22.12 <23",
+    "pnpm": ">=10.28"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "check:deps": "node scripts/check-deps.mjs",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check:expo": "node scripts/check-expo-versions.mjs",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db",
+    "db:lint": "supabase db lint --level warning",
+    "db:test:auth": "node scripts/test-auth-invite-only.mjs",
+    "e2e": "pnpm --filter @mandarin/web e2e",
+    "fetch:handwriting-data": "pnpm --filter @mandarin/adapters fetch:handwriting-data"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@types/node": "22.20.5",
+    "eslint": "9.39.5",
+    "globals": "17.14.0",
+    "prettier": "3.10.1",
+    "semver": "7.7.3",
+    "supabase": "3.3.0",
+    "turbo": "2.11.13",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "8.73.0",
+    "vitest": "5.1.1"
+  }
+}

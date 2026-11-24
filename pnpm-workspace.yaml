@@ -1,0 +1,10 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# Keep React renderer versions aligned with the Expo SDK 58 baseline (D-014).
+overrides:
+  react-dom: 19.3.0
+
+onlyBuiltDependencies:
+  - esbuild

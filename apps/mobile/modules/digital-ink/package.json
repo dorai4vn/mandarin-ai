@@ -1,0 +1,8 @@
+{
+  "name": "digital-ink",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local Expo module: Google ML Kit Digital Ink recognition (iOS). Android bridge is a post-iOS gate.",
+  "license": "UNLICENSED",
+  "main": "index.ts"
+}

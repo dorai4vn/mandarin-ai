@@ -1,0 +1,15 @@
+**/node_modules
+**/dist
+**/.turbo
+**/.expo
+apps/mobile/ios
+apps/mobile/android
+.git
+**/.env
+**/.env.*
+!**/.env.example
+supabase/.temp
+**/.next
+**/playwright-report
+**/test-results
+packages/adapters/data

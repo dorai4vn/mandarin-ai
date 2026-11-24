@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Offline · Mandarin AI</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        font-family: system-ui, sans-serif;
+        background: #faf7f0;
+        color: #1d1b18;
+        padding: 24px;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #171513;
+          color: #efe9dc;
+        }
+      }
+      main {
+        max-width: 32rem;
+      }
+      button {
+        font: inherit;
+        padding: 10px 16px;
+        border-radius: 12px;
+        border: 0;
+        background: #b8322a;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Bạn đang offline</h1>
+      <p>
+        Trang này chưa được lưu để dùng offline. Những trang bạn đã mở trước đó vẫn xem được. Dữ
+        liệu học chưa gửi sẽ tự đồng bộ khi có mạng.
+      </p>
+      <button onclick="location.reload()">Thử lại</button>
+    </main>
+  </body>
+</html>
