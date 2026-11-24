@@ -7,6 +7,13 @@ Tiêu chí gốc: `docs/MILESTONES_CLAUDE_CODE.md` mục M0-PWA (Exit). Bước 
 
 Ký hiệu: ✅ có bằng chứng · ⏳ cần kiểm tay trên website thật · ⚠️ cần chủ dự án quyết định · — không áp dụng.
 
+## 0. Lỗi chặn nghiệm thu (phát hiện 2026-11-24, CI run 45398341533)
+| # | Lỗi | Bằng chứng | Mức độ | Đề xuất sửa (chờ chủ dự án cho phép sửa code) |
+|---|---|---|---|---|
+| X1 | Form đăng nhập `/lab/session` không có `method` và nút bấm được **trước khi React hydrate**. Bấm sớm → trình duyệt gửi form kiểu HTML gốc (GET) → **email và mật khẩu nằm trên URL** (lịch sử trình duyệt, log Vercel, Referer) và không gọi `signInWithPassword` | (1) CI `0b8299a`: E2E WebKit tablet "wrong password and unknown e-mail…" FAIL lần đầu (không có thông báo lỗi), PASS khi chạy lại → job FAIL do `failOnFlakyTests`. (2) Tái hiện tại máy với JavaScript tắt: sau khi bấm, URL = `/lab/session?email=…&password=…` | **Cao** (lộ mật khẩu khi mạng/thiết bị chậm) | (a) `method="post"` + `action` trỏ về chính trang để submit gốc không bao giờ đưa mật khẩu lên URL; (b) ô nhập và nút **vô hiệu cho tới khi hydrate xong** (cùng cách đã sửa form offline trước đây); (c) E2E mới: submit khi JS tắt → URL không chứa `password`; chạy `--repeat-each` trên 3 engine. Không đổi `auth-password.ts`, testid hay luồng Supabase |
+
+Mục X1 phải được sửa và CI xanh trở lại trước khi merge. Các commit trước (`80ff911`, `0867d49`) xanh vì race này không xảy ra ở các lần chạy đó — lỗi có từ `80ff911` (D-038).
+
 ## A. Đã có kết quả CI (run 45394939456 trên `0867d49`, 6/6 job xanh)
 | # | Hạng mục | Bằng chứng CI | Giới hạn của bằng chứng |
 |---|---|---|---|
@@ -100,6 +107,7 @@ Ghi cho mỗi thiết bị: tên máy, hệ điều hành + phiên bản, trình
 **Đủ điều kiện nghiệm thu dựa trên CI (chờ xác nhận trên thiết bị thật):** 1, 5, 6, 7, 8, 9 về mặt mã; tiêu chí CI và performance baseline. **Chưa đủ:** mọi bằng chứng thiết bị thật (B1–B10), quyết định spike 2, chấp thuận MOCKED cho spike 3–4.
 
 ## D. Các bước chính xác trước khi cho phép merge
+0. **Cho phép sửa lỗi X1 (mục 0)**; Claude sửa, CI phải xanh 6/6 trên HEAD.
 1. Hoàn tất B1 (cấu hình) và chạy B2–B10 trên **iPhone Safari thật** và **một desktop thật**; gửi kết quả theo mẫu (thiết bị/phiên bản/URL/commit/ĐẠT–KHÔNG ĐẠT + ảnh lỗi). Claude tổng hợp vào `docs/M0_PWA_REPORT.md`.
 2. Quyết định spike 2 (D-029) theo mục C — (a) hoặc (b).
 3. Xác nhận chấp thuận Azure và OpenAI Realtime ở trạng thái **MOCKED** cho M0.
