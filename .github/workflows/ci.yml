@@ -134,13 +134,13 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Start Supabase local (Postgres + Auth + Kong + Mailpit; unused services excluded)
-        run: pnpm exec supabase start -x realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Start Supabase local (Postgres + Auth + Kong; no Mailpit — sign-in must not need e-mail)
+        run: pnpm exec supabase start -x realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor,mailpit
       - name: Apply migrations from scratch
         run: pnpm exec supabase db reset
       - name: RLS tests (pgTAP)
         run: pnpm exec supabase test db
       - name: Schema lint
         run: pnpm exec supabase db lint --level warning --fail-on error
-      - name: Auth is invite-only (real local GoTrue, no dev token — D-037)
+      - name: Auth is invite-only, e-mail + password (real local GoTrue, no dev token — D-038)
         run: node scripts/test-auth-invite-only.mjs

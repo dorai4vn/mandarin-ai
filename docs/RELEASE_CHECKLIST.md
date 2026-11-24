@@ -33,7 +33,7 @@ Phạm vi (D-028): web app chạy trên Chrome, Edge, Firefox, Safari bản hi�
 - [ ] Upload PDF: chọn file và kéo-thả (desktop); từ chối đúng file sai loại/quá lớn.
 - [ ] IndexedDB khả dụng: outbox gửi đúng một lần. Không khả dụng (private mode…): app online vẫn chạy, có thông báo.
 - [ ] Service worker/manifest: chỉ đăng ký khi được hỗ trợ; app shell offline; cài đặt là tùy chọn.
-- [ ] Đăng nhập bằng mã OTP trong tab trình duyệt và trong app đã cài (không phụ thuộc magic link).
+- [ ] Đăng nhập bằng email + mật khẩu trong tab trình duyệt và trong app đã cài (không phụ thuộc email/magic link — D-038).
 - [ ] Nhắc học (từ M7): **nhắc trong ứng dụng hoạt động ở mọi trình duyệt (bắt buộc)**; Web Push chỉ kiểm nơi được hỗ trợ và người dùng cho phép (tùy chọn, không chặn nghiệm thu) — D-024.
 - [ ] Trình duyệt quá cũ: hiện thông báo "trình duyệt không được hỗ trợ" thay vì lỗi.
 - [ ] Trình đọc màn hình (VoiceOver/NVDA/TalkBack) đọc được nút chính; cỡ chữ lớn không vỡ layout.
@@ -64,14 +64,17 @@ Phạm vi (D-028): web app chạy trên Chrome, Edge, Firefox, Safari bản hi�
 - [ ] Không tối ưu nào làm yếu bảo mật, RLS, dữ liệu offline hay tính đúng đắn của đồng bộ.
 - [ ] Không tuyên bố "đạt hiệu năng" nếu chưa có số liệu trên HTTPS thật.
 
-## C5. Truy cập riêng tư (D-037, `docs/ACCESS_CONTROL.md`)
-- [ ] Supabase: **Allow new users to sign up = TẮT**, anonymous sign-ins TẮT, chỉ bật provider Email.
+## C5. Truy cập riêng tư (D-037, D-038, `docs/ACCESS_CONTROL.md`)
+- [ ] Supabase: **Allow new users to sign up = TẮT**, anonymous sign-ins TẮT, chỉ bật provider Email; độ dài mật khẩu tối thiểu 12; *Secure password change* TẮT.
 - [ ] Thử đăng ký bằng publishable key (gọi trực tiếp Auth API) → bị từ chối.
-- [ ] Thử đăng nhập OTP với email chưa được cấp → không tạo tài khoản, thông báo trung tính.
-- [ ] Không có màn hình/đường dẫn "Đăng ký" trong app.
-- [ ] Danh sách Users trên Dashboard chỉ gồm người được mời; mỗi email một người; không tài khoản dùng chung.
-- [ ] (M1+) User đăng nhập nhưng không phải thành viên active → API 403, RLS không trả dữ liệu; khóa thành viên có hiệu lực ≤ 60 s.
-- [ ] Đặt/khôi phục mật khẩu bằng mã; admin không biết mật khẩu của ai.
+- [ ] Email chưa được cấp và mật khẩu sai → **cùng** thông báo "Email hoặc mật khẩu không đúng."; không tạo tài khoản.
+- [ ] Không có màn hình/đường dẫn "Đăng ký", không OTP/Magic Link trong app.
+- [ ] Users trên Dashboard chỉ gồm người được cấp; mỗi email một người; không tài khoản dùng chung; mật khẩu tạm gửi qua kênh riêng.
+- [ ] (M1+) Có tài khoản Auth nhưng membership không `active` → API 403 `not_a_member`, RLS 0 dòng; khóa membership có hiệu lực ≤ 60 s.
+- [ ] (M1+) Chưa đổi mật khẩu ban đầu → dữ liệu học bị chặn (API + RLS), chỉ `GET /v1/me` + đổi mật khẩu chạy.
+- [ ] (M1+) Đổi mật khẩu: xác minh mật khẩu hiện tại, ≥ 12 ký tự, thu hồi mọi phiên cũ; lỗi giữa chừng vẫn bị chặn (fail closed).
+- [ ] Không có mật khẩu trong log API/route handler, `localStorage`, `sessionStorage`, IndexedDB, URL.
+- [ ] Khôi phục mật khẩu qua email: ghi rõ **tạm hoãn** (cần Custom SMTP) hoặc đã cấu hình SMTP + test.
 - [ ] Secret key chỉ ở Railway/máy admin.
 
 ## D. Backend / dữ liệu

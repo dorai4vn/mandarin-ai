@@ -76,7 +76,7 @@ Package dependency direction (no cycles, enforced by lint/CI): `contracts` <- `d
 This is the target model. M0 ships only the migration template and the `profiles` baseline with RLS tests; the remaining tables are created by reviewed migrations in M1 (identity/sync), M2 (lexicon, vocabulary, tags/topics, course/library), M3 (quiz/review) and later milestones.
 
 ### Identity & content
-`app_members(user_id PK→auth.users, role owner|admin|member, status invited|active|disabled, invited_by, invited_at, activated_at, disabled_at, disabled_reason)` — invitation-only access (D-037); readable only by the member, writable only by service role/admin SQL; `is_active_member()` used by every learner-data policy.
+`app_members(user_id PK→auth.users, role owner|admin|member, status pending|active|disabled, password_change_required, approved_by, approved_at, password_changed_at, disabled_at, disabled_reason)` — approved-only access (D-037, D-038); row created `pending` by a trigger on `auth.users`; readable only by the member, writable only by service role/admin SQL; `is_active_member()` (active **and** initial password changed) used by every learner-data policy; changes audited by trigger into `admin_audit_log`.
 `admin_audit_log(id, actor_id, action, target_user_id, details_json, created_at)` — admin actions (M1).
 `profiles(id auth.uid FK, settings, created_at)`
 `courses(id, owner_id, title, language_level, visibility, latest_version_id)`
@@ -181,7 +181,7 @@ All rows carry `user_id`/`owner_id`; RLS: owner only. Composite foreign keys `(i
 | No Background Sync / Periodic Sync | Safari, Firefox | Sync on open/online/visibility/session end in every browser; show pending count |
 | IndexedDB/Cache may be unavailable or evicted (private mode, quota, inactivity) | all, esp. Safari | Feature-detect; in-memory fallback with "offline unavailable" notice; `storage.persist()` when supported; server is source of truth |
 | Installed web app has separate storage from the browser tab | iOS/iPadOS Home Screen | Login and offline download happen in the context the learner uses; sync reconciles |
-| Magic links open the default browser, not an installed app | iOS Home Screen, desktop installs | E-mail OTP code / password (D-025) |
+| Magic links open the default browser, not an installed app | iOS Home Screen, desktop installs | E-mail + password typed in the app; no e-mail link needed (D-025, D-038) |
 | Web Push availability differs | iOS ≥ 16.4 Home Screen only; supported in Chrome/Edge/Firefox desktop & Android | Push where available + in-app reminders everywhere (D-024) |
 | `MediaRecorder` formats differ (Safari AAC/MP4, Chrome/Firefox WebM/Opus) | all | AudioWorklet PCM → WAV 16 kHz on every browser (D-023); fallback transcoding on API |
 | getUserMedia and service workers need a secure context | all | HTTPS everywhere; localhost for development |
@@ -190,12 +190,14 @@ All rows carry `user_id`/`owner_id`; RLS: owner only. Composite foreign keys `(i
 | Touch gestures (scroll, zoom, edge swipe) vs mouse/pen | phones/tablets | Canvas `touch-action: none`, Pointer Events with `pointerType`, pressure when present |
 | `100vh`, on-screen keyboards, notches | phones/tablets | `dvh`, `viewport-fit=cover`, `env(safe-area-inset-*)`, inputs ≥ 16 px |
 
-## Access control — private, invitation-only (D-037)
+## Access control — private, approved accounts only (D-037, D-038)
 
 Details and admin runbook: `docs/ACCESS_CONTROL.md`.
-- Supabase Auth with sign-ups **disabled**, anonymous sign-ins disabled, only the Email provider enabled; accounts are created/invited by administrators (Dashboard first, admin scripts with the secret key on the server/admin machine later). There is no sign-up UI or API.
+- Supabase Auth with sign-ups **disabled**, anonymous sign-ins disabled, only the Email provider enabled; accounts are created with an initial password by administrators (Dashboard first, admin scripts with the secret key on the server/admin machine later). There is no sign-up UI or API.
 - Deny by default: a valid Supabase JWT (D-036) is necessary but **not sufficient**; the user must be an `active` row in `app_members`. Enforced twice: RLS (`and public.is_active_member()` on all learner-data policies) and the Fastify API (membership lookup cached ≤ 60 s → 403 `not_a_member`).
-- Sign-in: 6-digit e-mail OTP for existing users only (`shouldCreateUser: false`); optional password with reauthentication and code-based recovery; neutral error messages (no account enumeration).
+- **Identity vs access:** sign-in is e-mail + password (`signInWithPassword`, minimum length 12) and only proves identity; access is the admin-approved membership. No OTP, magic link or sign-up; one generic error for wrong password / unknown e-mail.
+- First sign-in: `password_change_required` blocks learner data in the API (403 `password_change_required`, except `GET /v1/me` and `POST /v1/me/password`) **and** in RLS. Password change runs on the API (secret key): verify current password → update → revoke all sessions + reject JWTs issued before `password_changed_at` → clear the flag; every partial failure leaves the user blocked (fail closed). Passwords are never stored or logged by Mandarin AI.
+- Password recovery by e-mail is deferred (needs custom SMTP); admins issue temporary passwords instead. Sign-in never depends on e-mail delivery.
 - Sessions per `docs/AUTH_SESSION_DESIGN.md` (HttpOnly cookie on the web origin, Bearer to the API).
 - Disabling a member takes effect at the API within ≤ 60 s and immediately in RLS; Auth-level ban via Admin API `ban_duration` from a server-side script.
 

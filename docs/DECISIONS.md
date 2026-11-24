@@ -190,7 +190,7 @@ Quy ước:
 - **Bổ sung khi duyệt:** tiêu chí nghiệm thu PRD-10 yêu cầu nhắc trong ứng dụng hoạt động trên mọi trình duyệt; Web Push chỉ được kiểm nơi trình duyệt hỗ trợ và người dùng cho phép, thiếu Web Push không làm milestone thất bại.
 
 ## D-025 — Đăng nhập trong PWA
-- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất; **bổ sung bởi D-037** (chỉ người đã được cấp tài khoản mới đăng nhập; không đăng ký)
+- **Ngày:** 2026-11-23 · **Trạng thái:** Đề xuất; **bổ sung bởi D-037**; **phương thức đăng nhập được thay bởi D-038** (email + mật khẩu, không OTP). Phần bối cảnh (magic link không mở được app đã cài) vẫn đúng và là một lý do của D-038
 - **Bối cảnh:** Web app đã thêm vào Màn hình chính trên iOS có bộ nhớ (cookie, IndexedDB) **tách riêng** khỏi Safari; link "magic link" trong email sẽ mở Safari chứ không mở app đã cài → đăng nhập không vào được app.
 - **Lựa chọn:** Supabase Auth bằng **mã OTP 6 số qua email** (nhập ngay trong app) và/hoặc mật khẩu; không dựa vào magic link hay OAuth redirect cho luồng chính.
 
@@ -293,7 +293,7 @@ Quy ước:
 ## Truy cập riêng tư (2026-11-24)
 
 ## D-037 — Ứng dụng riêng tư, chỉ người được mời; không đăng ký công khai
-- **Ngày:** 2026-11-24 · **Trạng thái:** **Đã duyệt** (chủ dự án)
+- **Ngày:** 2026-11-24 · **Trạng thái:** **Đã duyệt** (chủ dự án). Nguyên tắc chỉ-mời + mặc định từ chối **còn hiệu lực**; phần phương thức đăng nhập (OTP 6 số, mật khẩu tùy chọn, khôi phục bằng mã) và status `invited` **được thay bởi D-038**
 - **Bối cảnh:** Mandarin AI chỉ phục vụ chủ ứng dụng và một nhóm bạn được mời.
 - **Lựa chọn:**
   - Đăng nhập bằng Supabase Auth; **không** có giao diện đăng ký; **tắt** "Allow new users to sign up", anonymous sign-in và mọi provider ngoài Email trên Supabase.
@@ -303,3 +303,19 @@ Quy ước:
   - Đăng nhập mặc định bằng mã OTP 6 số qua email cho người đã được cấp (`shouldCreateUser: false`); mật khẩu tùy chọn, đặt sau khi đăng nhập (xác thực lại) và khôi phục bằng mã 6 số; thông báo lỗi không tiết lộ email có tồn tại.
   - Secret/service role key chỉ ở server (Railway) hoặc máy admin.
 - **Hậu quả:** Hướng dẫn chi tiết + runbook admin: `docs/ACCESS_CONTROL.md`. M1 thêm `app_members`, `is_active_member()`, kiểm tra membership ở API, màn hình đăng nhập/quên mật khẩu (không có đăng ký), script admin (ban/khóa) và test âm. Trong M0-PWA: chủ dự án đã tắt signup + anonymous trên `mandarin-ai-dev`; **2026-11-24 (được duyệt):** spike `/lab/session` đổi sang `shouldCreateUser: false` + thông báo trung tính, `supabase/config.toml` `enable_signup = false`, thêm test (unit, E2E chặn request, test GoTrue local thật trong CI). Membership/admin panel vẫn thuộc M1.
+
+## D-038 — Đăng nhập bằng email + mật khẩu do admin cấp; phê duyệt truy cập bằng `app_members`
+- **Ngày:** 2026-11-24 · **Trạng thái:** **Đã duyệt** (chủ dự án). Thay phần phương thức xác thực của **D-037** và **D-025**; D-037 vẫn giữ nguyên nguyên tắc chỉ-mời và mặc định từ chối.
+- **Bối cảnh:** Không cần OTP, Magic Link hay đăng ký công khai. Gửi email cho người dùng thật cần Custom SMTP (dịch vụ mặc định của Supabase giới hạn rất thấp); đăng nhập không nên phụ thuộc vào đó.
+- **Lựa chọn:**
+  - **Xác thực danh tính ≠ phê duyệt truy cập.** Supabase Auth (email + mật khẩu → JWT) chỉ chứng minh danh tính; quyền dùng app là dòng `app_members` `status = 'active'` do admin đặt. Chỉ có tài khoản Auth **không đủ**.
+  - Admin tạo tài khoản trên Supabase Dashboard (*Create new user*, Auto Confirm) với **mật khẩu ban đầu ≥ 12 ký tự**, gửi qua **kênh riêng**; tài khoản mới mặc định `pending`; admin kích hoạt `active`. Chưa có Admin Panel.
+  - Người dùng đăng nhập bằng email + mật khẩu (`signInWithPassword`); không có đăng ký, OTP, Magic Link; lỗi đăng nhập chung, không lộ tài khoản có tồn tại hay không.
+  - **Bắt buộc đổi mật khẩu ở lần đăng nhập đầu** (`app_members.password_change_required`, mặc định `true`). Khi cờ bật, API (403 `password_change_required`) **và** RLS (`is_active_member()` yêu cầu cờ tắt) chặn dữ liệu học; chỉ cho phép `GET /v1/me` và `POST /v1/me/password`.
+  - Đổi mật khẩu qua API (secret key chỉ ở Railway): xác minh mật khẩu hiện tại, chính sách 12–72 byte và khác mật khẩu cũ, cập nhật, **thu hồi mọi phiên** + từ chối JWT phát hành trước `password_changed_at`, rồi mới xóa cờ — mọi lỗi giữa chừng là fail closed (chi tiết `docs/ACCESS_CONTROL.md` mục 6).
+  - Không lưu/log mật khẩu plaintext (Supabase lưu hash; API redact body); secret key không ở frontend.
+  - Thu hồi: `status = 'disabled'` → API ≤ 60 giây (cache), RLS ngay; tùy chọn ban ở Auth.
+  - **Quên mật khẩu tự động: tạm hoãn** tới khi có Custom SMTP; trong lúc đó admin cấp mật khẩu tạm mới (và bật lại cờ đổi mật khẩu).
+  - Supabase Cloud: giữ signup TẮT, anonymous TẮT, Email BẬT; độ dài mật khẩu tối thiểu 12; *Secure password change* TẮT (cần email); không cần mẫu email.
+- **Phạm vi:** M0-PWA chỉ có luồng đăng nhập thử nghiệm bằng email + mật khẩu và tài liệu. `app_members`, đổi mật khẩu bắt buộc, cookie session (D-022), admin audit, bảo vệ dữ liệu theo membership: **M1**.
+- **Hậu quả:** Cập nhật `docs/ACCESS_CONTROL.md` (viết lại), `docs/AUTH_SESSION_DESIGN.md`, PRD, ARCHITECTURE, MILESTONES (tiêu chí M0 số 8, M1), RELEASE_CHECKLIST, SMOKE_TEST, DEPLOY_PREVIEW. M0: `/lab/session` dùng `signInWithPassword`; bỏ code/test/mẫu email OTP; CI kiểm trên GoTrue local thật **không có Mailpit**.

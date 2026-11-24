@@ -34,7 +34,7 @@
 | `packages/adapters/src/ports.ts` | `DigitalInkPort` → `HandwritingRecognitionPort` (thêm `id` adapter, `supportsOffline`). |
 | `packages/adapters/src/mock/index.ts` | `MockDigitalInk` → `MockHandwritingRecognizer` (vẫn `source: 'mock'`). |
 | `apps/api/src/app.ts`, `config.ts`, `.env.example` | Thêm CORS (`@fastify/cors`) chỉ cho origin web (`WEB_ORIGIN`); chuẩn bị endpoint ký URL upload PDF (spike 5). |
-| `supabase/config.toml` | `site_url`/redirect cho web, bật email OTP; bucket private cho PDF spike. |
+| `supabase/config.toml` | `site_url`/redirect cho web, đăng nhập email + mật khẩu (D-038), signup tắt; bucket private cho PDF spike. |
 | `package.json` (gốc) | Bỏ script `check:expo`; thêm script E2E (Playwright). |
 | `.npmrc` | `node-linker=hoisted` chỉ cần cho Metro; xem xét bỏ sau khi gỡ `apps/mobile` (đo lại install/build). |
 | `.github/workflows/ci.yml` | Bỏ bước `expo prebuild`/`expo-doctor` khi gỡ mobile; thêm `next build`, Playwright Chromium/Firefox/WebKit × mobile/tablet/desktop. |
@@ -58,7 +58,7 @@
 | `expo-sqlite` + SQLCipher + `expo-secure-store` | IndexedDB (Dexie) + outbox; Web Crypto AES-GCM cho trường nhạy cảm | D-021, D-022 |
 | EAS build / TestFlight | HTTPS URL + "Thêm vào Màn hình chính" | D-018, D-026 |
 | Thông báo cục bộ (dự kiến) | Web Push (VAPID) + nhắc trong app | D-024 |
-| Token dev dán tay | Đăng nhập OTP email của Supabase trong app | D-025 |
+| Token dev dán tay | Đăng nhập email + mật khẩu Supabase trong app (tài khoản do admin tạo) | D-025 → D-038 |
 | `apps/mobile/src/lib/sqlcipher.ts` | `apps/web/src/offline/crypto.ts` | D-022 |
 
 ### 2.5 LOẠI BỎ (chỉ sau khi M0-PWA spike tương đương có và được duyệt; commit riêng)
@@ -80,7 +80,7 @@
 1. `docs:` — kế hoạch này + cập nhật PRD/ARCHITECTURE/DECISIONS/MILESTONES/RELEASE_CHECKLIST (**commit hiện tại**).
 2. `refactor(contracts,adapters):` — đổi tên sang `HandwritingRecognitionPort` (giữ alias), chuyển `strokes.ts` vào `domain`; toàn bộ test cũ vẫn xanh.
 3. `feat(web):` — khung `apps/web` (Next.js, Tailwind, layout responsive phone/tablet/desktop, manifest + service worker tùy chọn) + CI `next build`.
-4. `feat(web):` — spike: canvas viết tay, thu âm WAV, IndexedDB/outbox, upload PDF, đăng nhập OTP, gọi API (Azure/Realtime).
+4. `feat(web):` — spike: canvas viết tay, thu âm WAV, IndexedDB/outbox, upload PDF, đăng nhập (D-038: email + mật khẩu), gọi API (Azure/Realtime).
 5. `feat(api):` — CORS, endpoint ký URL upload; test.
 6. `test(web):` — Playwright WebKit; `docs/WEB_COMPATIBILITY.md`, `HANDWRITING_EVALUATION.md` (khung + số đo khi có).
 7. `chore:` — gỡ `apps/mobile` và tài nguyên Expo (**chỉ sau khi chủ dự án duyệt**).

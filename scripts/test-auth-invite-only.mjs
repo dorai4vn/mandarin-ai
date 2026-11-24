@@ -1,20 +1,23 @@
 #!/usr/bin/env node
 /**
- * D-037 — real Auth check against the LOCAL Supabase stack (GoTrue + Kong + Mailpit) started by
- * `supabase start`, using supabase/config.toml (enable_signup = false). No dev token, no mock:
- * every request goes to the real Auth server. Run in CI (database job) or locally after
- * `pnpm exec supabase start`.
+ * D-038 / D-037 — real Auth check against the LOCAL Supabase stack (GoTrue + Kong) started by
+ * `supabase start`, using supabase/config.toml (enable_signup = false, anonymous off,
+ * minimum_password_length = 12). No dev token, no mock and no e-mail: every request goes to the
+ * real Auth server, and the CI job runs WITHOUT Mailpit to prove sign-in needs no SMTP.
  *
  * Proves:
  *   1. Public e-mail/password sign-up with the publishable key is rejected.
  *   2. Anonymous sign-in is rejected.
- *   3. OTP for an unknown e-mail (create_user true or false) creates no account and sends no mail.
- *   4. An account created by an admin (secret key) can request a code, receives it by e-mail and
- *      can verify it → gets an `authenticated` access token.
+ *   3. An account created by an admin (secret key) with a password signs in → `authenticated` JWT.
+ *   4. Wrong password and an e-mail that was never granted access get the SAME error and create
+ *      no account.
+ *   5. A password shorter than 12 characters cannot be set.
  *
- * Keys are read from `supabase status` (local demo keys) and never printed.
+ * Keys come from `supabase status` (local demo keys) and are never printed. Passwords are
+ * generated per run and never printed.
  */
 import { execFileSync } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
 
 function localStatus() {
   const raw = execFileSync('pnpm', ['exec', 'supabase', 'status', '-o', 'json'], {
@@ -28,7 +31,6 @@ function localStatus() {
     publishable: pick('PUBLISHABLE_KEY', 'ANON_KEY'),
     secret: pick('SECRET_KEY', 'SERVICE_ROLE_KEY'),
     serviceJwt: pick('SERVICE_ROLE_KEY'),
-    mail: pick('MAILPIT_URL', 'INBUCKET_URL'),
   };
   for (const [k, v] of Object.entries(cfg)) {
     if (!v && k !== 'serviceJwt') throw new Error(`supabase status: missing ${k}`);
@@ -45,7 +47,9 @@ function check(name, ok, detail = '') {
   if (!ok) failed = true;
 }
 
-async function auth(path, body, { admin = false, method = 'POST' } = {}) {
+const describe = (r) => `HTTP ${r.status} ${r.json.error_code ?? ''}`.trim();
+
+async function auth(path, body, { admin = false, method = 'POST', bearer } = {}) {
   const headers = { 'content-type': 'application/json' };
   if (admin) {
     headers.apikey = cfg.secret;
@@ -53,6 +57,7 @@ async function auth(path, body, { admin = false, method = 'POST' } = {}) {
     if (cfg.serviceJwt?.startsWith('ey')) headers.authorization = `Bearer ${cfg.serviceJwt}`;
   } else {
     headers.apikey = cfg.publishable;
+    if (bearer) headers.authorization = `Bearer ${bearer}`;
   }
   const res = await fetch(`${cfg.api}/auth/v1${path}`, {
     method,
@@ -77,117 +82,102 @@ async function listUserEmails() {
   return (json.users ?? []).map((u) => u.email);
 }
 
-async function mailsTo(email) {
-  const q = encodeURIComponent(`to:"${email}"`);
-  const res = await fetch(`${cfg.mail}/api/v1/search?query=${q}`);
-  if (!res.ok) throw new Error(`mailpit search failed: HTTP ${res.status}`);
-  return (await res.json()).messages ?? [];
-}
+const passwordLogin = (email, password) => auth('/token?grant_type=password', { email, password });
 
-/** Waits for the code e-mail. Returns { mails, subject, code } so a failure says which part broke. */
-async function waitForCode(email) {
-  let last = { mails: 0, subject: '', code: null };
-  for (let i = 0; i < 20; i++) {
-    const list = await mailsTo(email);
-    if (list[0]) {
-      const msg = await (await fetch(`${cfg.mail}/api/v1/message/${list[0].ID}`)).json();
-      // The code is the only 6-digit number in supabase/templates/magic_link.html ({{ .Token }}).
-      const code = /\b(\d{6})\b/.exec(`${msg.Text ?? ''} ${msg.HTML ?? ''}`)?.[1] ?? null;
-      last = { mails: list.length, subject: msg.Subject ?? '', code };
-      if (code) return last;
-    }
-    await new Promise((r) => setTimeout(r, 500));
-  }
-  return last;
-}
+const jwtPayload = (token) =>
+  token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString()) : {};
 
 const run = Date.now().toString(36);
-const stranger = `nguoi-la-${run}@example.com`;
-const stranger2 = `nguoi-la-2-${run}@example.com`;
+const newPassword = () => `Mk-${randomBytes(12).toString('base64url')}`; // ≥ 19 chars
+const stranger = `chua-duoc-cap-${run}@example.com`;
 const usersBefore = (await listUserEmails()).length;
 
 // 1. Public sign-up is closed.
-const signup = await auth('/signup', { email: stranger, password: 'Mat-khau-dai-123456!' });
+const signup = await auth('/signup', { email: stranger, password: newPassword() });
 check(
   'POST /signup (email + password, publishable key) is rejected',
   signup.status >= 400 && signup.status < 500 && !signup.json.access_token,
-  `HTTP ${signup.status} ${signup.json.error_code ?? signup.json.msg ?? ''}`.trim(),
+  describe(signup),
 );
 
-// 2. Anonymous sign-in is closed (empty sign-up body = anonymous user).
+// 2. Anonymous sign-in is closed (sign-up without credentials = anonymous user).
 const anon = await auth('/signup', { data: {} });
 check(
   'anonymous sign-in is rejected',
   anon.status >= 400 && anon.status < 500 && !anon.json.access_token,
-  `HTTP ${anon.status} ${anon.json.error_code ?? anon.json.msg ?? ''}`.trim(),
+  describe(anon),
 );
 
-// 3. OTP for unknown e-mails never creates a user.
-const otpCreate = await auth('/otp', { email: stranger, create_user: true });
-check(
-  'OTP create_user=true for unknown e-mail is rejected (signup disabled)',
-  otpCreate.status >= 400 && otpCreate.status < 500,
-  `HTTP ${otpCreate.status} ${otpCreate.json.error_code ?? otpCreate.json.msg ?? ''}`.trim(),
-);
-const otpNoCreate = await auth('/otp', { email: stranger2, create_user: false });
-check(
-  'OTP create_user=false (what the app sends) for unknown e-mail is not a server error',
-  otpNoCreate.status < 500,
-  `HTTP ${otpNoCreate.status} ${otpNoCreate.json.error_code ?? otpNoCreate.json.msg ?? ''}`.trim(),
-);
-const emailsAfter = await listUserEmails();
-check(
-  'no account was created for unknown e-mails',
-  !emailsAfter.includes(stranger) &&
-    !emailsAfter.includes(stranger2) &&
-    emailsAfter.length === usersBefore,
-  `users before=${usersBefore} after=${emailsAfter.length}`,
-);
-check(
-  'no e-mail was sent to unknown addresses',
-  (await mailsTo(stranger)).length === 0 && (await mailsTo(stranger2)).length === 0,
-);
-
-// 4. An admin-invited account can sign in with a code.
-const invited = `duoc-moi-${run}@example.com`;
+// 3. Admin-created account signs in with its password.
+const member = `duoc-cap-${run}@example.com`;
+const memberPassword = newPassword();
 const created = await auth(
   '/admin/users',
-  { email: invited, email_confirm: true },
+  { email: member, password: memberPassword, email_confirm: true },
   { admin: true },
 );
-check('admin (secret key) can create an account', created.status === 200, `HTTP ${created.status}`);
-const otpInvited = await auth('/otp', { email: invited, create_user: false });
-check('invited account can request a code', otpInvited.status === 200, `HTTP ${otpInvited.status}`);
-const mail = await waitForCode(invited);
-check('code e-mail arrives (Mailpit)', mail.mails > 0, `${mail.mails} message(s)`);
 check(
-  'e-mail contains the 6-digit code (template has {{ .Token }})',
-  Boolean(mail.code),
-  mail.mails > 0 ? `subject "${mail.subject}"` : 'no e-mail',
+  'admin (secret key) creates an account with a password',
+  created.status === 200,
+  describe(created),
 );
-const code = mail.code;
-if (code) {
-  const verify = await auth('/verify', { type: 'email', email: invited, token: code });
-  const payload = verify.json.access_token
-    ? JSON.parse(Buffer.from(verify.json.access_token.split('.')[1], 'base64url').toString())
-    : {};
-  check(
-    'code verifies → authenticated session (not anonymous)',
-    verify.status === 200 &&
-      payload.role === 'authenticated' &&
-      payload.aud === 'authenticated' &&
-      payload.is_anonymous !== true,
-    `HTTP ${verify.status}`,
-  );
-}
+const ok = await passwordLogin(member, memberPassword);
+const payload = jwtPayload(ok.json.access_token);
+check(
+  'correct password → authenticated session (not anonymous)',
+  ok.status === 200 &&
+    payload.role === 'authenticated' &&
+    payload.aud === 'authenticated' &&
+    payload.sub === created.json.id &&
+    payload.is_anonymous !== true,
+  describe(ok),
+);
+
+// 4. Wrong password and unknown e-mail are indistinguishable.
+const wrong = await passwordLogin(member, newPassword());
+const unknown = await passwordLogin(stranger, newPassword());
+check(
+  'wrong password is rejected',
+  wrong.status === 400 && !wrong.json.access_token,
+  describe(wrong),
+);
+check(
+  'e-mail never granted access is rejected',
+  unknown.status === 400 && !unknown.json.access_token,
+  describe(unknown),
+);
+check(
+  'wrong password and unknown e-mail return the same error (no account enumeration)',
+  wrong.status === unknown.status &&
+    wrong.json.error_code === unknown.json.error_code &&
+    wrong.json.msg === unknown.json.msg,
+  `${describe(wrong)} vs ${describe(unknown)}`,
+);
+
+// 5. Password policy: fewer than 12 characters cannot be set.
+const short = await auth(
+  '/user',
+  { password: 'Ngan-11-kt!' },
+  { method: 'PUT', bearer: ok.json.access_token },
+);
+check('a password shorter than 12 characters is refused', short.status === 422, describe(short));
+const stillOld = await passwordLogin(member, memberPassword);
+check(
+  'the refused change left the old password in place',
+  stillOld.status === 200,
+  describe(stillOld),
+);
+
 const finalEmails = await listUserEmails();
 check(
-  'only the invited account was added',
-  finalEmails.length === usersBefore + 1 && finalEmails.includes(invited),
+  'only the admin-created account exists (no account from sign-up / login attempts)',
+  finalEmails.length === usersBefore + 1 &&
+    finalEmails.includes(member) &&
+    !finalEmails.includes(stranger),
   `users before=${usersBefore} after=${finalEmails.length}`,
 );
 
-console.log('Auth invite-only check (real local GoTrue, D-037):');
+console.log('Auth invite-only check (real local GoTrue, e-mail + password, D-038):');
 for (const line of results) console.log(`  ${line}`);
 if (failed) {
   console.error('FAILED');

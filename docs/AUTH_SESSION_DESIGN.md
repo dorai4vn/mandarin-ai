@@ -2,10 +2,10 @@
 
 Ngày: 2026-11-23 · Trạng thái: **hướng đã được chủ dự án duyệt; đây là thiết kế, chưa triển khai** (M1).
 
-> **Bổ sung 2026-11-24 (D-037):** chỉ người được mời mới đăng nhập. Route handler `POST /auth/otp/request` gọi Supabase với `shouldCreateUser: false` (không bao giờ tạo tài khoản), trả thông báo trung tính dù email có tồn tại hay không; thêm `POST /auth/password/recover` và `POST /auth/password/update` (yêu cầu xác thực lại). Không có route đăng ký. Mô hình membership: `docs/ACCESS_CONTROL.md`.
+> **Cập nhật 2026-11-24 (D-038, thay phần OTP của D-037):** đăng nhập bằng **email + mật khẩu** do admin cấp; **không** có OTP, Magic Link, đăng ký. Route handler `POST /auth/login` gọi Supabase `signInWithPassword` phía server, trả một thông báo lỗi chung ("Email hoặc mật khẩu không đúng.") cho mọi lỗi danh tính. Có JWT **chưa đủ**: quyền dùng app do `app_members` quyết định và lần đăng nhập đầu phải đổi mật khẩu (mục 9; mô hình đầy đủ: `docs/ACCESS_CONTROL.md`). Khôi phục mật khẩu qua email **tạm hoãn** (cần Custom SMTP).
 
 ## 1. Hiện trạng M0-PWA (cần thay ở M1)
-- Đăng nhập OTP dùng `@supabase/supabase-js` trên trình duyệt → phiên (access + **refresh token**) nằm trong `localStorage`, JavaScript đọc được → rủi ro nếu có XSS. Trái tinh thần D-022.
+- Đăng nhập email + mật khẩu (M0, D-038) dùng `@supabase/supabase-js` trên trình duyệt → phiên (access + **refresh token**) nằm trong `localStorage`, JavaScript đọc được → rủi ro nếu có XSS. Trái tinh thần D-022.
 - API (`apps/api`, Railway) xác thực bằng header `Authorization: Bearer <access token>` — **không dùng cookie**.
 
 ## 2. Bài toán: web và API khác domain
@@ -24,7 +24,7 @@ Trình duyệt ──(cookie __Host-mai_rt, HttpOnly, first-party)──▶ Next
      │
      └──(Authorization: Bearer <access token>)──▶ Fastify API (Railway) ── xác thực JWT qua JWKS
 ```
-1. **Đăng nhập OTP qua route handler** (`POST /auth/otp/request`, `POST /auth/otp/verify` trên Next.js): server gọi Supabase Auth, nhận session; **refresh token** chỉ lưu trong cookie `__Host-mai_rt` (`HttpOnly; Secure; SameSite=Lax; Path=/`, không `Domain`), trình duyệt không đọc được.
+1. **Đăng nhập qua route handler** (`POST /auth/login { email, password }` trên Next.js): server gọi Supabase `signInWithPassword` (publishable key), nhận session; **refresh token** chỉ lưu trong cookie `__Host-mai_rt` (`HttpOnly; Secure; SameSite=Lax; Path=/`, không `Domain`), trình duyệt không đọc được. Mật khẩu chỉ nằm trong body request HTTPS này: không log (redact), không lưu, không đưa vào URL. Rate limit theo IP + email ở route handler, ngoài rate limit của Supabase.
 2. **Access token** (JWT, sống ngắn, mặc định Supabase 1 giờ — đề xuất 15–60 phút) trả về dạng JSON và chỉ giữ **trong bộ nhớ** (biến JS), không ghi `localStorage`/`sessionStorage`/IndexedDB.
 3. Khi tải trang hoặc access token sắp hết hạn: `POST /auth/refresh` (route handler) đọc cookie, gọi Supabase refresh, **xoay vòng** refresh token (đặt cookie mới), trả access token mới.
 4. Gọi API Railway bằng `Authorization: Bearer` như hiện tại → API giữ nguyên thiết kế stateless, không cần cookie, không phụ thuộc domain.
@@ -68,3 +68,14 @@ Trình duyệt ──(cookie __Host-mai_rt, HttpOnly, first-party)──▶ Next
 - Hai tab refresh đồng thời không làm mất phiên.
 - Đăng xuất xóa cookie + dữ liệu cục bộ; API trả 401 với access token cũ sau khi hết hạn.
 - E2E trên Chromium/Firefox/WebKit (Safari ITP) với web/API khác origin.
+
+## 9. Lần đăng nhập đầu và đổi mật khẩu (D-038, M1)
+- Sau `POST /auth/login`, web gọi `GET /v1/me` trên API → `{ membership: 'pending'|'active'|'disabled'|null, password_change_required }`:
+  - không có membership / `pending` / `disabled` → màn hình "Tài khoản chưa được cấp quyền — liên hệ chủ ứng dụng" (không tải dữ liệu học, không mở IndexedDB của người dùng);
+  - `password_change_required = true` → **chỉ** hiện màn hình "Đổi mật khẩu" (mật khẩu hiện tại + mật khẩu mới ≥ 12 ký tự + nhập lại);
+  - còn lại → app.
+- Đây là UX; lớp bảo vệ là API (403) + RLS (`is_active_member()` yêu cầu cờ tắt) — `docs/ACCESS_CONTROL.md` mục 5–6.
+- Đổi mật khẩu gọi **API Railway** `POST /v1/me/password` (cần secret key để cập nhật và xóa cờ), không qua Supabase trực tiếp từ trình duyệt. Thành công → API đã thu hồi mọi phiên → web xóa access token trong RAM, gọi `POST /auth/logout` để xóa cookie, yêu cầu đăng nhập lại bằng mật khẩu mới.
+- Người dùng đã kích hoạt đổi mật khẩu bất cứ lúc nào ở *Hồ sơ → Đổi mật khẩu* (cùng endpoint).
+- **Quên mật khẩu:** không có route tự phục vụ cho tới khi có Custom SMTP; màn hình đăng nhập ghi "Quên mật khẩu: nhờ quản trị viên cấp mật khẩu tạm mới".
+- Kiểm thử bổ sung cho mục 8: mật khẩu không xuất hiện trong log route handler/API, trong `localStorage`/`sessionStorage`/IndexedDB, trong URL; sau khi đổi mật khẩu refresh token cũ và access token cũ đều bị từ chối.

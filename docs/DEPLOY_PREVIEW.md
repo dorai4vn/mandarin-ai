@@ -40,7 +40,7 @@ Không dùng chung database, khóa hay bucket giữa preview và production.
 
 | Loại | Trông như | Là JWT? | Dùng để | Đặt ở |
 |---|---|---|---|---|
-| **Publishable key** | `sb_publishable_…` (hoặc anon key kiểu cũ `eyJ…`) | Không (khóa mới) | Trình duyệt gọi Supabase Auth (đăng nhập OTP). Công khai theo thiết kế; dữ liệu được RLS bảo vệ | Vercel `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` |
+| **Publishable key** | `sb_publishable_…` (hoặc anon key kiểu cũ `eyJ…`) | Không (khóa mới) | Trình duyệt gọi Supabase Auth (đăng nhập email + mật khẩu). Công khai theo thiết kế; dữ liệu được RLS bảo vệ | Vercel `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` |
 | **Secret key** | `sb_secret_…` (hoặc service_role kiểu cũ `eyJ…`) | Không (khóa mới) | Server ghi Storage với quyền đặc biệt (bỏ qua RLS). API gửi trong header `apikey` | Railway `SUPABASE_SECRET_KEY` — **BÍ MẬT** |
 | **JWT signing keys** | Cặp khóa bất đối xứng (ES256) ở Project Settings → JWT Keys; phần **công khai** được Supabase đăng tại `<Project URL>/auth/v1/.well-known/jwks.json` | — | Supabase dùng khóa riêng để **ký** access token của người dùng; API tự tải khóa công khai để **kiểm tra** | **Không cần đặt gì** — API chỉ cần `SUPABASE_URL` |
 | Legacy JWT secret | Chuỗi bí mật HS256 (chỉ dự án/khóa kiểu cũ) | — | Chỉ khi dự án vẫn ký token bằng HS256 | Railway `SUPABASE_JWT_SECRET` — **chỉ đặt nếu bước kiểm tra ở mục 3.11 cho thấy cần** |
@@ -96,12 +96,12 @@ Vercel **không** chứa khóa bí mật nào.
 4. Bấm **Create new project**, chờ trạng thái xanh.
 5. **SQL Editor** → **New query** → mở file `supabase/migrations/20261123000000_m0_profiles_baseline.sql` trên GitHub (nút *Raw*), sao chép toàn bộ, dán vào → **Run**. Kết quả mong đợi: "Success. No rows returned".
 6. **Storage** → **New bucket** → tên `documents` → **Public bucket: TẮT** → **Save**.
-7. **Authentication → Sign In / Providers** (ứng dụng riêng tư — D-037, `docs/ACCESS_CONTROL.md`):
+7. **Authentication → Sign In / Providers** (ứng dụng riêng tư — D-037, D-038, `docs/ACCESS_CONTROL.md`):
    - **Allow new users to sign up: TẮT** ← quan trọng nhất; nếu dự án đang bật thì tắt **ngay**, kể cả khi Preview đã online.
    - **Allow anonymous sign-ins: TẮT**.
-   - **Email:** bật *Enable Email provider* (để người đã được cấp đăng nhập); bật *Confirm email*.
+   - **Email:** bật *Enable Email provider* (cần cho đăng nhập email + mật khẩu). *Secure password change*: **TẮT** (tính năng đó cần gửi email).
    - Mọi provider khác (Google, GitHub, Phone…): **TẮT**.
-8. **Authentication → Emails → Templates → Magic Link:** thêm vào nội dung email dòng `Mã đăng nhập Mandarin AI: {{ .Token }}` → **Save** (app dùng mã 6 số, D-025). Làm tương tự với mẫu **Invite user** và **Reset Password** (thêm `{{ .Token }}`). Có thể dán nội dung từ `supabase/templates/magic_link.html`, `invite.html`, `recovery.html` (đây cũng là mẫu dùng cho local/CI). Thiếu bước này, email chỉ có link, không có mã 6 số → không đăng nhập được trong app.
+8. **Authentication → Policies / Password** (tên mục có thể khác): độ dài tối thiểu **12** ký tự (D-038); bật *leaked password protection* nếu gói hiện tại hỗ trợ. **Không cần** sửa mẫu email hay cấu hình SMTP: đăng nhập không gửi email. Khôi phục mật khẩu qua email tạm hoãn tới khi có Custom SMTP.
 9. **Authentication → Sessions** (nếu có): kiểm tra *Detect and revoke potentially compromised refresh tokens* đang bật. **Authentication → Sign In / Providers:** để **tắt** *Allow anonymous sign-ins* (API cũng từ chối phiên ẩn danh).
 10. **Project Settings → API Keys:** ghi lại (cho bước 2–3) Project URL, publishable key (công khai); secret key chỉ dán thẳng vào Railway ở bước 2. Nếu trang chỉ có "Legacy API keys" (anon/service_role): bấm tạo **publishable key** và **secret key** mới (khuyến nghị) — hoặc dùng anon/service_role kiểu cũ (API vẫn hỗ trợ).
 11. **Project Settings → JWT Keys** — xác định cách Supabase ký token người dùng:
@@ -159,9 +159,9 @@ Vercel **không** chứa khóa bí mật nào.
 1. **Railway → Variables:** sửa `WEB_ORIGINS` = URL ở 5.7 (có `https://`, không `/` cuối). Tùy chọn thêm `WEB_ORIGIN_REGEX` (2.2). Railway tự redeploy.
 2. **Supabase → Authentication → URL Configuration:** *Site URL* = URL ở 5.7; *Redirect URLs* thêm cùng URL.
 3. Mở URL web → **Phòng thử M0 → Khả năng trình duyệt**: không có cảnh báo đỏ.
-4. **Cấp tài khoản thử nghiệm (admin):** Supabase → Authentication → Users → **Add user** → **Send invitation** (hoặc *Create new user* + *Auto Confirm User*) với **email thật của từng người**; không tạo tài khoản dùng chung. Chi tiết: `docs/ACCESS_CONTROL.md` mục 5.
-5. **Kiểm tra chặn đăng ký:** ở trang Phiên đăng nhập, nhập một email **chưa được mời** → app hiện thông báo trung tính giống hệt email được mời, **không** nhận được mã và không có user mới xuất hiện trong Supabase → Users. App gọi OTP với `shouldCreateUser: false` (từ 2026-11-24); cấu hình "Allow new users to sign up = TẮT" trên Supabase vẫn là lớp chặn chính — app chỉ là lớp thứ hai.
-6. **Hồ sơ → Phiên đăng nhập:** nhập email **đã được mời** → nhận mã 6 số → đăng nhập (giới hạn email mặc định của Supabase rất thấp — chỉ thử vài lần). Lưu ý: ở M0 phiên đăng nhập do thư viện Supabase giữ trong `localStorage` của trình duyệt; phiên cookie HttpOnly làm ở M1 (`docs/AUTH_SESSION_DESIGN.md`) → **chỉ dùng tài khoản thử nghiệm** trên Preview.
+4. **Cấp tài khoản thử nghiệm (admin):** Supabase → Authentication → Users → **Add user** → **Create new user** → email thật của từng người + **mật khẩu tạm ngẫu nhiên ≥ 12 ký tự** + bật **Auto Confirm User**. Không dùng *Send invitation* (cần email), không tạo tài khoản dùng chung. Gửi mật khẩu tạm qua kênh riêng. Tài khoản tạo trước đây cho OTP (không có mật khẩu): xóa và tạo lại theo cách này (chưa có dữ liệu). Chi tiết: `docs/ACCESS_CONTROL.md` mục 8.
+5. **Kiểm tra chặn đăng ký và thông báo chung:** ở *Hồ sơ → Phiên đăng nhập*, nhập một email **chưa được cấp** + mật khẩu bất kỳ → "Email hoặc mật khẩu không đúng."; nhập email **đã được cấp** + mật khẩu **sai** → **cùng** thông báo; Supabase → Users không có user mới. Cấu hình "Allow new users to sign up = TẮT" là lớp chặn chính; app không có đường đăng ký.
+6. **Đăng nhập thật:** email đã được cấp + mật khẩu tạm đúng → "Đã đăng nhập". Lưu ý M0: phiên do thư viện Supabase giữ trong `localStorage`; **chưa có** bắt buộc đổi mật khẩu và kiểm tra membership (M1) → **chỉ dùng tài khoản thử nghiệm**, không nhập dữ liệu thật trên Preview.
 7. Chạy `docs/SMOKE_TEST.md` và gửi kết quả.
 
 ## 7. Kiểm tra an toàn Preview
@@ -185,11 +185,12 @@ Tạm dừng Preview khi không dùng: Railway → service → **Settings → Pa
 - **Railway build lỗi:** mở Deployments → bản lỗi → **View logs** → sao chép đoạn lỗi (log build không chứa secret) gửi Claude.
 - **API báo "Invalid API configuration: …":** tên biến được nêu trong thông báo — kiểm tra lại giá trị biến đó (thông báo không in giá trị).
 - **Web gọi API báo "Không kết nối được máy chủ API":** kiểm tra `NEXT_PUBLIC_API_URL` (Vercel) và `WEB_ORIGINS` (Railway) đúng từng ký tự.
-- **Không nhận được email mã:** kiểm tra thư rác; giới hạn email mặc định của Supabase; mẫu email có `{{ .Token }}`.
+- **Đăng nhập luôn báo "Email hoặc mật khẩu không đúng.":** kiểm tra user có trong Authentication → Users, đã *Confirmed* (Auto Confirm), mật khẩu tạm gõ đúng (không thừa khoảng trắng); `NEXT_PUBLIC_SUPABASE_URL`/publishable key trên Vercel đúng dự án. Thông báo cố ý không nói lý do cụ thể (chống dò tài khoản).
 
 ## 9. Bảo mật xác thực (tóm tắt cho người vận hành)
 - API chỉ chấp nhận **access token người dùng** của dự án Supabase đã cấu hình: chữ ký hợp lệ (khóa công khai JWKS hoặc Legacy JWT secret nếu được đặt), `iss = <Project URL>/auth/v1`, `aud = authenticated`, `role = authenticated`, chưa hết hạn, không phải phiên ẩn danh.
 - Publishable key, secret key, token `service_role`, token tự ký với thuật toán khác hoặc `alg: none` → **401**.
 - Khóa JWKS được cache 10 phút; khi Supabase xoay khóa (token có `kid` mới) API tự tải lại (tối đa 1 lần / 30 giây).
-- Access token vẫn hợp lệ tới khi hết hạn (mặc định 1 giờ) kể cả sau khi đăng xuất — giới hạn của JWT; thu hồi tức thì sẽ xem xét ở M1 (`docs/AUTH_SESSION_DESIGN.md`).
+- Access token vẫn hợp lệ tới khi hết hạn (mặc định 1 giờ) kể cả sau khi đăng xuất — giới hạn của JWT; M1 chặn sớm hơn bằng membership (≤ 60 s) và `password_changed_at` (`docs/ACCESS_CONTROL.md` mục 5).
+- M0: API chấp nhận **mọi** user đã đăng nhập của dự án (chưa có `app_members`) → chỉ tạo tài khoản cho người được phép.
 - Secret key chỉ được API gửi tới Supabase Storage trong header `apikey`; không ghi vào log, không có trong JavaScript của trình duyệt (đã kiểm bằng build có giá trị mồi).

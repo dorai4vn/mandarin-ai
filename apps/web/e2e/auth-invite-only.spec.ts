@@ -1,73 +1,109 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
 
 /**
- * D-037 — private app, invite only. These tests check the WEB CLIENT behaviour only:
- * the Supabase Auth endpoint is intercepted (the E2E build points at a placeholder
- * `https://supabase-e2e.invalid`), so nothing here proves a real Supabase project rejects
- * sign-ups. That is covered by `scripts/test-auth-invite-only.mjs` (real GoTrue in CI) and
- * by smoke test A12a/A12b on the dev project. No dev token is used in this file.
+ * D-038 / D-037 — private app, e-mail + password sign-in for admin-created accounts, no sign-up.
+ * These tests check the WEB CLIENT only: the Supabase Auth host is a placeholder
+ * (`https://supabase-e2e.invalid`, set at build time) and every Auth request is intercepted, so
+ * nothing here proves that a real Supabase project rejects sign-ups or wrong passwords. That is
+ * covered by `scripts/test-auth-invite-only.mjs` (real GoTrue in the CI database job) and by
+ * smoke tests A12–A12c on the dev project. No dev token is used in this file.
  */
-const SUPABASE_E2E_HOST = 'supabase-e2e.invalid';
-const NEUTRAL = /Nếu email này đã được quản trị viên cấp quyền/;
+const AUTH = 'https://supabase-e2e.invalid/auth/v1';
+const INVALID_LOGIN = 'Email hoặc mật khẩu không đúng.';
 const SIGN_UP_WORDING = /đăng ký|sign[\s-]?up|tạo tài khoản|create (an )?account/i;
+const PASSWORD = 'Mat-khau-thu-nghiem-E2E-42';
 
-type OtpBody = { email?: string; create_user?: boolean };
+type TokenRequest = { url: string; body: { email?: string; password?: string } };
 
-async function interceptOtp(page: Page, reply: (route: Route) => Promise<void>) {
-  const bodies: OtpBody[] = [];
-  await page.route(`https://${SUPABASE_E2E_HOST}/auth/v1/otp**`, async (route) => {
-    bodies.push(route.request().postDataJSON() as OtpBody);
-    await reply(route);
-  });
-  // Any other Auth endpoint (signup, anonymous sign-in) must never be called by the page.
+/** Records every Auth call; only the password grant is allowed, everything else is a failure. */
+async function interceptAuth(page: Page, reply: (route: Route) => Promise<void>) {
+  const token: TokenRequest[] = [];
   const forbidden: string[] = [];
-  await page.route(`https://${SUPABASE_E2E_HOST}/auth/v1/signup**`, async (route) => {
-    forbidden.push(route.request().url());
-    await route.fulfill({ status: 500, body: '{}' });
+  await page.route(`${AUTH}/**`, async (route) => {
+    const url = route.request().url();
+    if (url.startsWith(`${AUTH}/token?grant_type=password`)) {
+      token.push({ url, body: route.request().postDataJSON() as TokenRequest['body'] });
+      return reply(route);
+    }
+    forbidden.push(url);
+    return route.fulfill({ status: 500, body: '{}' });
   });
-  return { bodies, forbidden };
+  return { token, forbidden };
 }
 
-async function requestCode(page: Page, email: string) {
+const invalidCredentials = (r: Route) =>
+  r.fulfill({
+    status: 400,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      code: 400,
+      error_code: 'invalid_credentials',
+      msg: 'Invalid login credentials',
+    }),
+  });
+
+function fakeSession() {
+  const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString('base64url');
+  const sub = '00000000-0000-4000-8000-000000000001';
+  const exp = Math.floor(Date.now() / 1000) + 3600;
+  const jwt = `${b64({ alg: 'ES256', typ: 'JWT' })}.${b64({ sub, exp, role: 'authenticated', aud: 'authenticated' })}.c2ln`;
+  return {
+    access_token: jwt,
+    token_type: 'bearer',
+    expires_in: 3600,
+    expires_at: exp,
+    refresh_token: 'e2e-refresh-token',
+    user: { id: sub, aud: 'authenticated', role: 'authenticated', email: 'duoc.cap@example.com' },
+  };
+}
+
+async function submitLogin(page: Page, email: string, password = PASSWORD) {
   await page.goto('/lab/session');
   await expect(page.getByTestId('invite-only-note')).toBeVisible();
-  await page.getByTestId('otp-email').fill(email);
-  await page.getByTestId('otp-submit').click();
-  return page.getByTestId('otp-message');
+  await page.getByTestId('login-email').fill(email);
+  await page.getByTestId('login-password').fill(password);
+  await page.getByTestId('login-submit').click();
 }
 
-test.describe('Invite-only sign-in (D-037)', () => {
-  test('OTP request never asks Supabase to create a user (invited e-mail)', async ({ page }) => {
-    const { bodies, forbidden } = await interceptOtp(page, (r) =>
-      r.fulfill({ status: 200, contentType: 'application/json', body: '{}' }),
-    );
-    const msg = await requestCode(page, 'duoc.moi@example.com');
-    await expect(msg).toHaveText(NEUTRAL);
-    expect(bodies).toHaveLength(1);
-    expect(bodies[0]?.email).toBe('duoc.moi@example.com');
-    expect(bodies[0]?.create_user).toBe(false);
-    expect(forbidden).toEqual([]);
-  });
+async function expectPasswordNotStored(page: Page) {
+  const stored = await page.evaluate(() =>
+    [localStorage, sessionStorage]
+      .flatMap((s) => Object.keys(s).map((k) => `${k}=${s.getItem(k) ?? ''}`))
+      .join('\n'),
+  );
+  expect(stored).not.toContain(PASSWORD);
+}
 
-  test('unknown e-mail gets the same neutral message (no account enumeration)', async ({
-    page,
-  }) => {
-    const { bodies, forbidden } = await interceptOtp(page, (r) =>
+test.describe('E-mail + password sign-in, invite only (D-038)', () => {
+  test('signs in with signInWithPassword only — no sign-up, no e-mail code', async ({ page }) => {
+    const { token, forbidden } = await interceptAuth(page, (r) =>
       r.fulfill({
-        status: 422,
+        status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({
-          code: 422,
-          error_code: 'otp_disabled',
-          msg: 'Signups not allowed for otp',
-        }),
+        body: JSON.stringify(fakeSession()),
       }),
     );
-    const msg = await requestCode(page, 'nguoi.la@example.com');
-    await expect(msg).toHaveText(NEUTRAL);
-    await expect(page.getByText(/Signups not allowed/i)).toHaveCount(0);
-    expect(bodies[0]?.create_user).toBe(false);
+    await submitLogin(page, ' Duoc.Cap@Example.com ');
+    await expect(page.getByTestId('login-signed-in')).toBeVisible();
+    expect(token).toHaveLength(1);
+    expect(token[0]?.body.email).toBe('duoc.cap@example.com');
+    expect(token[0]?.body.password).toBe(PASSWORD);
+    expect(forbidden, 'no /signup, /otp or other Auth endpoint').toEqual([]);
+    await expectPasswordNotStored(page);
+  });
+
+  test('wrong password and unknown e-mail show the same generic message', async ({ page }) => {
+    const { token, forbidden } = await interceptAuth(page, invalidCredentials);
+    await submitLogin(page, 'duoc.cap@example.com', 'mat-khau-sai-1234');
+    await expect(page.getByTestId('login-message')).toHaveText(INVALID_LOGIN);
+    await expect(page.getByTestId('login-password')).toHaveValue('');
+    await submitLogin(page, 'nguoi.la@example.com');
+    await expect(page.getByTestId('login-message')).toHaveText(INVALID_LOGIN);
+    await expect(page.getByText(/Invalid login credentials/i)).toHaveCount(0);
+    expect(token).toHaveLength(2);
     expect(forbidden).toEqual([]);
+    await expect(page.getByTestId('login-signed-in')).toHaveCount(0);
+    await expectPasswordNotStored(page);
   });
 
   test('no page offers sign-up, and sign-up routes do not exist', async ({ page }) => {

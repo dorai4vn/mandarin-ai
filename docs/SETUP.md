@@ -76,7 +76,7 @@ Kịch bản (ghi lại thiết bị, hệ điều hành, trình duyệt + phiê
 4. **PDF:** chọn PDF mẫu từ ứng dụng Tệp (điện thoại) và kéo-thả (máy tính).
 5. **Offline:** Phòng thử → Offline: bật chế độ máy bay → lưu ghi chú → đóng hẳn trình duyệt → mở lại → tắt chế độ máy bay → "chờ=0", `applied=1`.
 6. **PWA (tùy chọn):** Thêm vào Màn hình chính (iPhone) / Cài đặt (Chrome, Edge) → mở từ icon → app chạy standalone; tắt mạng → trang chủ vẫn mở.
-7. **Đăng nhập OTP** (khi có Supabase): đăng nhập trong tab và trong app đã cài.
+7. **Đăng nhập email + mật khẩu** (khi có Supabase, tài khoản do admin tạo): đăng nhập trong tab và trong app đã cài.
 
 ## 6. Supabase local (cần Docker)
 ```bash

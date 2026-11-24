@@ -18,10 +18,11 @@ Ký hiệu cột "Cần": `—` = không cần tài khoản/khóa · `SB` = cầ
 | A9 | Phòng thử → Tải PDF: kéo-thả một PDF vào khung; thử thêm một tệp .txt đổi tên thành .pdf | PDF thật: chuyển sang bước gửi (chưa đăng nhập → thông báo đăng nhập); tệp giả: "Tệp không phải PDF" | — | |
 | A10 | Phòng thử → Offline: DevTools → Network → Offline → lưu một ghi chú → đóng tab → mở lại tab → bỏ Offline | Ghi chú còn; "chờ" > 0 khi chưa đăng nhập (không mất dữ liệu) | — | |
 | A11 | Biểu tượng cài đặt trên thanh địa chỉ (Chrome/Edge) → Cài đặt | App mở trong cửa sổ riêng; **không cài vẫn dùng được mọi thứ** | — | |
-| A12a | Nhập email **chưa được mời** ở Phiên đăng nhập | App hiện **cùng thông báo trung tính** như email được mời ("Nếu email này đã được quản trị viên cấp quyền…"); không nhận được mã; **không** có user mới trong Supabase → Users (D-037) | SB | |
-| A12b | Gọi trực tiếp Auth API đăng ký bằng publishable key (Claude cung cấp lệnh `curl` mẫu, không cần secret) | Bị từ chối (`Signups not allowed`) | SB | |
-| A12c | Trong app không có nút/đường dẫn "Đăng ký"; mở `/signup`, `/register` | Chỉ có "Đăng nhập bằng mã qua email" + ghi chú "chỉ dành cho người được mời"; hai đường dẫn trả trang 404 | — | |
-| A12 | Đăng nhập bằng mã OTP với email **đã được admin mời** (Hồ sơ → Phiên đăng nhập) | Email có mã 6 số; đăng nhập thành công | SB | |
+| A12a | Phiên đăng nhập: email **chưa được cấp** + mật khẩu bất kỳ | "Email hoặc mật khẩu không đúng."; **không** có user mới trong Supabase → Users (D-037, D-038) | SB | |
+| A12b | Gọi trực tiếp Auth API đăng ký bằng publishable key (Claude cung cấp lệnh `curl` mẫu, không cần secret) | Bị từ chối (`signup_disabled`) | SB | |
+| A12c | Trong app không có nút/đường dẫn "Đăng ký", không có ô "mã 6 số"; mở `/signup`, `/register` | Chỉ có form email + mật khẩu và ghi chú "chỉ dành cho người được chủ ứng dụng cấp quyền"; hai đường dẫn trả trang 404 | — | |
+| A12d | Email **đã được cấp** + mật khẩu **sai** | **Cùng** thông báo như A12a; ô mật khẩu được xóa | SB | |
+| A12 | Email đã được cấp + mật khẩu tạm đúng (Hồ sơ → Phiên đăng nhập) | "Đã đăng nhập"; không cần mở email. DevTools → Application → Local/Session Storage: **không** có mật khẩu (chỉ có phiên của Supabase — giới hạn M0) | SB | |
 | A13 | Sau khi đăng nhập: Offline → Đồng bộ ngay | `applied=…`, "chờ=0", `source=mock` (sync server **in-memory**, mất khi API khởi động lại) | SB + MOCK | |
 | A14 | Sau khi đăng nhập: Tải PDF | Nhãn LIVE, đường dẫn `…/imports/….pdf`; tệp có trong bucket private `documents` | SB | |
 | A15 | Viết chữ → Nộp bài sau khi đăng nhập | Nhãn MOCK (adapter mock) hoặc thông báo "chưa được cấu hình" (adapter tắt) | SB (+MOCK) | |
@@ -40,7 +41,7 @@ Ký hiệu cột "Cần": `—` = không cần tài khoản/khóa · `SB` = cầ
 | B8 | Offline: lưu ghi chú → bật **Chế độ máy bay** → lưu thêm → đóng hẳn Safari → mở lại | Ghi chú còn, "chờ" đúng số | — | |
 | B9 | Chia sẻ → **Thêm vào MH chính** → mở từ icon | Chạy toàn màn hình (không thanh địa chỉ); có nút điều hướng trong app | — | |
 | B10 | Trong app đã cài: bật Chế độ máy bay → mở lại app | Trang chủ vẫn hiện (app shell offline). **Bắt buộc kiểm tay** vì Playwright WebKit không tự động hóa được (CI) | — | |
-| B11 | Đăng nhập OTP **trong app đã cài** | Nhập mã 6 số ngay trong app; không phải mở link email | SB | |
+| B11 | Đăng nhập email + mật khẩu **trong app đã cài** | Đăng nhập ngay trong app; trình quản lý mật khẩu của iOS gợi ý/lưu được; không cần email | SB | |
 | B12 | Đăng nhập **cùng một người** (tài khoản của chính mình) trên máy tính (A12) và iPhone — không dùng tài khoản của người khác | Cả hai đăng nhập được. (Đồng bộ dữ liệu giữa thiết bị: **chưa có** — M1) | SB | |
 
 ## C. Chrome trên Android
@@ -52,7 +53,7 @@ Ký hiệu cột "Cần": `—` = không cần tài khoản/khóa · `SB` = cầ
 | C4 | Tải PDF từ trình chọn tệp | Như A9 | — | |
 | C5 | Offline bằng Chế độ máy bay | Như B8 | — | |
 | C6 | Menu ⋮ → **Cài đặt ứng dụng / Thêm vào màn hình chính** | Cài được; không cài vẫn dùng được | — | |
-| C7 | Đăng nhập OTP | Như A12 | SB | |
+| C7 | Đăng nhập email + mật khẩu | Như A12, A12a, A12d | SB | |
 
 ## D. Kết luận cho mỗi thiết bị
 - Tổng ĐẠT / KHÔNG ĐẠT; liệt kê lỗi kèm ảnh.
