@@ -84,17 +84,21 @@ async function mailsTo(email) {
   return (await res.json()).messages ?? [];
 }
 
+/** Waits for the code e-mail. Returns { mails, subject, code } so a failure says which part broke. */
 async function waitForCode(email) {
+  let last = { mails: 0, subject: '', code: null };
   for (let i = 0; i < 20; i++) {
-    const [first] = await mailsTo(email);
-    if (first) {
-      const msg = await (await fetch(`${cfg.mail}/api/v1/message/${first.ID}`)).json();
-      const code = /\b(\d{6})\b/.exec(`${msg.Text ?? ''} ${msg.HTML ?? ''}`)?.[1];
-      if (code) return code;
+    const list = await mailsTo(email);
+    if (list[0]) {
+      const msg = await (await fetch(`${cfg.mail}/api/v1/message/${list[0].ID}`)).json();
+      // The code is the only 6-digit number in supabase/templates/magic_link.html ({{ .Token }}).
+      const code = /\b(\d{6})\b/.exec(`${msg.Text ?? ''} ${msg.HTML ?? ''}`)?.[1] ?? null;
+      last = { mails: list.length, subject: msg.Subject ?? '', code };
+      if (code) return last;
     }
     await new Promise((r) => setTimeout(r, 500));
   }
-  return null;
+  return last;
 }
 
 const run = Date.now().toString(36);
@@ -154,8 +158,14 @@ const created = await auth(
 check('admin (secret key) can create an account', created.status === 200, `HTTP ${created.status}`);
 const otpInvited = await auth('/otp', { email: invited, create_user: false });
 check('invited account can request a code', otpInvited.status === 200, `HTTP ${otpInvited.status}`);
-const code = await waitForCode(invited);
-check('code e-mail arrives (Mailpit)', Boolean(code));
+const mail = await waitForCode(invited);
+check('code e-mail arrives (Mailpit)', mail.mails > 0, `${mail.mails} message(s)`);
+check(
+  'e-mail contains the 6-digit code (template has {{ .Token }})',
+  Boolean(mail.code),
+  mail.mails > 0 ? `subject "${mail.subject}"` : 'no e-mail',
+);
+const code = mail.code;
 if (code) {
   const verify = await auth('/verify', { type: 'email', email: invited, token: code });
   const payload = verify.json.access_token

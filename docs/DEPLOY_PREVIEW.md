@@ -101,7 +101,7 @@ Vercel **không** chứa khóa bí mật nào.
    - **Allow anonymous sign-ins: TẮT**.
    - **Email:** bật *Enable Email provider* (để người đã được cấp đăng nhập); bật *Confirm email*.
    - Mọi provider khác (Google, GitHub, Phone…): **TẮT**.
-8. **Authentication → Emails → Templates → Magic Link:** thêm vào nội dung email dòng `Mã đăng nhập Mandarin AI: {{ .Token }}` → **Save** (app dùng mã 6 số, D-025). Làm tương tự với mẫu **Invite user** và **Reset Password** (thêm `{{ .Token }}`).
+8. **Authentication → Emails → Templates → Magic Link:** thêm vào nội dung email dòng `Mã đăng nhập Mandarin AI: {{ .Token }}` → **Save** (app dùng mã 6 số, D-025). Làm tương tự với mẫu **Invite user** và **Reset Password** (thêm `{{ .Token }}`). Có thể dán nội dung từ `supabase/templates/magic_link.html`, `invite.html`, `recovery.html` (đây cũng là mẫu dùng cho local/CI). Thiếu bước này, email chỉ có link, không có mã 6 số → không đăng nhập được trong app.
 9. **Authentication → Sessions** (nếu có): kiểm tra *Detect and revoke potentially compromised refresh tokens* đang bật. **Authentication → Sign In / Providers:** để **tắt** *Allow anonymous sign-ins* (API cũng từ chối phiên ẩn danh).
 10. **Project Settings → API Keys:** ghi lại (cho bước 2–3) Project URL, publishable key (công khai); secret key chỉ dán thẳng vào Railway ở bước 2. Nếu trang chỉ có "Legacy API keys" (anon/service_role): bấm tạo **publishable key** và **secret key** mới (khuyến nghị) — hoặc dùng anon/service_role kiểu cũ (API vẫn hỗ trợ).
 11. **Project Settings → JWT Keys** — xác định cách Supabase ký token người dùng:

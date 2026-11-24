@@ -63,3 +63,8 @@ Skip có chủ đích (không phải để làm CI xanh): chuột trên điện 
 - `supabase/config.toml`: `enable_signup = false` (anonymous đã `false`).
 - Test: unit `auth-otp.test.ts` (4); E2E `auth-invite-only.spec.ts` (3 × 9 project) chặn request tới host giả `supabase-e2e.invalid` — **chỉ kiểm hành vi client**, không chứng minh Supabase thật từ chối; `scripts/test-auth-invite-only.mjs` chạy trên **GoTrue local thật** trong job CI `database` (không dev token): đăng ký + anonymous bị từ chối, email lạ không tạo user/không có thư, tài khoản do admin tạo nhận mã (Mailpit) và xác minh được.
 - Chưa kiểm: dự án Supabase Cloud `mandarin-ai-dev` (smoke test A12–A12c do chủ dự án chạy). Membership `app_members`, admin panel, cookie session: M1.
+
+### CI `70fc2af` — job `database` FAIL và cách sửa
+- Bước lỗi: `node scripts/test-auth-invite-only.mjs`. 9/10 kiểm tra trên GoTrue local PASS: signup → 422 `signup_disabled`; anonymous → 422 `anonymous_provider_disabled`; OTP email lạ → 422 `signup_disabled`/`otp_disabled`; 0 user được tạo; admin tạo user → 200; user được mời xin mã → 200. **FAIL:** không tìm thấy mã 6 số trong email.
+- Nguyên nhân: cấu hình trong repo, không phải logic Auth hay môi trường CI. `supabase/config.toml` dùng mẫu email mặc định của Supabase (chỉ có link, không có `{{ .Token }}`), trong khi app đăng nhập bằng mã (D-025). Cloud đã được hướng dẫn thêm `{{ .Token }}` (DEPLOY_PREVIEW bước 8), local/CI thì chưa.
+- Sửa: thêm `supabase/templates/{magic_link,invite,recovery}.html` có `{{ .Token }}` + khai báo trong `config.toml`; script tách "có email" và "email chứa mã" để báo lỗi chính xác. Không bỏ hay nới điều kiện nào.
