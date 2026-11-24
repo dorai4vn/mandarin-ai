@@ -1,6 +1,8 @@
 'use client';
 
 import {
+  useCallback,
+  useEffect,
   useId,
   useLayoutEffect,
   useRef,
@@ -17,6 +19,8 @@ import {
  * ←/→ (wrapping), Home/End. `segmented` (subtle track, selected = surface + shadow.xs) for
  * 2–4 short tabs; `underline` (44 px, 2 px primary.base indicator) for content tabs.
  * Too wide → the tablist scrolls horizontally inside itself; the page never scrolls sideways.
+ * Before the indicator is measured (server HTML, first paint) the selected tab has a static
+ * selected style; the indicator re-measures on resize and web-font load (ResizeObserver).
  * Focus ring is drawn INSIDE each tab: the scrolling tablist would clip an outside ring.
  * The indicator slides with `translate` (200 ms); reduced motion → instant (global rule).
  */
@@ -44,33 +48,64 @@ export function Tabs({
 }) {
   const base = useId();
   const [inner, setInner] = useState(defaultValue ?? items[0]?.id);
-  const selected = value ?? inner;
+  // A value that matches no item falls back to the first tab, so one tab is always reachable.
+  const requested = value ?? inner;
+  const selectedIndex = Math.max(
+    0,
+    items.findIndex((t) => t.id === requested),
+  );
+  const selected = items[selectedIndex]?.id;
   const tabs = useRef<Array<HTMLButtonElement | null>>([]);
   const list = useRef<HTMLDivElement>(null);
   const [indicator, setIndicator] = useState<{ x: number; w: number } | null>(null);
+  // DOM-safe ids (item ids may contain spaces etc.).
+  const domId = (kind: 'tab' | 'panel', id: string) =>
+    `${base}-${kind}-${encodeURIComponent(id).replace(/%/g, '_')}`;
 
   const select = (id: string) => {
     if (value === undefined) setInner(id);
     onValueChange?.(id);
   };
 
-  useLayoutEffect(() => {
-    const i = items.findIndex((t) => t.id === selected);
-    const el = tabs.current[i];
+  const measure = useCallback(() => {
+    const el = tabs.current[selectedIndex];
     if (!el) return;
-    setIndicator({ x: el.offsetLeft, w: el.offsetWidth });
-    // Keep the selected tab visible inside a horizontally scrolling list — scroll the LIST only
-    // (scrollIntoView could also scroll the page on first render).
+    setIndicator((prev) =>
+      prev && prev.x === el.offsetLeft && prev.w === el.offsetWidth
+        ? prev
+        : { x: el.offsetLeft, w: el.offsetWidth },
+    );
+  }, [selectedIndex]);
+
+  // Position the indicator and keep the selected tab visible inside a horizontally scrolling
+  // list — scroll the LIST only (scrollIntoView could also scroll the page on first render).
+  // Depends on the selection only, so a parent re-render does not undo a manual scroll.
+  useLayoutEffect(() => {
+    measure();
+    const el = tabs.current[selectedIndex];
     const l = list.current;
-    if (l) {
+    if (el && l) {
       if (el.offsetLeft < l.scrollLeft) l.scrollLeft = el.offsetLeft;
       else if (el.offsetLeft + el.offsetWidth > l.scrollLeft + l.clientWidth)
         l.scrollLeft = el.offsetLeft + el.offsetWidth - l.clientWidth;
     }
-  }, [selected, items]);
+  }, [measure, selectedIndex, items.length]);
+
+  // Re-measure when sizes change: web font swap, container resize, text zoom, label change.
+  useEffect(() => {
+    const ro = new ResizeObserver(() => measure());
+    if (list.current) ro.observe(list.current);
+    for (const t of tabs.current) if (t) ro.observe(t);
+    let alive = true;
+    void document.fonts?.ready.then(() => alive && measure());
+    return () => {
+      alive = false;
+      ro.disconnect();
+    };
+  }, [measure, items.length]);
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const i = items.findIndex((t) => t.id === selected);
+    const i = selectedIndex;
     let next = -1;
     if (e.key === 'ArrowRight') next = (i + 1) % items.length;
     else if (e.key === 'ArrowLeft') next = (i - 1 + items.length) % items.length;
@@ -109,16 +144,16 @@ export function Tabs({
               }}
               type="button"
               role="tab"
-              id={`${base}-tab-${t.id}`}
+              id={domId('tab', t.id)}
               aria-selected={on}
-              aria-controls={`${base}-panel-${t.id}`}
+              aria-controls={domId('panel', t.id)}
               tabIndex={on ? 0 : -1}
               data-touch={seg ? 'extended' : undefined}
               onClick={() => select(t.id)}
               className={`relative z-[1] shrink-0 whitespace-nowrap font-semibold focus-visible:outline-offset-[-3px]! transition-colors duration-[var(--duration-fast)] ${
                 seg
-                  ? `h-9 min-w-11 rounded-[8px] px-3 text-sm before:absolute before:-inset-y-1 before:inset-x-0 before:content-[''] ${on ? 'text-fg' : 'text-fg-muted hover:text-fg'}`
-                  : `h-11 min-w-11 px-4 text-base ${on ? 'text-primary-text' : 'text-fg-muted hover:text-fg'}`
+                  ? `h-9 min-w-11 rounded-[8px] px-3 text-sm before:absolute before:-inset-y-1 before:inset-x-0 before:content-[''] ${on ? `text-fg ${indicator ? '' : 'bg-surface shadow-xs'}` : 'text-fg-muted hover:text-fg'}`
+                  : `h-11 min-w-11 px-4 text-base ${on ? `text-primary-text ${indicator ? '' : 'shadow-[inset_0_-2px_0_var(--primary-base)]'}` : 'text-fg-muted hover:text-fg'}`
               }`}
             >
               {t.label}
@@ -130,8 +165,8 @@ export function Tabs({
         <div
           key={t.id}
           role="tabpanel"
-          id={`${base}-panel-${t.id}`}
-          aria-labelledby={`${base}-tab-${t.id}`}
+          id={domId('panel', t.id)}
+          aria-labelledby={domId('tab', t.id)}
           hidden={t.id !== selected}
           tabIndex={0}
           className="mt-4 rounded-control"

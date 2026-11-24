@@ -122,19 +122,54 @@ test('tooltip: hover and keyboard focus, hoverable, persistent, dismissible (WCA
   }
 });
 
-test('tooltip stays inside the viewport at 320 px', async ({ page }) => {
+test('tooltip at the right edge is shifted inside the viewport at 320 px', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 720 });
   await hydrated(page, '/lab/design');
-  const trigger = page.getByTestId('icon-search');
+  const trigger = page.getByTestId('icon-tip-edge');
+  await trigger.evaluate((el) => el.scrollIntoView({ block: 'center' }));
   await trigger.focus();
   await page.keyboard.press('Shift+Tab');
   await page.keyboard.press('Tab');
+  await expect(trigger).toBeFocused();
   const tip = page.locator(`[id="${(await trigger.getAttribute('aria-describedby'))!}"]`);
   await expect(tip).toBeVisible();
+  // The clamp really ran (a centred bubble would overflow the right edge).
+  expect(Number(await tip.getAttribute('data-shift'))).toBeLessThan(0);
   const b = (await tip.boundingBox())!;
-  expect(b.x).toBeGreaterThanOrEqual(0);
-  expect(b.x + b.width).toBeLessThanOrEqual(320);
+  expect(b.x).toBeGreaterThanOrEqual(8 - 0.5);
+  expect(b.x + b.width).toBeLessThanOrEqual(320 - 8 + 0.5);
   await expectNoHorizontalScroll(page);
+  // Rotate / resize while open: it re-measures and stays inside.
+  await page.setViewportSize({ width: 360, height: 720 });
+  await expect
+    .poll(async () => {
+      const r = (await tip.boundingBox())!;
+      return r.x >= 7.5 && r.x + r.width <= 360 - 7.5;
+    })
+    .toBe(true);
+});
+
+test('tooltip flips below its trigger when there is no room above', async ({ page }) => {
+  await hydrated(page, '/lab/design');
+  const trigger = page.getByTestId('icon-search');
+  // Put the trigger 4 px from the top of the viewport.
+  await trigger.evaluate((el) => {
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo(0, top - 4);
+  });
+  await trigger.focus();
+  await page.keyboard.press('Shift+Tab');
+  await page.keyboard.press('Tab');
+  await trigger.evaluate((el) => {
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo(0, top - 4);
+  });
+  const tip = page.locator(`[id="${(await trigger.getAttribute('aria-describedby'))!}"]`);
+  await expect(tip).toBeVisible();
+  await expect(tip).toHaveAttribute('data-placement', 'bottom');
+  const t = (await trigger.boundingBox())!;
+  const b = (await tip.boundingBox())!;
+  expect(b.y).toBeGreaterThanOrEqual(t.y + t.height - 1);
 });
 
 test('progress: ARIA values, clamping, indeterminate, ring', async ({ page }) => {
@@ -190,7 +225,7 @@ test('skeleton: appears only after 300 ms, busy region announced, blocks hidden'
   await expect(group).toBeVisible();
   expect(Date.now() - started).toBeGreaterThanOrEqual(300);
   await expect(group).toHaveAttribute('aria-busy', 'true');
-  await expect(group.getByRole('status')).toHaveText('Đang tải…');
+  await expect(group).toContainText('Đang tải…'); // hidden label (sr-only)
   const blocks = group.locator('[data-skeleton]');
   await expect(blocks).toHaveCount(3);
   for (let i = 0; i < 3; i++) await expect(blocks.nth(i)).toHaveAttribute('aria-hidden', 'true');
@@ -233,6 +268,8 @@ test('error state (page): "Thử lại" gets focus; one h1; link home', async ({
   const err = page.getByTestId('error-page');
   const retry = err.getByRole('button', { name: 'Thử lại', exact: true });
   await expect(retry).toBeFocused();
+  // Focus already moves to the error: no role="alert" on top (no double announcement).
+  await expect(err).not.toHaveAttribute('role', 'alert');
   await expect(page.locator('h1')).toHaveCount(1);
   await expect(err.getByRole('link', { name: 'Về Hôm nay', exact: true })).toHaveAttribute(
     'href',
@@ -253,8 +290,10 @@ test('server component: Button loading, ButtonLink and class builders render ser
   expect(res?.status()).toBe(200);
   // Present in the server HTML, before hydration.
   const html = await res!.text();
-  expect(html).toContain('data-testid="server-loading"');
-  expect(html).toContain('aria-busy="true"');
+  // Attribute order is not fixed: both on the same <button>.
+  expect(html).toMatch(
+    /<button(?=[^>]*data-testid="server-loading")(?=[^>]*aria-busy="true")[^>]*>/,
+  );
   const loading = page.getByTestId('server-loading');
   await expect(loading).toHaveAttribute('aria-busy', 'true');
   await expect(page.getByTestId('server-link')).toHaveAttribute('href', '/lab/design');
@@ -318,4 +357,35 @@ test('tabs: keyboard focus ring is drawn inside the tab (not clipped by the scro
   });
   expect(ring.style).toBe('solid');
   expect(ring.offset).toBeLessThan(0);
+});
+
+test('tabs: indicator re-measures on size change; server HTML has a static selected style', async ({
+  page,
+}) => {
+  const res = await page.goto('/lab/design');
+  const html = await res!.text();
+  // Before hydration/measurement the selected segmented tab is already visibly selected.
+  expect(html).toMatch(
+    /<button[^>]*role="tab"[^>]*aria-selected="true"[^>]*class="[^"]*bg-surface shadow-xs/,
+  );
+  await page.waitForFunction(() =>
+    Object.keys(document.querySelector('main') ?? {}).some((k) => k.startsWith('__react')),
+  );
+  const list = page.getByTestId('tabs-segmented').getByRole('tablist');
+  const selected = list.getByRole('tab', { selected: true });
+  const indicator = list.locator('span[aria-hidden]').first();
+  const widths = async () => ({
+    tab: (await selected.boundingBox())!.width,
+    ind: (await indicator.boundingBox())!.width,
+  });
+  let w = await widths();
+  expect(Math.abs(w.tab - w.ind)).toBeLessThanOrEqual(1);
+  // Larger text (like browser text zoom / a font swap) changes the tab width.
+  await page.evaluate(() => (document.documentElement.style.fontSize = '22px'));
+  await expect
+    .poll(async () => {
+      w = await widths();
+      return Math.abs(w.tab - w.ind) <= 1;
+    })
+    .toBe(true);
 });

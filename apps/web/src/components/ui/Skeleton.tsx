@@ -3,8 +3,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 
 /**
- * Skeleton (COMPONENT_SPEC_V2 §16). Blocks are decorative (aria-hidden); the container announces
- * the busy state once (aria-busy + hidden "Đang tải…"). Shimmer = a translating highlight
+ * Skeleton (COMPONENT_SPEC_V2 §16). Blocks are decorative (aria-hidden); the container is marked
+ * aria-busy with a hidden "Đang tải…" label (not a live region: a region inserted already filled,
+ * inside a busy subtree, is not announced reliably — the caller announces the result instead). Shimmer = a translating highlight
  * (transform only), off with reduced motion. Use `useShowAfter` so loads under 300 ms show
  * nothing (no flash). Shapes should match the real layout (no CLS).
  */
@@ -44,9 +45,7 @@ export function SkeletonGroup({
 }) {
   return (
     <div aria-busy="true" className={className} data-testid={testId}>
-      <span className="sr-only" role="status">
-        {label}
-      </span>
+      <span className="sr-only">{label}</span>
       {children}
     </div>
   );

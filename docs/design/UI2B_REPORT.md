@@ -42,3 +42,43 @@ Kế hoạch: `docs/design/UI2B_PLAN.md` (PR #7). Chỉ đạo bổ sung (issue 
 
 - Segmented Tabs cao 44 px thay vì 40 px của spec (ưu tiên vùng chạm 44 px).
 - Tooltip không mở khi chạm (đúng spec: không là kênh chính trên touch); trên điện thoại vẫn mở khi focus bằng bàn phím ngoài.
+
+## Review độc lập (PR #8 + #9) và xử lý
+
+**0 Critical, 4 Important, đã sửa cả 4:**
+
+1. **PR #8: preflight CORS bị bộ giới hạn IP chặn.** Request POST/upload vẫn lỗi mạng. Đã sửa: đăng ký CORS **trước** bộ giới hạn IP, nên preflight luôn được trả lời và mọi phản hồi (kể cả 429) đều có `Access-Control-Allow-Origin` + `Vary: Origin`. Có unit test. Kiểm trong trình duyệt: `POST /v1/uploads/pdf` → 429, không còn `TypeError`.
+2. **Tabs: chỉ báo không đo lại.** Đã sửa:
+   - `ResizeObserver` + `document.fonts.ready`;
+   - style "đã chọn" tĩnh trước khi đo (HTML server đúng);
+   - fallback tab đầu khi `value` không khớp;
+   - id DOM an toàn;
+   - effect chỉ phụ thuộc lựa chọn (không ghi đè cuộn tay).
+3. **Tooltip: không xử lý resize/scroll và mép trên.** Đã sửa:
+   - đo lại khi resize/scroll lúc đang mở;
+   - tự lật xuống dưới khi thiếu chỗ phía trên;
+   - `Esc` ở capture phase + `stopPropagation`;
+   - `:focus-visible` bọc try/catch.
+4. **Test Tooltip 320 px không thực sự kiểm cơ chế dịch.** Đã sửa: thêm trigger sát mép phải, nội dung dài; test kiểm `data-shift < 0`, nằm trong [8, 312], và đổi viewport khi đang mở. Thêm test lật xuống dưới. Kiểm thử đột biến: bỏ phần dịch → FAIL; bỏ `ResizeObserver` → FAIL.
+
+**Minor đã sửa:**
+
+- ErrorState:
+  - mức page mặc định không `role="alert"` (focus đã chuyển);
+  - không có retry thì focus vào tiêu đề;
+  - inline dùng `div`;
+  - nhãn "Về Hôm nay" cấu hình được.
+- Progress: chặn `max ≤ 0`; ProgressRing có `valueText`.
+- Skeleton: bỏ `role="status"` không đáng tin cậy; dùng nhãn ẩn + `aria-busy`.
+- Test Server Component kiểm `aria-busy` đúng trên phần tử.
+
+**Minor còn mở (không chặn):**
+
+- Tabs controlled mà cha bỏ qua `onValueChange` thì focus và lựa chọn lệch nhau.
+- Tablist cuộn chưa có fade mép.
+- Tooltip bị cắt nếu tổ tiên có `overflow`.
+- ESLint chưa bắt import tương đối `'../ui'`.
+- ProgressRing / PageHeader chưa có `actions`.
+- Test demo nút loading không còn kiểm việc trở lại trạng thái chờ.
+
+**Kết quả cuối (tại máy, Chromium):** toàn bộ **216 pass / 27 skip, 0 flaky**; lint, typecheck, test 9/9, format, `check:secrets`, `check:deps`, `check:contrast` 72: đều PASS.

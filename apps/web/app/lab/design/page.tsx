@@ -165,6 +165,19 @@ export default function DesignGallery() {
                   <CloseIcon width={18} height={18} />
                 </IconButton>
               </Row>
+              <Row label="Tooltip sát mép phải (tự dịch vào trong màn hình)">
+                <div className="flex w-full justify-end">
+                  <Tooltip content="Mẹo: nhấn phím / để tìm nhanh trong từ điển (ví dụ nội dung dài).">
+                    <IconButton
+                      label="Mẹo tìm kiếm"
+                      variant="secondary"
+                      data-testid="icon-tip-edge"
+                    >
+                      <SearchIcon width={20} height={20} />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+              </Row>
               <Row label="Full-width (mobile, form)">
                 <Button size="lg" fullWidth>
                   Đăng nhập

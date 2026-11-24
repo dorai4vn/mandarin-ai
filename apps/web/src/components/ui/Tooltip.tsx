@@ -40,6 +40,7 @@ export function Tooltip({
   const [focused, setFocused] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [shift, setShift] = useState(0);
+  const [placement, setPlacement] = useState<'top' | 'bottom'>(side);
   const bubble = useRef<HTMLSpanElement>(null);
   const open = (hovered || focused) && !dismissed;
 
@@ -48,26 +49,59 @@ export function Tooltip({
 
   useEffect(() => {
     if (!open) return;
+    // Capture phase + stopPropagation: one Escape closes the tooltip only, not a surrounding
+    // dialog/sheet (which would get the next Escape).
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setDismissed(true);
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        setDismissed(true);
+      }
     };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
   }, [open]);
 
-  useLayoutEffect(() => {
-    if (!open || !bubble.current) return;
+  // Keep the bubble inside the viewport: horizontal shift + vertical flip; re-run on resize and
+  // scroll while open (rotation, window resize, sticky header).
+  const place = useCallback(() => {
+    const el = bubble.current;
+    if (!el) return;
     const margin = 8;
-    const r = bubble.current.getBoundingClientRect();
-    const base = r.left - shift;
-    const width = r.width;
-    const max = document.documentElement.clientWidth - margin;
-    let next = 0;
-    if (base < margin) next = margin - base;
-    else if (base + width > max) next = max - (base + width);
-    if (next !== shift) setShift(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+    const trigger = el.parentElement?.getBoundingClientRect();
+    if (trigger) {
+      const h = el.offsetHeight;
+      const roomAbove = trigger.top - h;
+      const roomBelow = window.innerHeight - trigger.bottom - h;
+      setPlacement(
+        side === 'top'
+          ? roomAbove < margin && roomBelow > roomAbove
+            ? 'bottom'
+            : 'top'
+          : roomBelow < margin && roomAbove > roomBelow
+            ? 'top'
+            : 'bottom',
+      );
+    }
+    const r = el.getBoundingClientRect();
+    setShift((current) => {
+      const base = r.left - current;
+      const max = document.documentElement.clientWidth - margin;
+      if (base < margin) return margin - base;
+      if (base + r.width > max) return max - (base + r.width);
+      return 0;
+    });
+  }, [side]);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    place();
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, true);
+    return () => {
+      window.removeEventListener('resize', place);
+      window.removeEventListener('scroll', place, true);
+    };
+  }, [open, place]);
 
   const describedBy = [children.props['aria-describedby'], id].filter(Boolean).join(' ');
 
@@ -84,7 +118,14 @@ export function Tooltip({
       }}
       onFocus={(e) => {
         // Only keyboard-style focus (focus-visible) opens it; a mouse click focus does not.
-        if ((e.target as Element).matches?.(':focus-visible')) {
+        // Browsers without :focus-visible throw on the selector: open on any focus there.
+        let keyboard = true;
+        try {
+          keyboard = (e.target as Element).matches(':focus-visible');
+        } catch {
+          keyboard = true;
+        }
+        if (keyboard) {
           arm();
           setFocused(true);
         }
@@ -98,8 +139,10 @@ export function Tooltip({
         id={id}
         role="tooltip"
         hidden={!open}
+        data-shift={Math.round(shift)}
+        data-placement={placement}
         style={{ translate: `calc(-50% + ${shift}px) 0` }}
-        className={`absolute left-1/2 z-30 w-max max-w-[min(240px,calc(100vw-16px))] ${side === 'top' ? 'bottom-full pb-2' : 'top-full pt-2'}`}
+        className={`absolute left-1/2 z-30 w-max max-w-[min(240px,calc(100vw-16px))] ${placement === 'top' ? 'bottom-full pb-2' : 'top-full pt-2'}`}
       >
         <span className="block rounded-control bg-inverse px-2.5 py-1.5 text-center text-sm font-medium leading-5 text-fg-inverse shadow-md">
           {content}

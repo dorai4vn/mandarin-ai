@@ -24,7 +24,8 @@ export function ErrorState({
   retrying = false,
   details,
   homeHref = '/',
-  announce = true,
+  homeLabel = 'Về Hôm nay',
+  announce,
   headingLevel = 'h3',
   className = '',
   'data-testid': testId,
@@ -38,21 +39,25 @@ export function ErrorState({
   /** Technical detail (Phòng thử): shown collapsed. */
   details?: string;
   homeHref?: string;
+  homeLabel?: string;
+  /** role="alert". Default: true for inline/section; false for page (focus already moves). */
   announce?: boolean;
   headingLevel?: 'h1' | 'h2' | 'h3';
   className?: string;
   'data-testid'?: string;
 }) {
   const retry = useRef<HTMLButtonElement>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
-    if (level === 'page') retry.current?.focus();
+    // Page level only: focus "Thử lại", or the heading when there is no retry action.
+    if (level === 'page') (retry.current ?? heading.current)?.focus();
   }, [level]);
 
-  const role = announce ? 'alert' : undefined;
+  const role = (announce ?? level !== 'page') ? 'alert' : undefined;
 
   if (level === 'inline') {
     return (
-      <p
+      <div
         role={role}
         data-testid={testId}
         className={`flex items-start gap-1.5 text-sm leading-5 text-error-text ${className}`}
@@ -62,7 +67,7 @@ export function ErrorState({
           <span className="font-semibold">{title}</span>
           {description && <> {description}</>}
         </span>
-      </p>
+      </div>
     );
   }
 
@@ -81,6 +86,8 @@ export function ErrorState({
         className="mb-2 shrink-0 text-error-text"
       />
       <H
+        ref={heading}
+        tabIndex={page ? -1 : undefined}
         className={`font-semibold text-fg ${page ? 'text-[22px] leading-[30px]' : 'text-lg leading-[26px]'}`}
       >
         {title}
@@ -102,7 +109,7 @@ export function ErrorState({
           )}
           {page && (
             <ButtonLink href={homeHref} variant={onRetry ? 'secondary' : 'primary'}>
-              Về Hôm nay
+              {homeLabel}
             </ButtonLink>
           )}
         </div>

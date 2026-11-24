@@ -13,6 +13,8 @@ const FILL: Record<Tone, string> = { primary: 'bg-primary-base', success: 'bg-su
 const STROKE: Record<Tone, string> = { primary: 'stroke-primary-base', success: 'stroke-success' };
 
 const clamp = (v: number, max: number) => Math.min(Math.max(v, 0), max);
+/** max ≤ 0 or NaN would produce NaN in ARIA values and styles; treat it as 1. */
+const safeMax = (max: number) => (Number.isFinite(max) && max > 0 ? max : 1);
 
 export function ProgressBar({
   value,
@@ -37,6 +39,7 @@ export function ProgressBar({
   className?: string;
   'data-testid'?: string;
 }) {
+  max = safeMax(max);
   const indeterminate = value === undefined;
   const v = indeterminate ? 0 : clamp(value, max);
   const text = indeterminate ? undefined : (valueText ?? `${Math.round((v / max) * 100)}%`);
@@ -81,10 +84,13 @@ export function ProgressRing({
   label,
   size = 64,
   tone = 'primary',
+  valueText,
   children,
   'data-testid': testId,
 }: {
   value: number;
+  /** Spoken value when the centre shows something other than a percentage, e.g. "7 / 20". */
+  valueText?: string;
   max?: number;
   label: string;
   /** 56–80 px. */
@@ -94,6 +100,7 @@ export function ProgressRing({
   children?: ReactNode;
   'data-testid'?: string;
 }) {
+  max = safeMax(max);
   const v = clamp(value, max);
   const stroke = 6;
   const r = (size - stroke) / 2;
@@ -106,6 +113,7 @@ export function ProgressRing({
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={v}
+      aria-valuetext={valueText}
       data-testid={testId}
       className="relative inline-grid shrink-0 place-items-center"
       style={{ width: size, height: size }}
