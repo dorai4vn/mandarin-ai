@@ -136,7 +136,7 @@ Chuẩn bị 3 tệp: một PDF thật nhỏ (< 5 MB), một PDF thật **gần 
 | Hạng mục | Kết quả |
 |---|---|
 | CI trên `08418be` (run 45434263302) | 6/6 job xanh + check Vercel xanh |
-| Secret | `check:secrets` 223 file OK; quét lịch sử 28 commit của PR: chỉ có chuỗi giả trong test (`sb_secret_abcdefghijklmnop`, commit `2be829e`, đã thay ở `64dec7e`) — không phải khóa thật; `.env.example` không chứa giá trị bí mật; bundle trình duyệt với giá trị mồi: 0 secret |
+| Secret | `check:secrets` 223 file OK; quét lịch sử 28 commit của PR: chỉ có một chuỗi giả dạng `sb_secret_` + 16 chữ cái a–p trong một test (commit `2be829e`, đã thay ở `64dec7e`) — không phải khóa thật; `.env.example` không chứa giá trị bí mật; bundle trình duyệt với giá trị mồi: 0 secret |
 | Xung đột merge | Không: `main` (`10e4ee6`) là tổ tiên của `claude/m0-pwa`, `main` không có commit mới |
 | Auth thật (GoTrue local), Storage thật (local), RLS, E2E 3 engine | Xem mục A |
 
