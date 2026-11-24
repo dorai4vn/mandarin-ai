@@ -9,6 +9,7 @@ import {
   type TextareaHTMLAttributes,
 } from 'react';
 import { AlertIcon, CloseIcon, EyeIcon, EyeOffIcon, SearchIcon } from '../icons';
+import { controlClasses } from './styles';
 
 /**
  * Form controls (COMPONENT_SPEC_V2 §2–4). Always a visible <label> (never placeholder-only), hint
@@ -26,13 +27,7 @@ type FieldProps = {
   className?: string;
 };
 
-export const controlClasses =
-  'w-full rounded-control border border-line-strong bg-surface px-3.5 text-base text-fg shadow-xs ' +
-  'placeholder:text-fg-subtle transition-[border-color,box-shadow] duration-[var(--duration-fast)] ' +
-  'hover:border-fg-subtle focus-visible:border-primary-base ' +
-  'aria-invalid:border-error-base ' +
-  'disabled:cursor-not-allowed disabled:border-line disabled:bg-[var(--state-disabled-bg)] disabled:text-fg-disabled disabled:shadow-none ' +
-  'read-only:bg-sunken';
+// controlClasses lives in ./styles (server-safe, M2) and is exported from ./index.
 
 function useFieldIds(hint: unknown, error: unknown, describedBy?: string, ownId?: string) {
   // A caller-provided id wins, so <label htmlFor>, hint/error ids and aria-controls stay linked.
@@ -63,11 +58,11 @@ function FieldFrame({
         className={hideLabel ? 'sr-only' : 'text-sm font-semibold leading-5 text-fg'}
       >
         {label}
-        {optional && <span className="ml-1 font-normal text-fg-subtle">(không bắt buộc)</span>}
+        {optional && <span className="ml-1 font-normal text-fg-muted">(không bắt buộc)</span>}
       </label>
       {children}
       {hint && (
-        <p id={hintId} className="text-sm leading-5 text-fg-subtle">
+        <p id={hintId} className="text-sm leading-5 text-fg-muted">
           {hint}
         </p>
       )}
@@ -170,7 +165,7 @@ export function PasswordInput({
           type="button"
           onClick={() => setVisible((v) => !v)}
           aria-pressed={visible}
-          aria-label={visible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+          aria-label="Hiện mật khẩu"
           aria-controls={f.id}
           disabled={props.disabled}
           className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-control text-fg-muted hover:text-fg disabled:text-fg-disabled"

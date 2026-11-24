@@ -155,6 +155,52 @@ textarea {
   font-family: var(--font-sans);
 }
 
+/* UI-2B: indeterminate progress stripe and skeleton shimmer — transform only (D-032). */
+@keyframes progress-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+.progress-indeterminate {
+  animation: progress-slide 1.4s var(--ease-standard) infinite;
+}
+@keyframes skeleton-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--surface-default) 60%, transparent),
+    transparent
+  );
+  animation: skeleton-shimmer 1.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Static instead of a frozen mid-animation frame. */
+  .progress-indeterminate {
+    animation: none;
+    width: 100%;
+    opacity: 0.35;
+  }
+  .skeleton::after {
+    animation: none;
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

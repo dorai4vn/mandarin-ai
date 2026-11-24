@@ -86,30 +86,37 @@ test('buttons: focus ring on keyboard focus, disabled, loading blocks repeat', a
 
   await expect(page.getByTestId('btn-disabled')).toBeDisabled();
 
+  // Demo button: the handler runs once and the button shows its busy state.
   const save = page.getByTestId('btn-loading');
   await expect(save).toHaveAttribute('data-clicks', '0');
   await save.click();
   await expect(save).toHaveAttribute('aria-busy', 'true');
   await expect(save).toContainText('Đang lưu');
   await expect(save).toHaveAttribute('data-clicks', '1');
-  // A second click while loading must not run the handler again. Centre the button first: a
-  // forced click uses coordinates, and on phones the fixed bottom nav may cover the button.
-  await save.evaluate((el) => el.scrollIntoView({ block: 'center' }));
-  await save.click({ force: true });
-  await expect(save).toHaveAttribute('data-clicks', '1');
-  await expect(save).not.toHaveAttribute('aria-busy', 'true', { timeout: 4000 });
-  await expect(save).toContainText('Lưu (bấm thử)');
-  await expect(save).toHaveAttribute('data-clicks', '1');
 
-  // A loading submit button never submits its form: not by click, not by Enter (implicit submit).
+  // Repeat activation is blocked: use a button that is ALWAYS loading, so the check does not
+  // depend on a timer (N1). Centre it first: on phones the fixed bottom nav may cover it.
+  const stuck = page.getByTestId('btn-always-loading');
+  await expect(stuck).toHaveAttribute('aria-busy', 'true');
+  await stuck.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  await stuck.click();
+  await stuck.click();
+  await stuck.focus();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Space');
+  await expect(stuck).toHaveAttribute('data-clicks', '0');
+
+  // A loading submit button never submits its form: click, Enter/Space on the button, and
+  // implicit submission (Enter inside a text field of the form, N2).
   const form = page.getByTestId('loading-form');
   const submit = page.getByTestId('btn-loading-submit');
   await expect(submit).toHaveAttribute('aria-busy', 'true');
   await submit.evaluate((el) => el.scrollIntoView({ block: 'center' }));
-  await submit.click({ force: true });
+  await submit.click();
   await submit.focus();
   await page.keyboard.press('Enter');
   await page.keyboard.press('Space');
+  await page.getByTestId('loading-form-input').press('Enter');
   await expect(form).toHaveAttribute('data-submits', '0');
 });
 
@@ -128,6 +135,28 @@ test('form: label, hint and error are wired for assistive tech', async ({ page }
   await expect(own).toHaveAccessibleName(/Tên tài liệu/);
   await expect(own).toHaveAccessibleDescription('Ví dụ dùng id riêng.');
   await expect(page.locator('label[for="ten-tai-lieu"]')).toHaveCount(1);
+  // Same for Textarea, PasswordInput (+ its toggle's aria-controls) and SearchInput (N4).
+  for (const [id, name] of [
+    ['ghi-chu', 'Ghi chú'],
+    ['mat-khau', 'Mật khẩu'],
+    ['tim-kiem', 'Tìm trong từ điển'],
+  ] as const) {
+    const el = page.locator(`#${id}`);
+    await expect(el).toHaveAccessibleName(name);
+    await expect(page.locator(`label[for="${id}"]`)).toHaveCount(1);
+  }
+  await expect(page.locator('#mat-khau')).toHaveAccessibleDescription(
+    'Ví dụ id riêng cho mật khẩu.',
+  );
+  await expect(page.getByRole('button', { name: 'Hiện mật khẩu', exact: true })).toHaveAttribute(
+    'aria-controls',
+    'mat-khau',
+  );
+  // Read-only field: placeholder uses fg-muted (≥ 4.5:1 on the sunken background, M8).
+  const ro = page.getByTestId('field-readonly');
+  expect(await ro.evaluate((el) => getComputedStyle(el, '::placeholder').color)).toBe(
+    'rgb(79, 93, 115)',
+  );
 
   // Font size ≥ 16 px so iOS does not zoom on focus.
   expect(
@@ -141,15 +170,17 @@ test('password input: show / hide toggle by mouse and keyboard', async ({ page }
   await expect(pw).toHaveAttribute('type', 'password');
   await expect(pw).toHaveAttribute('autocomplete', 'current-password');
   await pw.fill('mat-khau-vi-du');
+  // One fixed name + aria-pressed (standard toggle button, M4).
   const toggle = page.getByRole('button', { name: 'Hiện mật khẩu', exact: true });
   await expect(toggle).toHaveAttribute('aria-pressed', 'false');
   await toggle.click();
   await expect(pw).toHaveAttribute('type', 'text');
-  const hide = page.getByRole('button', { name: 'Ẩn mật khẩu', exact: true });
-  await expect(hide).toHaveAttribute('aria-pressed', 'true');
-  await hide.focus();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await expect(toggle).toHaveAccessibleName('Hiện mật khẩu');
+  await toggle.focus();
   await page.keyboard.press('Space');
   await expect(pw).toHaveAttribute('type', 'password');
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
   await expect(pw).toHaveValue('mat-khau-vi-du');
 });
 
@@ -176,26 +207,43 @@ test('study cards: one link per tile; "Sắp có" tiles are not links', async ({
   const soon = page.getByTestId('study-soon');
   expect(await soon.evaluate((el) => el.tagName)).toBe('DIV');
   await expect(soon).toContainText('Sắp có');
-  await expect(soon).toHaveAttribute('aria-disabled', 'true');
+  await expect(soon).toHaveAttribute('data-state', 'coming-soon');
+  await expect(soon).not.toHaveAttribute('aria-disabled');
   // Pastel colours come from the tokens measured on the reference.
   const bg = await blue.evaluate((el) => getComputedStyle(el).backgroundColor);
   expect(bg).toBe('rgb(226, 237, 253)');
 });
 
-test('study cards stay inside their grid at 320 px (no overlap / clipping)', async ({ page }) => {
+test('study cards stay inside their grids at 320 px (no overlap / clipping)', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 720 });
   await open(page);
-  const grid = page.getByTestId('gallery-study').locator('> div').first();
-  const g = await grid.boundingBox();
-  const cards = grid.locator('> *');
-  expect(await cards.count()).toBe(3);
-  const boxes: Array<{ x: number; y: number; width: number; height: number }> = [];
-  for (let i = 0; i < 3; i++) boxes.push((await cards.nth(i).boundingBox())!);
-  const [a, b] = boxes as [(typeof boxes)[0], (typeof boxes)[0]];
-  for (const b of boxes) expect(b.x + b.width).toBeLessThanOrEqual(g!.x + g!.width + 0.5);
-  // Two columns on phones: the first two tiles sit side by side without overlapping.
-  expect(a.x + a.width).toBeLessThanOrEqual(b.x);
-  expect(a.y).toBe(b.y);
+  const grids = page.getByTestId('gallery-study').locator('> div');
+  expect(await grids.count()).toBe(2);
+  for (let gi = 0; gi < 2; gi++) {
+    const grid = grids.nth(gi);
+    const g = (await grid.boundingBox())!;
+    const cards = grid.locator('> *');
+    expect(await cards.count()).toBe(3);
+    const boxes: Array<{ x: number; y: number; width: number; height: number }> = [];
+    for (let i = 0; i < 3; i++) boxes.push((await cards.nth(i).boundingBox())!);
+    for (const b of boxes) {
+      expect(b.x).toBeGreaterThanOrEqual(g.x - 0.5);
+      expect(b.x + b.width).toBeLessThanOrEqual(g.x + g.width + 0.5);
+    }
+    // No two tiles overlap.
+    for (let i = 0; i < 3; i++)
+      for (let k = i + 1; k < 3; k++) {
+        const [p, q] = [boxes[i]!, boxes[k]!];
+        const overlap =
+          p.x < q.x + q.width - 0.5 &&
+          q.x < p.x + p.width - 0.5 &&
+          p.y < q.y + q.height - 0.5 &&
+          q.y < p.y + p.height - 0.5;
+        expect(overlap, `tiles ${i} and ${k} overlap`).toBe(false);
+      }
+    // Two columns on phones: tiles 0 and 1 share a row (±1 px).
+    expect(Math.abs(boxes[0]!.y - boxes[1]!.y)).toBeLessThanOrEqual(1);
+  }
 });
 
 test('study card "Nghe hiểu" is lavender: colours, hover, keyboard focus, coming soon', async ({
@@ -229,7 +277,8 @@ test('study card "Nghe hiểu" is lavender: colours, hover, keyboard focus, comi
   // Coming-soon tile: same lavender, not a link, not focusable, says "Sắp có".
   const soon = page.getByTestId('study-lavender-soon');
   expect(await soon.evaluate((el) => el.tagName)).toBe('DIV');
-  await expect(soon).toHaveAttribute('aria-disabled', 'true');
+  await expect(soon).toHaveAttribute('data-state', 'coming-soon');
+  await expect(soon).not.toHaveAttribute('aria-disabled');
   await expect(soon).toContainText('Sắp có');
   expect(await soon.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
     'rgb(240, 234, 254)',

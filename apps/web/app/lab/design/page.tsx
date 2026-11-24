@@ -1,6 +1,5 @@
 'use client';
 import { useState, type ReactNode } from 'react';
-import { PageHeader } from '@/components/ui';
 import {
   Badge,
   Button,
@@ -8,14 +7,25 @@ import {
   Card,
   CardLink,
   CountBadge,
+  EmptyState,
+  ErrorState,
   IconButton,
   Input,
+  PageHeader,
   PasswordInput,
+  ProgressBar,
+  ProgressRing,
   SearchInput,
+  Skeleton,
+  SkeletonGroup,
   StatusDot,
   StudyCard,
+  Tabs,
   Textarea,
+  Tooltip,
+  useShowAfter,
 } from '@/components/ui/index';
+import { HanziText, Pinyin } from '@/components/Hanzi';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ArrowRightIcon, CloseIcon, PlusIcon, SearchIcon } from '@/components/icons';
 
@@ -48,10 +58,16 @@ export default function DesignGallery() {
   const [saving, setSaving] = useState(false);
   const [clicks, setClicks] = useState(0);
   const [submits, setSubmits] = useState(0);
+  const [stuckClicks, setStuckClicks] = useState(0);
+  const [progress, setProgress] = useState(7);
+  const [loadingDemo, setLoadingDemo] = useState(false);
+  const showSkeleton = useShowAfter(loadingDemo);
+  const [failed, setFailed] = useState(false);
 
   return (
     <>
       <PageHeader
+        eyebrow="Phòng thử · UI-2 / UI-2B"
         title="Thư viện component"
         lead="Phòng thử giao diện: mọi nội dung trên trang này là ví dụ minh họa, không phải dữ liệu học thật."
       />
@@ -91,7 +107,14 @@ export default function DesignGallery() {
                 >
                   {saving ? 'Đang lưu…' : 'Lưu (bấm thử)'}
                 </Button>
-                <Button loading>Đang tải</Button>
+                <Button
+                  loading
+                  data-testid="btn-always-loading"
+                  data-clicks={stuckClicks}
+                  onClick={() => setStuckClicks((n) => n + 1)}
+                >
+                  Đang tải
+                </Button>
               </Row>
               <Row label="Nút submit đang tải trong form (không gửi lặp)">
                 <form
@@ -103,10 +126,16 @@ export default function DesignGallery() {
                   }}
                   className="flex flex-wrap items-center gap-3"
                 >
+                  <Input
+                    label="Lời nhắn (Enter để gửi)"
+                    defaultValue="Ví dụ"
+                    data-testid="loading-form-input"
+                    className="w-56"
+                  />
                   <Button type="submit" loading data-testid="btn-loading-submit">
                     Đang gửi
                   </Button>
-                  <span className="text-sm text-fg-subtle">Lần gửi: {submits}</span>
+                  <span className="text-sm text-fg-muted">Lần gửi: {submits}</span>
                 </form>
               </Row>
               <Row label="Link dạng nút · Icon button">
@@ -117,15 +146,21 @@ export default function DesignGallery() {
                 >
                   Về Phòng thử
                 </ButtonLink>
-                <IconButton label="Tìm kiếm" variant="secondary">
-                  <SearchIcon width={20} height={20} />
-                </IconButton>
-                <IconButton label="Đóng">
-                  <CloseIcon width={20} height={20} />
-                </IconButton>
-                <IconButton label="Thêm" variant="primary" shape="circle">
-                  <PlusIcon width={20} height={20} />
-                </IconButton>
+                <Tooltip content="Tìm kiếm">
+                  <IconButton label="Tìm kiếm" variant="secondary" data-testid="icon-search">
+                    <SearchIcon width={20} height={20} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip content="Đóng">
+                  <IconButton label="Đóng">
+                    <CloseIcon width={20} height={20} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip content="Thêm từ mới">
+                  <IconButton label="Thêm" variant="primary" shape="circle">
+                    <PlusIcon width={20} height={20} />
+                  </IconButton>
+                </Tooltip>
                 <IconButton label="Đóng (nhỏ)" size="sm">
                   <CloseIcon width={18} height={18} />
                 </IconButton>
@@ -274,18 +309,29 @@ export default function DesignGallery() {
               />
               <Input label="Vô hiệu" defaultValue="Không sửa được" disabled />
               <PasswordInput
+                id="mat-khau"
                 label="Mật khẩu"
                 autoComplete="current-password"
+                hint="Ví dụ id riêng cho mật khẩu."
                 data-testid="field-password"
+              />
+              <Input
+                label="Chỉ đọc"
+                readOnly
+                placeholder="Chưa có dữ liệu"
+                hint="Ô chỉ đọc: placeholder dùng fg-muted (M8)."
+                data-testid="field-readonly"
               />
               <Input label="Lớn (lg 52)" size="lg" placeholder="Ví dụ" />
               <Textarea
+                id="ghi-chu"
                 label="Ghi chú"
                 placeholder="Ví dụ: 山 = núi"
                 hint="Tối đa 500 ký tự."
                 className="md:col-span-2"
               />
               <SearchInput
+                id="tim-kiem"
                 label="Tìm trong từ điển"
                 value={query}
                 onValueChange={setQuery}
@@ -295,6 +341,213 @@ export default function DesignGallery() {
               />
             </form>
           </Card>
+        </Section>
+
+        <Section id="tabs" title="Tabs">
+          <Card>
+            <div className="flex flex-col gap-8">
+              <Tabs
+                label="Chế độ xem từ (ví dụ)"
+                data-testid="tabs-segmented"
+                items={[
+                  {
+                    id: 'nghia',
+                    label: 'Nghĩa',
+                    content: (
+                      <p className="text-fg-muted">
+                        <HanziText className="text-fg">山</HanziText> · <Pinyin>shān</Pinyin> — núi
+                        (ví dụ).
+                      </p>
+                    ),
+                  },
+                  {
+                    id: 'vi-du',
+                    label: 'Ví dụ',
+                    content: <p className="text-fg-muted">Câu ví dụ.</p>,
+                  },
+                  {
+                    id: 'chiet-tu',
+                    label: 'Chiết tự',
+                    content: <p className="text-fg-muted">Bộ thủ.</p>,
+                  },
+                ]}
+              />
+              <Tabs
+                label="Thư viện (ví dụ)"
+                variant="underline"
+                data-testid="tabs-underline"
+                items={[
+                  {
+                    id: 'giao-trinh',
+                    label: 'Giáo trình',
+                    content: <p className="text-fg-muted">Danh sách giáo trình.</p>,
+                  },
+                  {
+                    id: 'tai-lieu',
+                    label: 'Tài liệu của tôi',
+                    content: <p className="text-fg-muted">PDF đã tải lên.</p>,
+                  },
+                  {
+                    id: 'luu',
+                    label: 'Đã lưu',
+                    content: <p className="text-fg-muted">Mục đã lưu.</p>,
+                  },
+                  {
+                    id: 'gan-day',
+                    label: 'Gần đây',
+                    content: <p className="text-fg-muted">Mở gần đây.</p>,
+                  },
+                  {
+                    id: 'chia-se',
+                    label: 'Được chia sẻ',
+                    content: <p className="text-fg-muted">Từ bạn học.</p>,
+                  },
+                ]}
+              />
+            </div>
+          </Card>
+        </Section>
+
+        <Section id="progress" title="Progress">
+          <Card>
+            <div className="flex flex-col gap-6">
+              <ProgressBar
+                label="Tiến độ phiên (ví dụ)"
+                showLabel
+                value={progress}
+                max={20}
+                valueText={`${progress} / 20`}
+                data-testid="progress-bar"
+              />
+              <div className="flex flex-wrap gap-3">
+                <Button variant="secondary" size="sm" onClick={() => setProgress((p) => p - 5)}>
+                  −5
+                </Button>
+                <Button variant="secondary" size="sm" onClick={() => setProgress((p) => p + 5)}>
+                  +5
+                </Button>
+              </div>
+              <ProgressBar
+                label="Mục tiêu ngày (ví dụ)"
+                showLabel
+                value={20}
+                max={20}
+                tone="success"
+                valueText="20 / 20"
+              />
+              <ProgressBar label="Đầu phiên học" thin value={3} max={10} />
+              <ProgressBar
+                label="Đang tải tệp (ví dụ)"
+                showLabel
+                data-testid="progress-indeterminate"
+              />
+              <div className="flex flex-wrap items-center gap-6">
+                <ProgressRing
+                  label="Mục tiêu ngày (ví dụ)"
+                  value={60}
+                  data-testid="progress-ring"
+                />
+                <ProgressRing label="Hoàn thành (ví dụ)" value={100} tone="success" size={80} />
+              </div>
+            </div>
+          </Card>
+        </Section>
+
+        <Section id="skeleton" title="Skeleton">
+          <Card>
+            <div className="flex flex-col gap-4">
+              <Button
+                variant="secondary"
+                onClick={() => setLoadingDemo((v) => !v)}
+                className="self-start"
+                data-testid="skeleton-toggle"
+              >
+                {loadingDemo ? 'Dừng tải (ví dụ)' : 'Mô phỏng tải dữ liệu'}
+              </Button>
+              {showSkeleton ? (
+                <SkeletonGroup data-testid="skeleton-group" className="flex flex-col gap-3">
+                  <Skeleton className="h-5 w-40" />
+                  <Skeleton className="h-4 w-full max-w-md" />
+                  <Skeleton className="h-24 w-full" radius="card" />
+                </SkeletonGroup>
+              ) : (
+                <p className="text-sm text-fg-muted" data-testid="skeleton-idle">
+                  {loadingDemo
+                    ? 'Đang chờ (skeleton chỉ hiện sau 300 ms).'
+                    : 'Không tải — bấm nút để xem skeleton.'}
+                </p>
+              )}
+            </div>
+          </Card>
+        </Section>
+
+        <Section id="states" title="Empty / Error state">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <EmptyState
+                hanzi="学"
+                title="Chưa có từ nào"
+                description="Thêm từ đầu tiên để bắt đầu ôn tập (ví dụ)."
+                primaryAction={<ButtonLink href="/lab/design">Thêm từ</ButtonLink>}
+                data-testid="empty-first-use"
+              />
+            </Card>
+            <Card>
+              <EmptyState
+                variant="coming-soon"
+                hanzi="听"
+                title="Nghe hiểu"
+                description="Bài nghe theo cấp độ HSK."
+                milestone="M6"
+                data-testid="empty-coming-soon"
+              />
+            </Card>
+            <Card>
+              <EmptyState
+                variant="no-results"
+                title="Không tìm thấy “xyz”"
+                description="Thử pinyin không dấu, ví dụ “ni hao”."
+              />
+            </Card>
+            <Card>
+              {failed ? (
+                <ErrorState
+                  title="Không tải được danh sách"
+                  description="Máy chủ chưa phản hồi. Dữ liệu đã lưu trên máy vẫn dùng được (ví dụ)."
+                  onRetry={() => setFailed(false)}
+                  details="Ví dụ: provider_http_error 502"
+                  data-testid="error-section"
+                />
+              ) : (
+                <div className="flex flex-col items-start gap-3">
+                  <p className="text-sm text-fg-muted">
+                    ErrorState mức section xuất hiện sau thao tác.
+                  </p>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setFailed(true)}
+                    data-testid="error-trigger"
+                  >
+                    Mô phỏng lỗi
+                  </Button>
+                </div>
+              )}
+            </Card>
+            <Card className="md:col-span-2">
+              <ErrorState
+                level="inline"
+                announce={false}
+                title="Tệp không phải PDF."
+                description="Hãy chọn tệp .pdf (ví dụ)."
+              />
+            </Card>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm text-fg-muted">ErrorState mức trang (focus vào “Thử lại”):</p>
+            <ButtonLink href="/lab/design/error" variant="secondary">
+              Xem trang lỗi mẫu
+            </ButtonLink>
+          </div>
         </Section>
       </div>
     </>

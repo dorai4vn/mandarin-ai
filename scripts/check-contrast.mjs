@@ -26,6 +26,16 @@ const TEXT = 4.5;
 const UI = 3;
 /** [foreground token, background token, minimum, where it is used] */
 const PAIRS = [
+  // UI-2B
+  ['fg-inverse', 'surface-inverse', TEXT, 'tooltip text'],
+  ['fg-default', 'surface-default', TEXT, 'selected segmented tab'],
+  ['fg-muted', 'bg-subtle', TEXT, 'unselected segmented tab'],
+  ['primary-base', 'surface-default', UI, 'underline tab indicator'],
+  ['primary-base', 'bg-subtle', UI, 'progress fill on track'],
+  ['success-solid', 'bg-subtle', UI, 'progress fill (success) on track'],
+  ['fg-muted', 'surface-sunken', TEXT, 'read-only field placeholder, details text (M8)'],
+  ['fg-muted', 'surface-default', TEXT, 'field hint (M8: fg-muted, also on subtle cards)'],
+  ['error-text', 'surface-sunken', TEXT, 'error text on sunken'],
   // UI-2 Study Cards (pastel tiles from the reference): title + meta text
   ['fg-default', 'study-blue-bg', TEXT, 'study card title (blue)'],
   ['fg-muted', 'study-blue-bg', TEXT, 'study card meta (blue)'],
