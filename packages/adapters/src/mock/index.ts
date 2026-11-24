@@ -88,12 +88,31 @@ export class MockHandwritingRecognizer implements HandwritingRecognitionPort {
   }
 }
 
-/** In-memory object storage (MOCK, development only). */
+/**
+ * In-memory object storage (MOCK, development only). Bounded by total bytes (oldest objects are
+ * evicted first) so repeated 50 MB test uploads cannot exhaust the dev server's memory.
+ */
 export class MemoryObjectStorage implements ObjectStoragePort {
   readonly mode = 'mock' as const;
   readonly objects = new Map<string, { body: Uint8Array; contentType: string }>();
+  private totalBytes = 0;
+  constructor(private readonly maxTotalBytes = 256 * 1024 * 1024) {}
   async put(path: string, body: Uint8Array, contentType: string): Promise<void> {
+    const previous = this.objects.get(path);
+    if (previous) {
+      this.totalBytes -= previous.body.byteLength;
+      this.objects.delete(path);
+    }
     this.objects.set(path, { body, contentType });
+    this.totalBytes += body.byteLength;
+    for (const [key, value] of this.objects) {
+      if (this.totalBytes <= this.maxTotalBytes || key === path) break;
+      this.objects.delete(key);
+      this.totalBytes -= value.body.byteLength;
+    }
+  }
+  get storedBytes(): number {
+    return this.totalBytes;
   }
 }
 

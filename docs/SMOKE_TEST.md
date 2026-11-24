@@ -15,7 +15,7 @@ Ký hiệu cột "Cần": `—` = không cần tài khoản/khóa · `SB` = cầ
 | A6 | Bấm "Nộp bài" khi chưa đăng nhập | Thông báo "Bạn chưa đăng nhập" (không treo, không lỗi trắng) | — | |
 | A7 | Phòng thử → Micro: Bắt đầu ghi → trình duyệt hỏi quyền → Cho phép → nói 2 giây → Dừng → Nghe lại (thử 0.5×) | Hiện "WAV 16000 Hz · 1 kênh · 16-bit"; nghe lại được | — | |
 | A8 | Chặn quyền micro (biểu tượng ổ khóa cạnh địa chỉ) → tải lại → Bắt đầu ghi | Thông báo "Quyền micro bị từ chối" + hướng dẫn bật lại | — | |
-| A9 | Phòng thử → Tải PDF: kéo-thả một PDF vào khung; thử thêm một tệp .txt đổi tên thành .pdf | PDF thật: chuyển sang bước gửi (chưa đăng nhập → thông báo đăng nhập); tệp giả: "Tệp không phải PDF" | — | |
+| A9 | Phòng thử → Tải PDF: kéo-thả một PDF thật **gần 50 MB** (ví dụ 45–49,9 MB) vào khung; thử một PDF **lớn hơn 50 MB**; thử tệp .txt đổi tên thành .pdf | PDF ≤ 50 MB: chuyển sang bước gửi, hiện "Đang gửi … MB" (chưa đăng nhập → thông báo đăng nhập); > 50 MB: thông báo tên tệp, dung lượng và giới hạn 50 MB, **không** gửi; tệp giả: "Tệp không phải PDF"; trang không đơ khi chọn tệp lớn | — | |
 | A10 | Phòng thử → Offline: DevTools → Network → Offline → lưu một ghi chú → đóng tab → mở lại tab → bỏ Offline | Ghi chú còn; "chờ" > 0 khi chưa đăng nhập (không mất dữ liệu) | — | |
 | A11 | Biểu tượng cài đặt trên thanh địa chỉ (Chrome/Edge) → Cài đặt | App mở trong cửa sổ riêng; **không cài vẫn dùng được mọi thứ** | — | |
 | A12a | Phiên đăng nhập: email **chưa được cấp** + mật khẩu bất kỳ | "Email hoặc mật khẩu không đúng."; **không** có user mới trong Supabase → Users (D-037, D-038) | SB | |
@@ -37,7 +37,7 @@ Ký hiệu cột "Cần": `—` = không cần tài khoản/khóa · `SB` = cầ
 | B4 | Chạm vào ô nhập ghi chú | Không tự phóng to; bàn phím không che ô nhập | — | |
 | B5 | Micro: ghi → cho phép → Dừng → Nghe lại | Hỏi quyền bằng hộp thoại của Safari; WAV 16 kHz; nghe được | — | |
 | B6 | Từ chối micro (Cài đặt → Safari → Micro, hoặc "aA" → Cài đặt trang web) → thử lại | Thông báo bị từ chối + hướng dẫn | — | |
-| B7 | Tải PDF từ ứng dụng **Tệp** | Chọn được tệp; tệp giả bị từ chối | — | |
+| B7 | Tải PDF từ ứng dụng **Tệp**: một tệp nhỏ và một tệp **gần 50 MB** (Wi-Fi và 4G nếu được) | Chọn được tệp; tệp ≤ 50 MB gửi được (ghi thời gian); > 50 MB và tệp giả bị từ chối rõ ràng | — | |
 | B8 | Offline: lưu ghi chú → bật **Chế độ máy bay** → lưu thêm → đóng hẳn Safari → mở lại | Ghi chú còn, "chờ" đúng số | — | |
 | B9 | Chia sẻ → **Thêm vào MH chính** → mở từ icon | Chạy toàn màn hình (không thanh địa chỉ); có nút điều hướng trong app | — | |
 | B10 | Trong app đã cài: bật Chế độ máy bay → mở lại app | Trang chủ vẫn hiện (app shell offline). **Bắt buộc kiểm tay** vì Playwright WebKit không tự động hóa được (CI) | — | |

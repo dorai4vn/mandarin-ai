@@ -279,6 +279,55 @@ describe('cross-platform web endpoints', () => {
   });
 });
 
+describe('PDF upload limit 50 MB (D-040)', () => {
+  const MiB = 1024 * 1024;
+  const auth = async () => ({
+    authorization: `Bearer ${await token({}, SECRET, '88888888-2222-4333-8444-555555555555')}`,
+  });
+  const pdfOf = (size: number) => {
+    const b = Buffer.alloc(size);
+    b.write('%PDF-1.7\n', 0, 'latin1');
+    return b;
+  };
+  const upload = async (payload: Buffer, headers: Record<string, string>) =>
+    app.inject({
+      method: 'POST',
+      url: '/v1/uploads/pdf',
+      headers: { ...headers, 'content-type': 'application/pdf' },
+      payload,
+    });
+
+  it.each([
+    ['20 MB', 20 * MiB],
+    ['49 MB', 49 * MiB],
+    ['exactly 50 MB', 50 * MiB],
+  ])('accepts a %s PDF and reports its exact size', async (_label, size) => {
+    const res = await upload(pdfOf(size), await auth());
+    expect(res.statusCode).toBe(201);
+    expect(res.json().sizeBytes).toBe(size);
+  });
+
+  it('rejects 50 MB + 1 byte with 413 payload_too_large (client-side check cannot be bypassed)', async () => {
+    const res = await upload(pdfOf(50 * MiB + 1), await auth());
+    expect(res.statusCode).toBe(413);
+    expect(res.json()).toEqual({
+      error: { code: 'payload_too_large', message: expect.any(String) },
+    });
+  });
+
+  it('rejects a 49 MB file that is not a PDF with 422', async () => {
+    const res = await upload(Buffer.alloc(49 * MiB, 0x41), await auth());
+    expect(res.statusCode).toBe(422);
+    expect(res.json().error.code).toBe('not_a_pdf');
+  });
+
+  it('refuses anonymous uploads with 401 before reading the body', async () => {
+    const res = await upload(pdfOf(50 * MiB + 1), {});
+    expect(res.statusCode).toBe(401);
+    expect(res.json().error.code).toBe('unauthenticated');
+  });
+});
+
 describe('deployment safety (APP_ENV, D-029, preview)', () => {
   const base = { SUPABASE_JWT_SECRET: SECRET, SUPABASE_URL: 'https://x.supabase.co' };
 

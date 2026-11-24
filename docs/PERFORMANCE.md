@@ -112,7 +112,7 @@ Phân tích JS (gzip, chunk chung cho mọi route): react-dom ≈ 70 KB, runtime
 | A2 | Optimistic UI, outbox idempotent, pending/error rõ, không báo synced khi chưa có ack | Outbox + reconcile đúng; **G1:** chip báo "Đã đồng bộ" khi còn thao tác `rejected` | M1 (sửa G1) |
 | A3 | Cache/prefetch có giới hạn, invalidation theo version, không cache nhầm dữ liệu riêng | SW chỉ cache trang công khai + asset có hash; chưa có cache dữ liệu; chưa có quota | M1–M2 |
 | A4 | Lazy loading PDF viewer, audio engine, Hanzi animation, handwriting | Nhận dạng chạy server; audio worklet tải khi bấm ghi; **G2:** Supabase SDK tải sẵn mọi trang | M1 (G2), M4–M6 |
-| A5 | PDF/AI nặng chạy background job (progress, retry, idempotency) | Chưa có (upload M0 là đồng bộ, tối đa 20 MB) | M4, M7 |
+| A5 | PDF/AI nặng chạy background job (progress, retry, idempotency) | Chưa có (upload M0 là đồng bộ, tối đa 50 MB — D-040) | M4, M7 |
 | A6 | AI text streaming; Realtime chỉ khi tương thích + test thật | Chưa có (chỉ spike cấp khóa) | M6–M7 |
 | A7 | Rà soát số request, index DB, batching, N+1, connection management | Sync đã batch ≤ 100 thao tác; chưa có DB thật | M1–M3 (mỗi migration kèm index + EXPLAIN) |
 | A8 | Region theo đo đạc, colocate API/DB | Chưa đo (D-034) | Trước khi tạo Supabase production |

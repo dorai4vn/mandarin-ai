@@ -1,10 +1,24 @@
 import { z } from 'zod';
 
-/** PDF upload limits for the M0 spike (resumable uploads for large files arrive in M4). */
+/**
+ * PDF upload limit (D-040): 50 MB per file = 50 MiB = 52 428 800 bytes, inclusive. Single source of
+ * truth for the web client, the API body limit and docs; it must not exceed the Supabase Storage
+ * upload limit of the project (local `supabase/config.toml` storage.file_size_limit = "50MiB").
+ */
 export const PDF_UPLOAD_LIMITS = {
-  maxBytes: 20 * 1024 * 1024,
+  maxBytes: 50 * 1024 * 1024,
+  /** What users see. Supabase and most file managers count 1 MB = 1 MiB here. */
+  maxLabel: '50 MB',
   mimeType: 'application/pdf',
 } as const;
+
+export type PdfSizeCheck = 'ok' | 'empty' | 'too_large';
+
+/** Size gate shared by client and server: 1 byte ≤ size ≤ maxBytes. */
+export function checkPdfSize(sizeBytes: number): PdfSizeCheck {
+  if (!Number.isFinite(sizeBytes) || sizeBytes <= 0) return 'empty';
+  return sizeBytes > PDF_UPLOAD_LIMITS.maxBytes ? 'too_large' : 'ok';
+}
 
 /** Every PDF starts with `%PDF-`. Used on both client and server. */
 export function looksLikePdf(firstBytes: Uint8Array): boolean {

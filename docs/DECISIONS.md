@@ -336,3 +336,10 @@ Quy ước:
   - Không thêm thư viện UI runtime; `<dialog>` gốc; icon SVG nội tuyến.
 - **Quy tắc triển khai:** không bắt đầu M1; không đổi logic xác thực (D-037, D-038), backend Railway, Supabase, database, RLS khi làm UI; giữ mọi `data-testid` và kiểm thử hồi quy; mỗi PR có phạm vi rõ, checklist QC và kết quả kiểm thử; không merge/deploy thay đổi lớn khi chưa duyệt.
 - **Hậu quả:** Triển khai theo `docs/design/UI_MIGRATION_PLAN.md` (PR UI-1 → UI-8) từ nhánh mới tạo từ `main` sau merge PR #2. Tạm thời giữa PR UI-1 và giai đoạn Dark mode, app chỉ có giao diện sáng (người dùng đặt hệ điều hành ở chế độ tối sẽ thấy giao diện sáng) — chấp nhận theo quyết định 5.
+
+## D-040 — Giới hạn tải PDF 50 MB mỗi tệp
+- **Ngày:** 2026-11-24 · **Trạng thái:** **Đã duyệt** (chủ dự án) — thay mức 20 MB của spike M0.
+- **Bối cảnh:** Nhập giáo trình HSK 3.0 và tài liệu học cần tệp PDF lớn hơn 20 MB.
+- **Lựa chọn:** Tối đa **50 MB = 50 MiB = 52 428 800 byte mỗi tệp** (tính cả mốc), một nguồn duy nhất trong `packages/contracts` cho web và API; lỗi rõ ràng khi vượt. API xác thực **trước khi** nhận body; Fastify từ chối theo `Content-Length` và cắt luồng vượt giới hạn. Phương thức M0 giữ nguyên: trình duyệt → API Railway → Supabase Storage (standard upload, secret key chỉ ở server, bucket private, đường dẫn do server chọn). Supabase Storage của dự án phải cho phép ≥ 50 MB (gói Free tối đa 50 MB).
+- **Chưa làm (cần duyệt riêng, M4):** signed upload URL + upload trực tiếp resumable (TUS) lên Storage, có tiến độ và tiếp tục khi rớt mạng — xem `docs/PDF_UPLOAD.md` mục 3.
+- **Hậu quả:** `docs/PDF_UPLOAD.md`; test contract/API/web/E2E và test Storage thật trong CI; checklist B7.

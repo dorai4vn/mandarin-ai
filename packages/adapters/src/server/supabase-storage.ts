@@ -41,7 +41,8 @@ export class SupabaseObjectStorage implements ObjectStoragePort {
       method: 'POST',
       headers: storageAuthHeaders(this.config.secretKey, contentType),
       body: body as unknown as BodyInit,
-      signal: AbortSignal.timeout(60_000),
+      // Standard (single-request) upload; 50 MB from Railway to Supabase needs headroom (D-040).
+      signal: AbortSignal.timeout(180_000),
     });
     if (!res.ok)
       throw new ProviderError(

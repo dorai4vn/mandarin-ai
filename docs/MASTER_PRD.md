@@ -98,7 +98,8 @@ Mandarin AI is a cross-platform Chinese learning web application for Vietnamese-
 - Input via camera/photo/screenshot (browser file picker / camera capture), pasted text and teaching PDF (file picker on every platform, incl. iOS/Android Files and desktop drag-and-drop).
 - Extract text (PDF text layer first, OCR fallback), segment Chinese words, assign Pinyin/meaning and detect lesson structure when possible.
 - Preview extracted content side-by-side with source page, allow correction, selection and dedupe before finalizing.
-- Long PDF is a resumable background import with status, partial errors and idempotent retry; uploads are private by default.
+- PDF files up to **50 MB each** (50 MiB = 52 428 800 bytes, D-040); larger files are refused with a clear message (split or compress). Uploads are private by default.
+- Long PDF is a resumable background import with status, partial errors and idempotent retry (M4: resumable direct upload to storage recommended, `docs/PDF_UPLOAD.md`).
 
 **Acceptance:** Import sample PDF -> preview lessons/words -> correct one misread word -> publish -> start quiz; reimport does not duplicate content.
 

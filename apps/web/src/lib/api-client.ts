@@ -46,7 +46,9 @@ async function call<T>(
       headers,
       signal: init.signal ?? AbortSignal.timeout(30_000),
     });
-  } catch {
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'TimeoutError')
+      throw new ApiCallError(0, 'timeout');
     throw new ApiCallError(0, navigator.onLine === false ? 'offline' : 'network_unreachable');
   }
   const body: unknown = await res.json().catch(() => null);
@@ -77,8 +79,10 @@ export const api = {
     call('/v1/uploads/pdf', (v) => PdfUploadResultSchema.parse(v), {
       method: 'POST',
       headers: { 'Content-Type': 'application/pdf' },
+      // Streams the File from disk (no full read on the main thread). 50 MB on a slow mobile
+      // uplink can take minutes (D-040).
       body: file,
-      signal: AbortSignal.timeout(120_000),
+      signal: AbortSignal.timeout(300_000),
     }),
   assessPronunciation: (req: PronunciationAssessmentRequest) =>
     call(
@@ -100,6 +104,8 @@ export function describeApiError(e: unknown): string {
       return 'Bạn chưa đăng nhập (vào mục Phiên đăng nhập).';
     case 'offline':
       return 'Thiết bị đang offline.';
+    case 'timeout':
+      return 'Máy chủ phản hồi quá lâu (mạng chậm?). Hãy thử lại.';
     case 'network_unreachable':
       return 'Không kết nối được máy chủ API.';
     case 'unauthenticated':
@@ -110,6 +116,12 @@ export function describeApiError(e: unknown): string {
       return 'Dịch vụ này chưa được cấu hình trên máy chủ.';
     case 'not_a_pdf':
       return 'Tệp không phải PDF hợp lệ.';
+    case 'payload_too_large':
+    case 'provider_http_error':
+      if (e.status === 413) return 'Tệp vượt giới hạn 50 MB mỗi tệp PDF.';
+      return `Lỗi máy chủ (${e.status} ${e.code}).`;
+    case 'unsupported_media_type':
+      return 'Chỉ nhận tệp PDF.';
     default:
       return `Lỗi máy chủ (${e.status} ${e.code}).`;
   }

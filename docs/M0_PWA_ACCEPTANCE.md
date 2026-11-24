@@ -45,7 +45,7 @@ Ký hiệu: ✅ có bằng chứng · ⏳ cần kiểm tay trên website thật 
 | A7 | Responsive: đúng điều hướng theo viewport, không cuộn ngang, desktop không phải layout điện thoại kéo giãn, điều hướng bằng bàn phím | E2E `layout.spec.ts` 390×844 / 820×1180 / 1440×900 × Chromium/Firefox/WebKit | Trình duyệt headless; breakpoint hiện tại của D-030 (768/1280) |
 | A8 | Canvas viết: chạm, chuột, bút (mô phỏng), nhận dạng 山, chữ khác không bị chấm đúng, chưa đăng nhập có thông báo | E2E `handwriting.spec.ts` | Nhận dạng chạy bằng HanziLookup **chế độ development**; trên Preview/production nhận dạng **TẮT** (D-029) |
 | A9 | Micro: ghi từ micro giả → WAV 16 kHz mono; từ chối quyền → hướng dẫn; không có getUserMedia → thông báo | E2E `audio.spec.ts` (Chromium, Firefox có PulseAudio) | WebKit headless không có micro giả → **Safari phải kiểm tay** |
-| A10 | PDF: chọn tệp, kiểm tra loại/`%PDF-`, tệp giả bị từ chối, kéo-thả desktop | E2E `upload.spec.ts` | Lưu trữ **in-memory development**; Supabase Storage thật chưa kiểm trong CI |
+| A10 | PDF ≤ **50 MB** (D-040): chọn tệp, kiểm `%PDF-`, tệp giả bị từ chối, kéo-thả desktop; 20 / 49 / đúng 50 MiB qua trình duyệt → API; 50 MiB + 1 và 60 MiB bị từ chối không gửi request; API 413/422/401-trước-body; **Supabase Storage local thật**: 20/49/50 MiB lưu được, 50 MiB + 1 → 413, bucket private | E2E `upload.spec.ts`, `upload-limits.spec.ts`; unit API; job *database* `test-storage-upload-limit.mjs` | Lưu trữ E2E là **in-memory development**; Storage **Cloud** (giới hạn theo gói/dự án) chỉ kiểm tay ở B7 |
 | A11 | Offline/IndexedDB: ghi offline → đóng tab → mở lại → gửi đúng một lần; mất phản hồi → chống trùng; không có IndexedDB → bộ nhớ tạm; thao tác bị từ chối hiện lỗi, không "đã đồng bộ" (G1) | E2E `offline.spec.ts` | Server sync là **mock development**; trên Preview sync **TẮT** (D-035) |
 | A12 | PWA: manifest hợp lệ, cài đặt tùy chọn, service worker đăng ký, app shell offline | E2E `pwa.spec.ts` | WebKit chỉ kiểm precache; điều hướng offline trên Safari phải kiểm tay (B10) |
 | A13 | Realtime: yêu cầu khóa tạm thời hiển thị MOCK khi không có khóa | E2E `realtime.spec.ts` | Không có khóa OpenAI thật |
@@ -59,7 +59,7 @@ Ghi cho mỗi thiết bị: tên máy, hệ điều hành + phiên bản, trình
 ### B1. Cấu hình trước khi kiểm (chủ dự án, trên dashboard; không gửi khóa qua chat)
 - [ ] Supabase `mandarin-ai-dev` → Authentication: *Allow new users to sign up* **TẮT**, *Allow anonymous sign-ins* **TẮT**, Email **BẬT**, *Secure password change* **TẮT**, độ dài mật khẩu tối thiểu **12**.
 - [ ] Tạo 1–2 tài khoản thử nghiệm: *Create new user* + mật khẩu tạm ngẫu nhiên ≥ 12 ký tự + *Auto Confirm User*. Xóa tài khoản cũ tạo cho OTP (không có mật khẩu).
-- [ ] Storage: bucket `documents` **private**.
+- [ ] Storage: bucket `documents` **private**; Storage → Settings → **Upload file size limit ≥ 50 MB** (gói Free tối đa 50 MB); giới hạn riêng của bucket (nếu có) ≥ 50 MB.
 - [ ] Railway (`mandarin-ai-preview`): `APP_ENV=preview`, `TRUST_PROXY=true`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `WEB_ORIGINS` = URL Vercel của branch; **không** đặt `HANDWRITING_ADAPTER=hanzilookup`; `ALLOW_MOCKS_IN_PREVIEW` chỉ bật nếu muốn thấy nhãn MOCK cho Azure/Realtime.
 - [ ] Vercel: biến `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` có tick **Preview**; **không** có `NEXT_PUBLIC_ENABLE_DEV_TOKEN` hay `NEXT_PUBLIC_ALLOW_MOCK_SYNC`; Deployment Protection bật; Preview đã build từ HEAD mới nhất của `claude/m0-pwa`.
 
@@ -90,9 +90,14 @@ Ghi cho mỗi thiết bị: tên máy, hệ điều hành + phiên bản, trình
 - [ ] Từ chối quyền → thông báo + hướng dẫn bật lại; cấp lại quyền → ghi được.
 - [ ] Gửi chấm / xin khóa Realtime → "chưa được cấu hình" hoặc nhãn MOCK (không có khóa thật).
 
-### B7. PDF precheck và lưu trữ — A9, A14, B7, C4
-- [ ] PDF thật (chọn tệp; kéo-thả trên desktop; ứng dụng Tệp trên iPhone) → sau khi đăng nhập: nhãn LIVE, đường dẫn `…/imports/….pdf`; tệp có trong bucket private `documents`.
-- [ ] Tệp `.txt` đổi tên `.pdf` → "Tệp không phải PDF"; tệp quá lớn → bị từ chối.
+### B7. PDF precheck và lưu trữ (giới hạn 50 MB — D-040) — A9, A14, B7, C4
+Chuẩn bị 3 tệp: một PDF thật nhỏ (< 5 MB), một PDF thật **gần 50 MB** (45–49,9 MB; hoặc đúng 52.428.800 byte nếu có) và một PDF **lớn hơn 50 MB**; thêm một tệp `.txt` đổi tên `.pdf`. Ghi kích thước chính xác (byte) và thời gian gửi.
+- [ ] Đã đăng nhập, PDF nhỏ (chọn tệp; kéo-thả trên desktop; ứng dụng Tệp trên iPhone) → nhãn LIVE, đường dẫn `…/imports/….pdf`; tệp có trong bucket private `documents` (Supabase → Storage), kích thước khớp.
+- [ ] PDF **gần 50 MB** trên desktop (Wi-Fi) và iPhone/Android (4G nếu được) → hiện "Đang gửi <tên> · <x> MB"; trang **không đơ**; gửi xong nhãn LIVE; tệp có trong bucket với đúng kích thước; ghi thời gian gửi.
+- [ ] PDF **> 50 MB** → thông báo nêu tên tệp, dung lượng (MB + byte) và giới hạn 50 MB (52.428.800 byte); **không** có request tới API (DevTools → Network).
+- [ ] Tệp `.txt` đổi tên `.pdf` → "Tệp không phải PDF".
+- [ ] Nếu PDF gần 50 MB bị Storage Cloud từ chối (thông báo "Tệp vượt giới hạn 50 MB mỗi tệp PDF" dù tệp ≤ 50 MB) → giới hạn Storage của dự án đang < 50 MB: sửa ở Storage → Settings rồi thử lại.
+- [ ] Nếu gửi thất bại trên 4G chậm (hết 5 phút hoặc rớt mạng) → ghi lại; đây là giới hạn đã biết của upload một request (resumable ở M4, `docs/PDF_UPLOAD.md` mục 3).
 
 ### B8. Offline/IndexedDB — A10, A13, B8, C5
 - [ ] Lưu ghi chú khi offline (DevTools Offline / Chế độ máy bay) → đóng hẳn trình duyệt → mở lại → ghi chú còn, "chờ" đúng số.

@@ -128,7 +128,7 @@ jobs:
         run: pnpm prebuild:ios
 
   database:
-    name: Supabase migrations + RLS + invite-only Auth tests
+    name: Supabase migrations + RLS + invite-only Auth + Storage limit tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -139,8 +139,8 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Start Supabase local (Postgres + Auth + Kong; no Mailpit — sign-in must not need e-mail)
-        run: pnpm exec supabase start -x realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor,mailpit
+      - name: Start Supabase local (Postgres + Auth + Storage + Kong; no Mailpit — sign-in must not need e-mail)
+        run: pnpm exec supabase start -x realtime,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor,mailpit
       - name: Apply migrations from scratch
         run: pnpm exec supabase db reset
       - name: RLS tests (pgTAP)
@@ -149,3 +149,7 @@ jobs:
         run: pnpm exec supabase db lint --level warning --fail-on error
       - name: Auth is invite-only, e-mail + password (real local GoTrue, no dev token — D-038)
         run: node scripts/test-auth-invite-only.mjs
+      - name: Build the storage adapter used by the API
+        run: pnpm turbo run build --filter "@mandarin/adapters..."
+      - name: PDF limit 50 MB on real Supabase Storage (D-040)
+        run: node scripts/test-storage-upload-limit.mjs

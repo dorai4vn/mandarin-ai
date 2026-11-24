@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import {
   HandwritingRecognitionRequestSchema,
   PDF_UPLOAD_LIMITS,
+  checkPdfSize,
   PronunciationAssessmentRequestSchema,
   SyncPushRequestSchema,
   looksLikePdf,
@@ -182,7 +183,32 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
 
   app.post(
     '/v1/uploads/pdf',
-    { preHandler: requireUser, bodyLimit: PDF_UPLOAD_LIMITS.maxBytes },
+    {
+      // D-040: authenticate in onRequest, BEFORE the (up to 50 MB) body is read, so an anonymous
+      // client can never make the server buffer a large upload. Fastify rejects a declared
+      // Content-Length above bodyLimit before reading and aborts a stream that grows past it.
+      onRequest: requireUser,
+      bodyLimit: PDF_UPLOAD_LIMITS.maxBytes,
+      errorHandler: (error, _req, reply) => {
+        const e = error as { code?: string; statusCode?: number };
+        if (e.code === 'FST_ERR_CTP_BODY_TOO_LARGE' || e.statusCode === 413) {
+          return reply
+            .code(413)
+            .send(
+              err('payload_too_large', `PDF must be at most ${PDF_UPLOAD_LIMITS.maxBytes} bytes`),
+            );
+        }
+        if (e.code === 'FST_ERR_CTP_INVALID_MEDIA_TYPE') {
+          return reply
+            .code(415)
+            .send(err('unsupported_media_type', 'Only application/pdf is accepted'));
+        }
+        app.log.error({ code: e.code }, 'upload failed');
+        return reply
+          .code(e.statusCode && e.statusCode < 500 ? e.statusCode : 500)
+          .send(err('upload_failed', 'Upload failed'));
+      },
+    },
     async (req, reply) => {
       if (
         req.headers['content-type'] !== PDF_UPLOAD_LIMITS.mimeType ||
@@ -193,6 +219,9 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
           .send(err('unsupported_media_type', 'Only application/pdf is accepted'));
       }
       const body = req.body;
+      if (checkPdfSize(body.length) === 'too_large') {
+        return reply.code(413).send(err('payload_too_large', 'PDF is larger than allowed'));
+      }
       if (body.length === 0 || !looksLikePdf(body.subarray(0, 5))) {
         return reply.code(422).send(err('not_a_pdf', 'File content is not a PDF'));
       }

@@ -191,3 +191,17 @@ describe('Supabase Storage auth headers (new vs legacy keys)', () => {
     expect(h.Authorization).toBe('Bearer eyJhbGciOiJIUzI1NiJ9.x.y');
   });
 });
+
+describe('MemoryObjectStorage bound (D-040, development only)', () => {
+  it('evicts the oldest objects once the byte budget is exceeded', async () => {
+    const { MemoryObjectStorage } = await import('./mock/index.js');
+    const store = new MemoryObjectStorage(100);
+    await store.put('a', new Uint8Array(40), 'application/pdf');
+    await store.put('b', new Uint8Array(40), 'application/pdf');
+    await store.put('c', new Uint8Array(40), 'application/pdf');
+    expect([...store.objects.keys()]).toEqual(['b', 'c']);
+    expect(store.storedBytes).toBe(80);
+    await store.put('big', new Uint8Array(150), 'application/pdf');
+    expect([...store.objects.keys()]).toEqual(['big']);
+  });
+});

@@ -4,6 +4,7 @@ import { SAMPLE_PDF, deviceClass, signIn } from './helpers';
 test('PDF upload via file picker is validated and stored privately', async ({ page }) => {
   await signIn(page);
   await page.goto('/lab/upload');
+  await expect(page.getByTestId('pdf-input')).toBeEnabled();
   await page
     .getByTestId('pdf-input')
     .setInputFiles({ name: 'bai-mau.pdf', mimeType: 'application/pdf', buffer: SAMPLE_PDF });
@@ -19,6 +20,7 @@ test('non-PDF files are rejected before upload', async ({ page }) => {
     return r.continue();
   });
   await page.goto('/lab/upload');
+  await expect(page.getByTestId('pdf-input')).toBeEnabled();
   await page.getByTestId('pdf-input').setInputFiles({
     name: 'fake.pdf',
     mimeType: 'application/pdf',
@@ -32,6 +34,7 @@ test('desktop drag-and-drop upload', async ({ page }) => {
   test.skip(deviceClass(page) !== 'desktop', 'drag-and-drop is a desktop interaction');
   await signIn(page);
   await page.goto('/lab/upload');
+  await expect(page.getByTestId('pdf-input')).toBeEnabled();
   const bytes = [...SAMPLE_PDF];
   await page.getByTestId('dropzone').evaluate((el, data) => {
     const dt = new DataTransfer();
