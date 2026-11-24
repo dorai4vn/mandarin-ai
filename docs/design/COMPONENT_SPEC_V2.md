@@ -1,6 +1,6 @@
 # Component specification V2
 
-Trạng thái: **ĐỀ XUẤT — chờ duyệt** (D-039). Token: `TOKENS_V2.md`. Breakpoint: `RESPONSIVE_V2.md`.
+Trạng thái: **ĐÃ DUYỆT 2026-11-24** (D-039) — chưa triển khai code. Token: `TOKENS_V2.md`. Breakpoint: `RESPONSIVE_V2.md`.
 
 ## 0. Quy ước chung (áp dụng cho mọi component)
 

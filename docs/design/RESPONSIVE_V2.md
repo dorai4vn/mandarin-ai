@@ -1,6 +1,6 @@
 # Responsive architecture V2
 
-Trạng thái: **ĐỀ XUẤT — chờ duyệt** (D-039; phần breakpoint thay D-030 khi được duyệt). Khả năng trình duyệt: `docs/WEB_COMPATIBILITY.md`. App vẫn là web app chạy trong tab thường; PWA tùy chọn (D-018, D-028).
+Trạng thái: **ĐÃ DUYỆT 2026-11-24** (D-039; thay phần breakpoint của D-030, áp dụng ở PR UI-3). Khả năng trình duyệt: `docs/WEB_COMPATIBILITY.md`. App vẫn là web app chạy trong tab thường; PWA tùy chọn (D-018, D-028).
 
 ## 1. Breakpoint và lớp thiết bị
 

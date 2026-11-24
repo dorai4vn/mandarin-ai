@@ -1,6 +1,6 @@
 # Screen blueprints V2
 
-Trạng thái: **ĐỀ XUẤT — chờ duyệt** (D-039). Wireframe là cấu trúc, không phải pixel. Component: `COMPONENT_SPEC_V2.md`.
+Trạng thái: **ĐÃ DUYỆT 2026-11-24** (D-039) — chưa triển khai code. Wireframe là cấu trúc, không phải pixel. Component: `COMPONENT_SPEC_V2.md`.
 
 **Ký hiệu phạm vi:** **[M0]** có trong code hiện tại (chỉ đổi giao diện) · **[M1]**, **[M2]**… thuộc milestone sau, chưa phát triển — chỉ thiết kế, **không làm giả** (không dữ liệu mẫu trông như thật, không nút không hoạt động trừ khi ghi rõ "Ra mắt ở Mx").
 Nguồn milestone: `MILESTONES_CLAUDE_CODE.md`, `FEATURES.md` (từ vựng/thư viện M2, quiz + SRS M3, nhập PDF M4, viết tay M5, nghe/nói M6, gia sư AI + XP + nhắc học M7).

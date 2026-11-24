@@ -233,7 +233,7 @@ Quy ước:
 - **Hiện trạng kỹ thuật sau quyết định "chưa duyệt":** adapter mặc định `HANDWRITING_ADAPTER=disabled`; API **từ chối khởi động** nếu `HANDWRITING_ADAPTER=hanzilookup` khi `APP_ENV` khác `development`; image Docker **không** đóng gói dữ liệu `mmah.json`; chỉ môi trường development/test (và Preview nếu chủ dự án chủ động bật) mới chạy được HanziLookup. Gói npm `hanzilookup-js` vẫn còn trong `package.json` (chưa thay thư viện theo chỉ đạo).
 
 ## D-030 — Responsive layout theo lớp thiết bị
-- **Ngày:** 2026-11-23 · **Trạng thái:** **Đã duyệt** (chủ dự án, 2026-11-23)
+- **Ngày:** 2026-11-23 · **Trạng thái:** **Đã duyệt** (chủ dự án, 2026-11-23). **Phần breakpoint được thay bởi D-039** (desktop từ 1024 px; áp dụng khi triển khai PR UI-3) — phần còn lại (bố cục riêng cho từng lớp thiết bị, test không cuộn ngang) giữ nguyên
 - **Lựa chọn:** Breakpoint dùng chung (Tailwind): phone < 768 px (một cột, tab bar dưới), tablet 768–1279 px (navigation rail, hai cột khi hữu ích), desktop ≥ 1280 px (sidebar cố định, nội dung nhiều cột, phím tắt, trạng thái hover). Mỗi module mô tả bố cục desktop riêng (ví dụ: danh sách + chi tiết từ điển cạnh nhau; canvas + gợi ý + lịch sử). Kiểm thử tự động ở 390×844, 820×1180, 1440×900.
 - **Hậu quả:** Test E2E kiểm tra đúng thành phần điều hướng hiển thị theo từng viewport và không có cuộn ngang.
 
@@ -321,14 +321,18 @@ Quy ước:
 - **Hậu quả:** Cập nhật `docs/ACCESS_CONTROL.md` (viết lại), `docs/AUTH_SESSION_DESIGN.md`, PRD, ARCHITECTURE, MILESTONES (tiêu chí M0 số 8, M1), RELEASE_CHECKLIST, SMOKE_TEST, DEPLOY_PREVIEW. M0: `/lab/session` dùng `signInWithPassword`; bỏ code/test/mẫu email OTP; CI kiểm trên GoTrue local thật **không có Mailpit**.
 
 ## D-039 — Design System V2: Neo Minimal × Playful Learning
-- **Ngày:** 2026-11-24 · **Trạng thái:** **Đề xuất — chờ chủ dự án duyệt**. Hướng thiết kế (Neo Minimal 70% + Playful Learning 30%) và bộ màu gốc do chủ dự án chọn; chi tiết kỹ thuật dưới đây cần duyệt trước khi sửa code.
+- **Ngày:** 2026-11-24 · **Trạng thái:** **Đã duyệt** (chủ dự án, 2026-11-24). Tài liệu: `docs/design/` (6 file). Chưa triển khai code; code bắt đầu **sau khi PR #2 được nghiệm thu và merge**.
 - **Bối cảnh:** Giao diện M0-PWA (nền kem, đỏ gạch, sidebar kiểu phần mềm quản trị) không phù hợp với sản phẩm học tập hiện đại. Cần một hệ thống thiết kế lâu dài cho desktop, tablet, điện thoại, không đổi nghiệp vụ hay bảo mật.
-- **Lựa chọn (đề xuất):**
-  - Token semantic light/dark trong `docs/design/TOKENS_V2.md`, kiểm WCAG 2.2 AA (94/94 cặp đạt). Giữ `#476DFF` cho thương hiệu/UI; thêm `#335DFF` cho chữ, link, nút có chữ trắng (vì `#476DFF` chỉ đạt 4.29:1); coral/lavender/mint chỉ làm nền/minh họa, chữ dùng bản đậm hơn. Đỏ chỉ cho lỗi.
-  - Font Inter (UI, tiếng Việt, pinyin) + Noto Sans SC (chữ Hán) tự host bằng `next/font`; mọi chữ Hán có `lang="zh-Hans"`.
-  - Lưới 4 px, radius 12/16/20/24, shadow nhẹ, motion chỉ `transform`/`opacity`, tôn trọng `prefers-reduced-motion`.
-  - Breakpoint mobile 320–767 / tablet 768–1023 / desktop ≥ 1024: **thay phần breakpoint của D-030 (desktop ≥ 1280) khi được duyệt**; tablet và desktop 1024–1279 dùng sidebar thu gọn, ≥ 1280 sidebar mở rộng; mobile bottom navigation 5 mục + menu *Thêm*.
-  - Playful có kiểm soát: phản hồi, tổng kết phiên, streak/XP **chỉ khi có dữ liệu thật** (M3/M7); không dữ liệu giả trong UI.
+- **Lựa chọn (đã duyệt):**
+  1. Hướng **Neo Minimal 70% + Playful Learning 30%**; playful có kiểm soát; streak/XP và số liệu học **chỉ khi có dữ liệu thật** (M3/M7); không giả lập chức năng chưa phát triển.
+  2. **Bộ màu V2 đã điều chỉnh WCAG** (`docs/design/TOKENS_V2.md`, 94/94 cặp đạt AA): `#476DFF` cho thương hiệu/UI; **`#335DFF` cho chữ, link và CTA** có chữ trắng; coral/lavender/mint làm nền/minh họa với bản chữ đậm hơn; đỏ chỉ cho lỗi. Phải kiểm lại AA trên component thực tế (CI kiểm token + axe trên trang).
+  3. **Responsive:** mobile < 768 px, tablet 768–1023 px, desktop ≥ 1024 px (thay phần breakpoint của D-030); tablet và desktop 1024–1279 sidebar thu gọn, ≥ 1280 mở rộng; mobile bottom navigation + menu *Thêm*.
+  4. **Font:** Inter cho UI (subset `latin`, `latin-ext`, `vietnamese`) và Noto Sans SC cho chữ Hán (nạp theo lát `unicode-range`), tự host bằng `next/font`; kiểm hiển thị tiếng Việt, pinyin có dấu thanh và Hanzi trên 3 engine; mọi chữ Hán `lang="zh-Hans"`.
+  5. **Light và Dark mode:** hoàn thiện **Light trước**; Dark mode là **giai đoạn riêng** (token dark đã đặc tả, kích hoạt + bộ chọn giao diện sau khi Light xong).
+  6. **Logo:** nghiên cứu hướng xanh hiện đại và **trình phương án để duyệt**; không tự thay logo.
+  7. **Phòng thử M0** chuyển vào menu *Thêm*, vẫn truy cập được cho kiểm thử kỹ thuật.
+  8. **`@axe-core/playwright`** được dùng làm dev dependency kiểm accessibility (chỉ môi trường phát triển/CI).
+  9. Trình tự: **nghiệm thu + merge PR #2 trước** (`docs/M0_PWA_ACCEPTANCE.md`), sau đó **UI Foundation + M0 Visual Refresh trước M1**, để M1 dùng ngay component mới.
   - Không thêm thư viện UI runtime; `<dialog>` gốc; icon SVG nội tuyến.
-- **Phạm vi:** chỉ lớp trình bày. Không đổi Auth (D-037, D-038), API, offline/sync (G1, D-035), spike trình duyệt. Giữ mọi `data-testid`.
-- **Hậu quả:** Tài liệu `docs/design/` (6 file). Triển khai theo `docs/design/UI_MIGRATION_PLAN.md` (PR-1 → PR-8) **sau khi duyệt**; câu hỏi mở ở mục 10 của kế hoạch đó.
+- **Quy tắc triển khai:** không bắt đầu M1; không đổi logic xác thực (D-037, D-038), backend Railway, Supabase, database, RLS khi làm UI; giữ mọi `data-testid` và kiểm thử hồi quy; mỗi PR có phạm vi rõ, checklist QC và kết quả kiểm thử; không merge/deploy thay đổi lớn khi chưa duyệt.
+- **Hậu quả:** Triển khai theo `docs/design/UI_MIGRATION_PLAN.md` (PR UI-1 → UI-8) từ nhánh mới tạo từ `main` sau merge PR #2. Tạm thời giữa PR UI-1 và giai đoạn Dark mode, app chỉ có giao diện sáng (người dùng đặt hệ điều hành ở chế độ tối sẽ thấy giao diện sáng) — chấp nhận theo quyết định 5.

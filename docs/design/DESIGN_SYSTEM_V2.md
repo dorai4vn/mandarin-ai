@@ -1,6 +1,6 @@
 # Mandarin AI — Design System V2 · Neo Minimal × Playful Learning
 
-Ngày: 2026-11-24 · Trạng thái: **ĐỀ XUẤT — chờ chủ dự án duyệt** (D-039). Chưa áp dụng vào code. Sau khi duyệt, triển khai theo `UI_MIGRATION_PLAN.md`.
+Ngày: 2026-11-24 · Trạng thái: **ĐÃ DUYỆT 2026-11-24** (D-039). Chưa áp dụng vào code: triển khai theo `UI_MIGRATION_PLAN.md` **sau khi PR #2 được nghiệm thu và merge**, trước M1.
 
 ## 1. Bộ tài liệu
 
@@ -61,8 +61,8 @@ Giới hạn định lượng: trên một màn hình, tối đa **1** màu nh�
 ## 5. Nhận diện
 
 - **Logo hiện tại:** chữ 学 trắng trên ô vuông bo góc đỏ gạch. **Không thay** khi chưa được duyệt.
-- **Đề xuất (chờ duyệt — mục 7):** giữ ký tự 学 làm biểu tượng, đổi nền sang `primary.base` `#476DFF`, chữ trắng Noto Sans SC Bold, bo góc theo tỉ lệ 28%; tùy chọn thêm một chấm nhỏ màu coral ở góc trên phải (gợi "AI/tia sáng"). Tên chữ: "Mandarin AI", Inter SemiBold, "AI" cùng màu chữ (không tô màu riêng).
-- Khi duyệt cần làm lại: favicon, `icon-192/512`, maskable icon, `apple-touch-icon`, `theme_color` trong manifest và `viewport.themeColor`. Đây là một PR riêng (PR-7 trong kế hoạch).
+- **Hướng nghiên cứu (được duyệt nghiên cứu, chưa được thay — mục 7):** giữ ký tự 学 làm biểu tượng, đổi nền sang `primary.base` `#476DFF`, chữ trắng Noto Sans SC Bold, bo góc theo tỉ lệ 28%; tùy chọn thêm một chấm nhỏ màu coral ở góc trên phải (gợi "AI/tia sáng"). Tên chữ: "Mandarin AI", Inter SemiBold, "AI" cùng màu chữ (không tô màu riêng).
+- Quy trình: trình 2–3 phương án (ảnh mockup ở các kích thước 16/32/180/512 px, nền sáng/tối, maskable) để chủ dự án chọn; chỉ sau khi duyệt mới làm lại favicon, `icon-192/512`, maskable icon, `apple-touch-icon`, `theme_color` trong manifest và `viewport.themeColor` (PR UI-7).
 
 ## 6. Phạm vi và ranh giới
 
@@ -71,15 +71,14 @@ Giới hạn định lượng: trên một màn hình, tối đa **1** màu nh�
 - Không thêm dependency runtime cho UI (dùng React + Tailwind 4 + HTML gốc như `<dialog>`). Dev dependency cho kiểm thử a11y cần duyệt riêng.
 - Màn hình phụ thuộc backend M1+ chỉ được thiết kế, không làm giả.
 
-## 7. Quyết định cần chủ dự án duyệt
+## 7. Quyết định đã chốt (chủ dự án, 2026-11-24 — D-039)
 
-Xem D-039 trong `docs/DECISIONS.md` và mục 10 của `UI_MIGRATION_PLAN.md`. Tóm tắt:
-
-1. Bộ màu đã điều chỉnh WCAG (giữ `#476DFF` cho thương hiệu/UI; dùng `#335DFF` cho chữ và nút có chữ trắng; màu nhấn chỉ làm nền/trang trí, có bản "text" đậm hơn).
-2. Breakpoint 768/1024 thay cho 768/1280 của D-030; tablet dùng sidebar thu gọn.
-3. Font Inter + Noto Sans SC tự host bằng `next/font`.
-4. Dark mode và nút chọn giao diện (Sáng/Tối/Theo hệ thống) trong đợt đầu.
-5. Đề xuất làm mới logo (mục 5).
-6. "Phòng thử M0" chuyển vào menu _Thêm_.
-7. Kiểm thử visual + a11y: thêm dev dependency `@axe-core/playwright`.
-8. Chiến lược nhánh: chờ PR #2 merge hay xếp PR UI chồng lên `claude/m0-pwa`.
+1. Bộ màu V2 đã điều chỉnh, gồm `#335DFF` cho chữ và CTA; bảo đảm WCAG AA trên component thực tế.
+2. Responsive: mobile < 768, tablet 768–1023, desktop ≥ 1024.
+3. Inter (UI) + Noto Sans SC (chữ Hán), subset phù hợp; kiểm tiếng Việt, pinyin, Hanzi.
+4. Light và Dark mode; **Light hoàn thiện trước**, Dark là giai đoạn riêng.
+5. Logo: **nghiên cứu** hướng xanh hiện đại và trình phương án; không tự thay logo.
+6. Phòng thử M0 vào menu _Thêm_, vẫn truy cập được cho kiểm thử kỹ thuật.
+7. `@axe-core/playwright` là dev dependency kiểm accessibility.
+8. Nghiệm thu + merge PR #2 trước khi triển khai code V2.
+9. UI Foundation + M0 Visual Refresh trước M1.

@@ -75,3 +75,9 @@ Skip có chủ đích (không phải để làm CI xanh): chuột trên điện 
 - `supabase/config.toml`: `minimum_password_length = 12` (signup/anonymous vẫn tắt).
 - Test: unit `auth-password.test.ts` (4); E2E `auth-invite-only.spec.ts` (3 × 9 project; chỉ có request password grant, không `/signup`/`/otp`; lỗi chung; mật khẩu không có trong local/sessionStorage; không có trang đăng ký) — **chỉ kiểm client**; `scripts/test-auth-invite-only.mjs` trên **GoTrue local thật, không Mailpit, không dev token**: signup + anonymous bị từ chối, user do admin tạo đăng nhập được (JWT `authenticated`), sai mật khẩu và email lạ trả **cùng** lỗi, mật khẩu 11 ký tự bị từ chối, không có tài khoản nào khác được tạo.
 - M1 (chưa bắt đầu): `app_members`, bắt buộc đổi mật khẩu, cookie session, audit, bảo vệ dữ liệu theo membership.
+
+## Cập nhật 2026-11-24 — Design System V2 được duyệt; checklist nghiệm thu
+- D-039 (Design System V2) **đã duyệt**; tài liệu `docs/design/`. Code UI V2 chỉ bắt đầu **sau khi PR #2 được nghiệm thu và merge**, trước M1.
+- Checklist nghiệm thu trước merge: `docs/M0_PWA_ACCEPTANCE.md` — tách phần đã có bằng chứng CI và phần phải kiểm tay trên website thật (Vercel Preview + Railway + `mandarin-ai-dev`, iPhone Safari + desktop thật).
+- Kiểm tra bundle với giá trị mồi trên HEAD (2026-11-24): 0 secret server trong `.next`.
+- `docs/SMOKE_TEST.md` A13 sửa cho đúng D-035: trên Preview sync server TẮT, thao tác giữ trạng thái "chờ".
