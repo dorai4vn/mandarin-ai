@@ -9,3 +9,4 @@ docs/*.md
 **/playwright-report
 **/test-results
 apps/web/public/sw.js
+docs/design/brand/source/fonts
