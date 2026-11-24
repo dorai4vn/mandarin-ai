@@ -59,7 +59,7 @@ Ghi cho mỗi thiết bị: tên máy, hệ điều hành + phiên bản, trình
 ### B1. Cấu hình trước khi kiểm (chủ dự án, trên dashboard; không gửi khóa qua chat)
 - [ ] Supabase `mandarin-ai-dev` → Authentication: *Allow new users to sign up* **TẮT**, *Allow anonymous sign-ins* **TẮT**, Email **BẬT**, *Secure password change* **TẮT**, độ dài mật khẩu tối thiểu **12**.
 - [ ] Tạo 1–2 tài khoản thử nghiệm: *Create new user* + mật khẩu tạm ngẫu nhiên ≥ 12 ký tự + *Auto Confirm User*. Xóa tài khoản cũ tạo cho OTP (không có mật khẩu).
-- [ ] Storage: bucket `documents` **private**; Storage → Settings → **Upload file size limit ≥ 50 MB** (gói Free tối đa 50 MB); giới hạn riêng của bucket (nếu có) ≥ 50 MB.
+- [ ] Storage: bucket `documents` **private**; Storage → Settings → **Upload file size limit ≥ 50 MB** (gói Free tối đa 50 MB); bucket `documents` → *Restrict file upload size* = **50 MB** và *Allowed MIME types* = `application/pdf` (khuyến nghị, D-040).
 - [ ] Railway (`mandarin-ai-preview`): `APP_ENV=preview`, `TRUST_PROXY=true`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `WEB_ORIGINS` = URL Vercel của branch; **không** đặt `HANDWRITING_ADAPTER=hanzilookup`; `ALLOW_MOCKS_IN_PREVIEW` chỉ bật nếu muốn thấy nhãn MOCK cho Azure/Realtime.
 - [ ] Vercel: biến `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` có tick **Preview**; **không** có `NEXT_PUBLIC_ENABLE_DEV_TOKEN` hay `NEXT_PUBLIC_ALLOW_MOCK_SYNC`; Deployment Protection bật; Preview đã build từ HEAD mới nhất của `claude/m0-pwa`.
 

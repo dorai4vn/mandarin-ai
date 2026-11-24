@@ -95,7 +95,7 @@ Vercel **không** chứa khóa bí mật nào.
 3. **Region:** chọn region gần người dùng thử nghiệm (ví dụ *Southeast Asia (Singapore)*) — với Preview chấp nhận được; production sẽ chọn lại bằng đo đạc (D-034).
 4. Bấm **Create new project**, chờ trạng thái xanh.
 5. **SQL Editor** → **New query** → mở file `supabase/migrations/20261123000000_m0_profiles_baseline.sql` trên GitHub (nút *Raw*), sao chép toàn bộ, dán vào → **Run**. Kết quả mong đợi: "Success. No rows returned".
-6. **Storage** → **New bucket** → tên `documents` → **Public bucket: TẮT** → **Save**. Trong **Storage → Settings**, kiểm **Upload file size limit** của dự án **≥ 50 MB** (D-040; gói Free tối đa 50 MB). Nếu đặt giới hạn riêng cho bucket thì cũng ≥ 50 MB; có thể giới hạn MIME `application/pdf`.
+6. **Storage** → **New bucket** → tên `documents` → **Public bucket: TẮT** → **Save**. Trong **Storage → Settings**, kiểm **Upload file size limit** của dự án **≥ 50 MB** (D-040; gói Free tối đa 50 MB). **Khuyến nghị (lớp chặn thứ hai sau API):** mở bucket `documents` → *Edit bucket* → bật *Restrict file upload size* = **50 MB** và *Allowed MIME types* = `application/pdf`. (Thử nghiệm cho thấy chỉ giới hạn chung của dự án có thể không chặn tệp vượt mốc — `docs/PDF_UPLOAD.md`.)
 7. **Authentication → Sign In / Providers** (ứng dụng riêng tư — D-037, D-038, `docs/ACCESS_CONTROL.md`):
    - **Allow new users to sign up: TẮT** ← quan trọng nhất; nếu dự án đang bật thì tắt **ngay**, kể cả khi Preview đã online.
    - **Allow anonymous sign-ins: TẮT**.

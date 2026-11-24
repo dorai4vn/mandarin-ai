@@ -7,7 +7,10 @@
  *
  * Proves:
  *   1. 20 MiB, 49 MiB and exactly 50 MiB (52 428 800 bytes) PDFs are stored, with the exact size.
- *   2. 50 MiB + 1 byte is refused by Storage with 413 (so the app limit is not above Storage's).
+ *   2. With the recommended bucket settings (file_size_limit = 52 428 800, MIME application/pdf),
+ *      Storage itself refuses 50 MiB + 1 byte and non-PDF content types — a second gate behind the
+ *      API (which is the primary gate). The project-wide limit alone is reported, not relied on:
+ *      CI run 45425461714 showed the local project-wide "50MiB" did NOT reject 50 MiB + 1.
  *   3. The bucket is private: no public read, no upload with the publishable key, none without a key.
  *
  * Keys come from `supabase status` (local demo keys) and are never printed.
@@ -45,17 +48,32 @@ const pdfOf = (size) => {
   return b;
 };
 
-// Private bucket WITHOUT a bucket-level size limit — like the Cloud bucket created in
-// DEPLOY_PREVIEW — so the project-wide Storage limit is what is being tested.
+// Recommended bucket settings (docs/PDF_UPLOAD.md, DEPLOY_PREVIEW step 6): private, 50 MiB, PDF only.
+const bucketSettings = {
+  public: false,
+  file_size_limit: PDF_UPLOAD_LIMITS.maxBytes,
+  allowed_mime_types: ['application/pdf'],
+};
 const created = await fetch(`${api}/storage/v1/bucket`, {
   method: 'POST',
   headers: adminHeaders({ 'content-type': 'application/json' }),
-  body: JSON.stringify({ id: BUCKET, name: BUCKET, public: false }),
+  body: JSON.stringify({ id: BUCKET, name: BUCKET, ...bucketSettings }),
 });
+if (!created.ok) {
+  await fetch(`${api}/storage/v1/bucket/${BUCKET}`, {
+    method: 'PUT',
+    headers: adminHeaders({ 'content-type': 'application/json' }),
+    body: JSON.stringify(bucketSettings),
+  });
+}
+const bucket = await fetch(`${api}/storage/v1/bucket/${BUCKET}`, { headers: adminHeaders() });
+const info = bucket.ok ? await bucket.json() : {};
 check(
-  'private bucket "documents" exists',
-  created.ok || created.status === 409 || created.status === 400,
-  `HTTP ${created.status}`,
+  'bucket "documents": private, 52 428 800-byte limit, PDF only',
+  info.public === false &&
+    Number(info.file_size_limit) === PDF_UPLOAD_LIMITS.maxBytes &&
+    JSON.stringify(info.allowed_mime_types) === '["application/pdf"]',
+  `HTTP ${bucket.status}`,
 );
 
 check(
@@ -85,9 +103,21 @@ for (const [label, size] of [
 
 try {
   await storage.put(`ci-${run}/imports/too-big.pdf`, pdfOf(50 * MiB + 1), 'application/pdf');
-  check('refuses 50 MiB + 1 byte', false, 'was accepted');
+  check('bucket limit refuses 50 MiB + 1 byte', false, 'was accepted');
 } catch (e) {
-  check('refuses 50 MiB + 1 byte with 413', e.status === 413, `status ${e.status}`);
+  // The adapter normalises Storage's "payload too large" answer to status 413 (→ API 413).
+  check(
+    'bucket limit refuses 50 MiB + 1 byte (adapter reports 413)',
+    e.status === 413,
+    `status ${e.status}`,
+  );
+}
+
+try {
+  await storage.put(`ci-${run}/imports/not-pdf.txt`, Buffer.from('hello'), 'text/plain');
+  check('bucket refuses non-PDF content types', false, 'was accepted');
+} catch (e) {
+  check('bucket refuses non-PDF content types', true, `status ${e.status}`);
 }
 
 const list = await fetch(`${api}/storage/v1/object/list/${BUCKET}`, {
@@ -102,7 +132,8 @@ check(
   sizes[`${50 * MiB}.pdf`] === 50 * MiB &&
     sizes[`${49 * MiB}.pdf`] === 49 * MiB &&
     sizes[`${20 * MiB}.pdf`] === 20 * MiB &&
-    !(`too-big.pdf` in sizes),
+    !('too-big.pdf' in sizes) &&
+    !('not-pdf.txt' in sizes),
   JSON.stringify(sizes),
 );
 

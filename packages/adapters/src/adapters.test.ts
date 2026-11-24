@@ -205,3 +205,37 @@ describe('MemoryObjectStorage bound (D-040, development only)', () => {
     expect([...store.objects.keys()]).toEqual(['big']);
   });
 });
+
+describe('Supabase Storage size errors (D-040)', () => {
+  const store = (res: Response) =>
+    new SupabaseObjectStorage({
+      url: 'https://x.supabase.co',
+      secretKey: 'sb_secret_test',
+      bucket: 'documents',
+      fetch: vi.fn(async () => res),
+    });
+
+  it.each([
+    ['HTTP 413', new Response('', { status: 413 })],
+    [
+      'HTTP 400 with statusCode "413"',
+      new Response('{"statusCode":"413","error":"Payload too large","message":"x"}', {
+        status: 400,
+      }),
+    ],
+  ])('reports %s as status 413', async (_label, res) => {
+    await expect(
+      store(res).put('u/a.pdf', new Uint8Array([1]), 'application/pdf'),
+    ).rejects.toMatchObject({ status: 413 });
+  });
+
+  it('keeps other failures as they are', async () => {
+    await expect(
+      store(new Response('{"statusCode":"403","error":"Unauthorized"}', { status: 400 })).put(
+        'u/a.pdf',
+        new Uint8Array([1]),
+        'application/pdf',
+      ),
+    ).rejects.toMatchObject({ status: 400 });
+  });
+});

@@ -44,12 +44,19 @@ export class SupabaseObjectStorage implements ObjectStoragePort {
       // Standard (single-request) upload; 50 MB from Railway to Supabase needs headroom (D-040).
       signal: AbortSignal.timeout(180_000),
     });
-    if (!res.ok)
+    if (!res.ok) {
+      // Some Storage versions answer an over-limit upload with HTTP 400 and
+      // `{"statusCode":"413","error":"Payload too large"}`: report it as 413 so the API and the
+      // client show the size message instead of a generic upstream failure.
+      const text = await res.text().catch(() => '');
+      const tooLarge =
+        res.status === 413 || /"statusCode"\s*:\s*"?413|payload too large/i.test(text);
       throw new ProviderError(
         'supabase-storage',
         'http_error',
         `Storage returned ${res.status}`,
-        res.status,
+        tooLarge ? 413 : res.status,
       );
+    }
   }
 }

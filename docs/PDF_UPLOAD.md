@@ -10,8 +10,9 @@ Ngày: 2026-11-24 · Phạm vi: **chỉ tải tệp lên lưu trữ riêng tư**
 |---|---|---|
 | Trình duyệt `/lab/upload` | `checkPdfSize(file.size)` + đọc **5 byte đầu** (`%PDF-`) | Thông báo: tên tệp, dung lượng (MB + byte), giới hạn 50 MB (52.428.800 byte), gợi ý chia nhỏ/nén — **không gửi request** |
 | API Fastify `POST /v1/uploads/pdf` | Xác thực ở `onRequest` (trước khi đọc body); `bodyLimit` = 52 428 800 (Fastify từ chối ngay khi `Content-Length` lớn hơn, và cắt luồng nếu vượt khi đang nhận); kiểm lại `checkPdfSize` + `%PDF-` | `413 payload_too_large` (JSON đúng định dạng lỗi của API) · không phải PDF: `422 not_a_pdf` · sai kiểu: `415` · chưa đăng nhập: `401` **trước khi nhận body** |
-| Supabase Storage (local/CI) | `supabase/config.toml` `[storage] file_size_limit = "50MiB"` | `413` → API trả `413 provider_http_error` → web hiện "Tệp vượt giới hạn 50 MB mỗi tệp PDF." |
-| Supabase Storage (Cloud `mandarin-ai-dev`) | Storage → Settings → **Upload file size limit** của dự án (gói Free: tối đa 50 MB) và (nếu đặt) giới hạn của bucket `documents` | Như trên — **phải ≥ 50 MB**, chủ dự án kiểm ở B1/B7 |
+| Supabase Storage — giới hạn chung của dự án (local `config.toml` `file_size_limit = "50MiB"`) | **Không dựa vào.** CI run 45425461714: Storage local (CLI 3.3.0) **vẫn nhận** 50 MiB + 1 byte dù đặt 50MiB | — |
+| Supabase Storage — **giới hạn của bucket `documents`** (khuyến nghị: `file_size_limit` 52 428 800 byte + MIME `application/pdf`) | Lớp chặn thứ hai sau API. CI (Storage local thật): 50 MiB nhận; **50 MiB + 1 bị từ chối**; `text/plain` bị từ chối | Adapter chuẩn hóa thành 413 → API `413 provider_http_error` → web "Tệp vượt giới hạn 50 MB mỗi tệp PDF." |
+| Supabase Storage Cloud `mandarin-ai-dev` | Storage → Settings → Upload file size limit của dự án **≥ 50 MB** (gói Free tối đa 50 MB) **và** đặt giới hạn bucket như trên | Chủ dự án cấu hình + kiểm ở B1/B7 |
 
 ## 2. Phương thức upload thực tế (M0)
 ```text
@@ -40,5 +41,5 @@ Supabase khuyến nghị **standard upload cho tệp nhỏ (≈ ≤ 6 MB)** và 
 | API (Fastify inject) | `apps/api/src/app.test.ts` › *PDF upload limit 50 MB* | 20 / 49 / đúng 50 MiB → 201, `sizeBytes` đúng; 50 MiB + 1 → 413 `payload_too_large`; 49 MiB không phải PDF → 422; chưa đăng nhập + 50 MiB + 1 → **401** (xác thực trước body) |
 | Web | `apps/web/src/lib/api-client.test.ts` | Thông báo 413, timeout, sai kiểu |
 | E2E 3 engine | `apps/web/e2e/upload-limits.spec.ts` | Desktop mỗi engine: 20 / 49 / đúng 50 MiB qua trình duyệt → API (lưu trữ giả lập development); Chromium: không long task ≥ 250 ms. Mọi viewport: 50 MiB + 1 và 60 MiB bị từ chối **không gửi request**; 49 MiB giả mạo bị từ chối |
-| Storage thật (CI) | `scripts/test-storage-upload-limit.mjs` (job `database`) | Bằng adapter thật của API: 20 / 49 / đúng 50 MiB lưu được, kích thước đúng; 50 MiB + 1 → 413; không đọc công khai; publishable key và không có key đều không upload được |
+| Storage thật (CI) | `scripts/test-storage-upload-limit.mjs` (job `database`) | Bucket private + giới hạn 52 428 800 byte + chỉ PDF; bằng adapter thật của API: 20 / 49 / đúng 50 MiB lưu được, kích thước đúng; 50 MiB + 1 → 413; `text/plain` bị từ chối; không đọc công khai; publishable key và không có key đều không upload được |
 | Thủ công | `docs/M0_PWA_ACCEPTANCE.md` B7, `docs/SMOKE_TEST.md` A9/B7/C4 | Trên Preview + Storage Cloud, tệp gần 50 MB từ máy tính và điện thoại |
