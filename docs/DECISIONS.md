@@ -319,3 +319,16 @@ Quy ước:
   - Supabase Cloud: giữ signup TẮT, anonymous TẮT, Email BẬT; độ dài mật khẩu tối thiểu 12; *Secure password change* TẮT (cần email); không cần mẫu email.
 - **Phạm vi:** M0-PWA chỉ có luồng đăng nhập thử nghiệm bằng email + mật khẩu và tài liệu. `app_members`, đổi mật khẩu bắt buộc, cookie session (D-022), admin audit, bảo vệ dữ liệu theo membership: **M1**.
 - **Hậu quả:** Cập nhật `docs/ACCESS_CONTROL.md` (viết lại), `docs/AUTH_SESSION_DESIGN.md`, PRD, ARCHITECTURE, MILESTONES (tiêu chí M0 số 8, M1), RELEASE_CHECKLIST, SMOKE_TEST, DEPLOY_PREVIEW. M0: `/lab/session` dùng `signInWithPassword`; bỏ code/test/mẫu email OTP; CI kiểm trên GoTrue local thật **không có Mailpit**.
+
+## D-039 — Design System V2: Neo Minimal × Playful Learning
+- **Ngày:** 2026-11-24 · **Trạng thái:** **Đề xuất — chờ chủ dự án duyệt**. Hướng thiết kế (Neo Minimal 70% + Playful Learning 30%) và bộ màu gốc do chủ dự án chọn; chi tiết kỹ thuật dưới đây cần duyệt trước khi sửa code.
+- **Bối cảnh:** Giao diện M0-PWA (nền kem, đỏ gạch, sidebar kiểu phần mềm quản trị) không phù hợp với sản phẩm học tập hiện đại. Cần một hệ thống thiết kế lâu dài cho desktop, tablet, điện thoại, không đổi nghiệp vụ hay bảo mật.
+- **Lựa chọn (đề xuất):**
+  - Token semantic light/dark trong `docs/design/TOKENS_V2.md`, kiểm WCAG 2.2 AA (94/94 cặp đạt). Giữ `#476DFF` cho thương hiệu/UI; thêm `#335DFF` cho chữ, link, nút có chữ trắng (vì `#476DFF` chỉ đạt 4.29:1); coral/lavender/mint chỉ làm nền/minh họa, chữ dùng bản đậm hơn. Đỏ chỉ cho lỗi.
+  - Font Inter (UI, tiếng Việt, pinyin) + Noto Sans SC (chữ Hán) tự host bằng `next/font`; mọi chữ Hán có `lang="zh-Hans"`.
+  - Lưới 4 px, radius 12/16/20/24, shadow nhẹ, motion chỉ `transform`/`opacity`, tôn trọng `prefers-reduced-motion`.
+  - Breakpoint mobile 320–767 / tablet 768–1023 / desktop ≥ 1024: **thay phần breakpoint của D-030 (desktop ≥ 1280) khi được duyệt**; tablet và desktop 1024–1279 dùng sidebar thu gọn, ≥ 1280 sidebar mở rộng; mobile bottom navigation 5 mục + menu *Thêm*.
+  - Playful có kiểm soát: phản hồi, tổng kết phiên, streak/XP **chỉ khi có dữ liệu thật** (M3/M7); không dữ liệu giả trong UI.
+  - Không thêm thư viện UI runtime; `<dialog>` gốc; icon SVG nội tuyến.
+- **Phạm vi:** chỉ lớp trình bày. Không đổi Auth (D-037, D-038), API, offline/sync (G1, D-035), spike trình duyệt. Giữ mọi `data-testid`.
+- **Hậu quả:** Tài liệu `docs/design/` (6 file). Triển khai theo `docs/design/UI_MIGRATION_PLAN.md` (PR-1 → PR-8) **sau khi duyệt**; câu hỏi mở ở mục 10 của kế hoạch đó.
