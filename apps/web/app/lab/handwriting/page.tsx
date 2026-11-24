@@ -7,6 +7,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { Button, Card, Mono, PageHeader } from '@/components/ui';
 import { api, describeApiError } from '@/lib/api-client';
 import { labelForResult } from '@/lib/status';
+import { HanziText } from '@/components/Hanzi';
 
 // M0 spike only: in M5 the prompt and the grading come from the server so the target is
 // never present client-side before submission. Here it is only kept out of the DOM.
@@ -90,7 +91,7 @@ export default function HandwritingLab() {
             <Card title="Kết quả">
               <p data-testid="hw-verdict" className="text-lg font-semibold">
                 {grade.correct ? '✅ Đúng!' : '❌ Chưa đúng'} Đáp án:{' '}
-                <span className="hanzi text-3xl">{PROMPT.target}</span>
+                <HanziText className="text-3xl">{PROMPT.target}</HanziText>
               </p>
               <p className="mt-2 text-sm text-ink-2">
                 Ứng viên (tốt nhất trước) — chỉ ứng viên đầu tiên được tính là đúng:
@@ -99,7 +100,8 @@ export default function HandwritingLab() {
                 {result.candidates.map((c, i) => (
                   <li
                     key={`${c.text}-${i}`}
-                    className={`hanzi rounded-lg border px-2 py-1 text-2xl ${i === 0 ? 'border-seal' : 'border-line'}`}
+                    lang="zh-Hans"
+                    className={`hanzi rounded-lg border px-2 py-1 text-2xl ${i === 0 ? 'border-primary-base' : 'border-line'}`}
                   >
                     {c.text}
                   </li>

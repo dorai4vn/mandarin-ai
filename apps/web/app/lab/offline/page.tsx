@@ -74,7 +74,7 @@ export default function OfflineLab() {
               aria-label="Nội dung ghi chú"
               data-testid="note-input"
               disabled={!store}
-              className="min-w-0 flex-1 rounded-xl border border-line bg-paper px-3 py-2"
+              className="min-w-0 flex-1 rounded-xl border border-line-strong bg-surface px-3 py-2"
             />
             <Button type="submit" data-testid="note-add" disabled={!store}>
               Lưu

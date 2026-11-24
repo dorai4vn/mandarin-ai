@@ -1,6 +1,6 @@
 # Design tokens V2
 
-Trạng thái: **ĐÃ DUYỆT 2026-11-24** (D-039), gồm `#335DFF` cho chữ và CTA. **Light triển khai trước (PR UI-1); token Dark đã đặc tả, kích hoạt ở giai đoạn Dark mode riêng (PR UI-6).** Giá trị dưới đây đã qua kiểm tra độ tương phản (mục 3). Nguồn sự thật khi triển khai: `apps/web/src/design/tokens.css` (PR-1). Không dùng mã màu trực tiếp trong component; chỉ dùng token semantic.
+Trạng thái: **ĐÃ DUYỆT 2026-11-24** (D-039), gồm `#335DFF` cho chữ và CTA. **Light triển khai trước (PR UI-1); token Dark đã đặc tả, kích hoạt ở giai đoạn Dark mode riêng (PR UI-6).** Light đã hiện thực trong `apps/web/src/design/tokens.css` (UI-1); `scripts/check-contrast.mjs` kiểm trong CI. Giá trị dưới đây đã qua kiểm tra độ tương phản (mục 3). Nguồn sự thật khi triển khai: `apps/web/src/design/tokens.css` (PR-1). Không dùng mã màu trực tiếp trong component; chỉ dùng token semantic.
 
 ## 1. Bảng màu gốc (primitive) và điều chỉnh WCAG
 

@@ -1,0 +1,109 @@
+/*
+ * Mandarin AI — Design System V2 tokens, LIGHT MODE (D-039, docs/design/TOKENS_V2.md).
+ * Source of truth for runtime colours. Every value below was checked against WCAG 2.2 AA
+ * (scripts/check-contrast.mjs parses this file in CI). Dark mode is a separate phase (UI-6):
+ * the dark values are specified in TOKENS_V2.md but intentionally NOT active yet.
+ * Components use the semantic names through Tailwind (`bg-surface`, `text-fg-muted`, …), never
+ * raw hex codes.
+ */
+:root {
+  color-scheme: light;
+
+  /* Backgrounds & surfaces */
+  --bg-page: #f7f9fd;
+  --bg-subtle: #eef2fa;
+  --surface-default: #ffffff;
+  --surface-sunken: #f1f4fa;
+  --surface-inverse: #18243a;
+
+  /* Text */
+  --fg-default: #18243a;
+  --fg-muted: #4f5d73;
+  --fg-subtle: #647186;
+  --fg-disabled: #9aa6bc;
+  --fg-inverse: #ffffff;
+  --fg-link: #335dff;
+
+  /* Borders & focus */
+  --border-default: #e6ebf4; /* decorative separators only (1.2:1) */
+  --border-strong: #7d899e; /* control outlines, ≥ 3:1 */
+  --border-focus: #476dff;
+
+  /* Primary — #476DFF is brand/UI (≥ 3:1); #335DFF carries text and white labels (≥ 4.5:1) */
+  --primary-base: #476dff;
+  --primary-solid: #335dff;
+  --primary-hover: #2a4fe0;
+  --primary-active: #2343c4;
+  --primary-subtle: #ebf0ff;
+  --primary-text: #335dff;
+  --primary-text-strong: #2a4fe0; /* text on primary-subtle */
+  --primary-on: #ffffff;
+
+  /* Secondary — lavender (AI / hints) */
+  --secondary-base: #a78bfa;
+  --secondary-solid: #6d4fd8;
+  --secondary-hover: #5e41c4;
+  --secondary-subtle: #f3efff;
+  --secondary-text: #6d4fd8;
+  --secondary-on: #ffffff;
+
+  /* Accent — coral (energy / streak); never used for errors */
+  --accent-base: #ff806b;
+  --accent-subtle: #fff0ec;
+  --accent-text: #c2412d;
+  --accent-text-strong: #b23a27;
+  --accent-on: #18243a;
+
+  /* Status */
+  --success-base: #2fc9a1;
+  --success-solid: #0b7a5e;
+  --success-subtle: #e6f8f2;
+  --success-text: #0b7a5e;
+  --success-text-strong: #0a6e55;
+  --success-on: #ffffff;
+
+  --warning-base: #f5a524;
+  --warning-subtle: #fff6e5;
+  --warning-text: #8f5800;
+  --warning-on: #18243a;
+
+  --error-base: #e5484d;
+  --error-solid: #c9252c;
+  --error-hover: #b01f25;
+  --error-subtle: #ffecec;
+  --error-text: #c9252c;
+  --error-text-strong: #b42027;
+  --error-on: #ffffff;
+
+  /* Interaction overlays */
+  --state-hover: rgb(24 36 58 / 0.05);
+  --state-pressed: rgb(24 36 58 / 0.09);
+  --state-disabled-bg: #eef2fa;
+  --overlay-scrim: rgb(24 36 58 / 0.45);
+
+  /* Handwriting canvas */
+  --stroke-ink: #18243a;
+  --stroke-guide: #c9d2e3;
+  --stroke-hint: #476dff;
+
+  /*
+   * Logo identity — unchanged on purpose (D-039 decision 6: the logo is only researched, not
+   * replaced). Kept separate from the brand primary so UI-1 does not alter the mark.
+   */
+  --logo-bg: #b8322a;
+  --logo-fg: #ffffff;
+
+  /* Shadows (light, one light source from above) */
+  --elevation-xs: 0 1px 2px rgb(24 36 58 / 0.06);
+  --elevation-sm: 0 1px 3px rgb(24 36 58 / 0.08), 0 1px 2px rgb(24 36 58 / 0.04);
+  --elevation-md: 0 4px 12px rgb(24 36 58 / 0.08);
+  --elevation-lg: 0 12px 32px rgb(24 36 58 / 0.12);
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}

@@ -1,37 +1,101 @@
 @import 'tailwindcss';
+@import '../src/design/tokens.css';
 
-/* Design tokens: warm paper, ink, cinnabar seal red. Light + dark. */
-@theme {
-  --color-paper: #faf7f0;
-  --color-paper-2: #f1ece0;
-  --color-ink: #1d1b18;
-  --color-ink-2: #57524a;
-  --color-line: #ddd5c4;
-  --color-seal: #b8322a;
-  --color-seal-ink: #ffffff;
-  --color-jade: #2f6b4f;
-  --color-amber: #9a6200;
-  --color-sky: #2a5d9a;
+/*
+ * Design System V2 (D-039) — Tailwind 4 mapping of the semantic tokens in src/design/tokens.css.
+ * `inline` makes every utility read the runtime CSS variable, so tokens stay the single source.
+ */
+@theme inline {
+  /* Surfaces */
+  --color-page: var(--bg-page);
+  --color-subtle: var(--bg-subtle);
+  --color-surface: var(--surface-default);
+  --color-sunken: var(--surface-sunken);
+  --color-inverse: var(--surface-inverse);
+
+  /* Text */
+  --color-fg: var(--fg-default);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-fg-disabled: var(--fg-disabled);
+  --color-fg-inverse: var(--fg-inverse);
+  --color-link: var(--fg-link);
+
+  /* Borders */
+  --color-line: var(--border-default);
+  --color-line-strong: var(--border-strong);
+  --color-focus: var(--border-focus);
+
+  /* Primary (brand). `primary` = solid #335DFF (CTA, white label); `primary-base` = #476DFF (UI) */
+  --color-primary: var(--primary-solid);
+  --color-primary-base: var(--primary-base);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-subtle: var(--primary-subtle);
+  --color-primary-text: var(--primary-text);
+  --color-primary-strong: var(--primary-text-strong);
+  --color-on-primary: var(--primary-on);
+
+  --color-secondary: var(--secondary-solid);
+  --color-secondary-base: var(--secondary-base);
+  --color-secondary-subtle: var(--secondary-subtle);
+  --color-secondary-text: var(--secondary-text);
+  --color-on-secondary: var(--secondary-on);
+
+  --color-accent: var(--accent-base);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-accent-text: var(--accent-text);
+  --color-accent-strong: var(--accent-text-strong);
+  --color-on-accent: var(--accent-on);
+
+  --color-success: var(--success-solid);
+  --color-success-base: var(--success-base);
+  --color-success-subtle: var(--success-subtle);
+  --color-success-text: var(--success-text);
+  --color-success-strong: var(--success-text-strong);
+
+  --color-warning: var(--warning-base);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-warning-text: var(--warning-text);
+
+  --color-error: var(--error-solid);
+  --color-error-base: var(--error-base);
+  --color-error-hover: var(--error-hover);
+  --color-error-subtle: var(--error-subtle);
+  --color-error-text: var(--error-text);
+  --color-error-strong: var(--error-text-strong);
+  --color-on-error: var(--error-on);
+
+  /* Logo mark — unchanged identity (not the brand primary) */
+  --color-logo: var(--logo-bg);
+  --color-logo-ink: var(--logo-fg);
+
+  /*
+   * TEMPORARY aliases for M0 class names (UI_MIGRATION_PLAN §2) so every screen moves to V2 in
+   * one step without touching layouts. Removed in UI-8. `seal` is NOT aliased: it meant both
+   * "brand" and "error", so each use was replaced by `primary*`, `error*` or `logo` by meaning.
+   */
+  --color-paper: var(--bg-page);
+  --color-paper-2: var(--bg-subtle);
+  --color-ink: var(--fg-default);
+  --color-ink-2: var(--fg-muted);
+  --color-jade: var(--success-text);
+  --color-amber: var(--warning-text);
+  --color-sky: var(--primary-text);
+
+  /* Typography — fonts self-hosted at build time by next/font (no runtime Google request) */
   --font-sans:
-    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    var(--font-inter), system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
   --font-hanzi:
-    'Noto Serif SC', 'Noto Serif CJK SC', 'Songti SC', 'STSong', 'SimSun', 'Source Han Serif SC',
-    serif;
-}
+    var(--font-noto-sc), 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC',
+    'Source Han Sans SC', sans-serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-paper: #171513;
-    --color-paper-2: #221f1b;
-    --color-ink: #efe9dc;
-    --color-ink-2: #b3ab9b;
-    --color-line: #3a352e;
-    --color-seal: #e0675d;
-    --color-seal-ink: #1a0d0b;
-    --color-jade: #6fbf98;
-    --color-amber: #e0a542;
-    --color-sky: #7fb0eb;
-  }
+  /* Shadows (V2: light, consistent) */
+  --shadow-xs: var(--elevation-xs);
+  --shadow-sm: var(--elevation-sm);
+  --shadow-md: var(--elevation-md);
+  --shadow-lg: var(--elevation-lg);
 }
 
 html {
@@ -40,9 +104,10 @@ html {
 }
 
 body {
-  background: var(--color-paper);
-  color: var(--color-ink);
+  background: var(--bg-page);
+  color: var(--fg-default);
   font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
 }
 
 /* iOS: inputs below 16px trigger zoom-on-focus. */
@@ -52,11 +117,36 @@ textarea {
   font-size: max(16px, 1rem);
 }
 
+/* Focus ring: 2 px border.focus with a 2 px gap (TOKENS_V2 §2.5). Never removed. */
 :focus-visible {
-  outline: 3px solid var(--color-sky);
+  outline: 2px solid var(--border-focus);
   outline-offset: 2px;
 }
 
-.hanzi {
+::selection {
+  background: var(--primary-subtle);
+  color: var(--fg-default);
+}
+
+/* Chinese text: Noto Sans SC; never synthesise bold/italic (it smears strokes). */
+.hanzi,
+:lang(zh-Hans) {
   font-family: var(--font-hanzi);
+  font-synthesis: none;
+}
+
+/* Pinyin and Vietnamese use Inter; tone marks are precomposed (NFC) characters. */
+:lang(zh-Latn-pinyin) {
+  font-family: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

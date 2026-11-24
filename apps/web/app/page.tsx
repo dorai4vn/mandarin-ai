@@ -57,7 +57,7 @@ export default function Home() {
           <li key={l.href}>
             <Link
               href={l.href}
-              className="block h-full rounded-2xl border border-line p-4 transition hover:border-seal hover:bg-paper-2"
+              className="block h-full rounded-2xl border border-line bg-surface p-4 transition hover:border-primary-base hover:shadow-sm"
             >
               <span className="font-semibold">{l.title} ›</span>
               <span className="mt-1 block text-sm text-ink-2">{l.desc}</span>

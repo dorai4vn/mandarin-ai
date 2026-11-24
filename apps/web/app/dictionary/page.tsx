@@ -1,4 +1,5 @@
 import { Card, PageHeader } from '@/components/ui';
+import { HanziText, Pinyin } from '@/components/Hanzi';
 
 export const metadata = { title: 'Từ điển' };
 
@@ -21,8 +22,8 @@ export default function Dictionary() {
           <ul className="divide-y divide-line">
             {SAMPLE.map((w) => (
               <li key={w.hanzi} className="flex items-baseline gap-3 py-2">
-                <span className="hanzi text-2xl">{w.hanzi}</span>
-                <span className="text-ink-2">{w.pinyin}</span>
+                <HanziText className="text-2xl">{w.hanzi}</HanziText>
+                <Pinyin className="text-ink-2">{w.pinyin}</Pinyin>
                 <span className="ml-auto">{w.vi}</span>
               </li>
             ))}

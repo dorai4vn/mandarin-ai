@@ -36,7 +36,9 @@ export const HandwritingCanvas = forwardRef<
     // Practice grid (米字格).
     const w = canvas.width / dpr;
     const h = canvas.height / dpr;
-    ctx.strokeStyle = 'rgba(184,50,42,0.18)';
+    // Grid colour from the V2 token (stroke.guide); fallback keeps old browsers working.
+    ctx.strokeStyle =
+      getComputedStyle(canvas).getPropertyValue('--stroke-guide').trim() || '#c9d2e3';
     ctx.lineWidth = 1;
     ctx.setLineDash([6, 6]);
     ctx.beginPath();
@@ -119,7 +121,7 @@ export const HandwritingCanvas = forwardRef<
         aria-label={label}
         data-testid="handwriting-canvas"
         data-pointer-kind={lastKind}
-        className="aspect-square w-full max-w-[min(100%,32rem)] touch-none select-none rounded-2xl border-2 border-line bg-paper text-ink [touch-action:none]"
+        className="aspect-square w-full max-w-[min(100%,32rem)] touch-none select-none rounded-2xl border-2 border-line bg-sunken text-fg [touch-action:none]"
         onPointerDown={(e) => {
           if (activePointer.current !== null || (e.pointerType === 'mouse' && e.button !== 0))
             return;
