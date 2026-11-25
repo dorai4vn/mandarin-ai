@@ -19,3 +19,6 @@ export type { TabItem } from './Tabs';
 export { Tooltip } from './Tooltip';
 export { Skeleton, SkeletonGroup, useShowAfter } from './Skeleton';
 export { ErrorState } from './ErrorState';
+export { Dialog, Sheet } from './Sheet';
+export { ToastProvider, useToast } from './Toast';
+export type { ToastInput, ToastTone } from './Toast';

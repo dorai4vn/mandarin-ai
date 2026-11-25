@@ -4,59 +4,12 @@ import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { detectCapabilities, missingCore, type Capability } from '@/platform/capabilities';
 import { MoreIcon, PanelLeftIcon } from './icons';
-import { SYNC_DISABLED_MESSAGE, useOffline } from './OfflineProvider';
 import { PRIMARY, SECONDARY, isActive, type NavItem } from './shell/nav';
+import { OfflineBanner } from './shell/OfflineBanner';
+import { SyncIndicator } from './shell/SyncIndicator';
 import { Sheet } from './ui/Sheet';
+import { ToastProvider } from './ui/Toast';
 import { Tooltip } from './ui/Tooltip';
-
-function SyncChip({ compact = false }: { compact?: boolean }) {
-  const { online, pending, rejected, store, syncAvailability } = useOffline();
-  // "Đã đồng bộ" only when nothing is pending AND nothing was refused by the server (G1), and
-  // never while the server has cloud sync switched off (then data is on this device only).
-  const localOnly = syncAvailability === 'disabled';
-  const text =
-    rejected > 0
-      ? `${rejected} lỗi đồng bộ`
-      : !online
-        ? 'Offline'
-        : localOnly
-          ? 'Lưu trên thiết bị'
-          : pending > 0
-            ? `${pending} chờ đồng bộ`
-            : 'Đã đồng bộ';
-  const description = localOnly && rejected === 0 && online ? SYNC_DISABLED_MESSAGE : text;
-  return (
-    <span
-      data-testid="sync-chip"
-      data-sync-state={
-        rejected > 0
-          ? 'error'
-          : !online
-            ? 'offline'
-            : localOnly
-              ? 'local-only'
-              : pending
-                ? 'pending'
-                : 'synced'
-      }
-      title={
-        store?.kind === 'memory'
-          ? 'Không có lưu trữ offline trên trình duyệt này'
-          : localOnly
-            ? SYNC_DISABLED_MESSAGE
-            : undefined
-      }
-      className={`inline-flex items-center gap-1.5 rounded-full border border-line text-xs font-medium ${compact ? 'size-7 justify-center p-0' : 'w-fit px-2.5 py-1'}`}
-    >
-      <span
-        aria-hidden
-        className={`h-2 w-2 rounded-full ${rejected > 0 ? 'bg-error-base' : !online ? 'bg-warning' : localOnly ? 'bg-fg-subtle' : pending ? 'bg-primary-base' : 'bg-success'}`}
-      />
-      {compact ? <span className="sr-only">{text}</span> : text}
-      {description !== text && <span className="sr-only"> — {description}</span>}
-    </span>
-  );
-}
 
 function CompatibilityNotice() {
   const [missing, setMissing] = useState<Capability[]>([]);
@@ -189,10 +142,10 @@ function Sidebar({
       </nav>
       <div className="mt-auto flex flex-col gap-2">
         <div className="nav-sync">
-          <SyncChip />
+          <SyncIndicator align="start" />
         </div>
-        <div className="nav-sync-compact">
-          <SyncChip compact />
+        <div className="nav-sync-compact flex justify-center">
+          <SyncIndicator compact />
         </div>
         {desktop && onToggle && (
           <button
@@ -352,28 +305,31 @@ export function AppShell({ children }: { children: ReactNode }) {
   const path = usePathname() ?? '/';
   const { expanded, toggle } = useSidebarPref();
   return (
-    <div className="app-shell min-h-dvh md:grid md:grid-cols-[calc(72px+env(safe-area-inset-left))_1fr] lg:grid-cols-[calc(var(--sidebar-w)+env(safe-area-inset-left))_1fr]">
-      <Sidebar variant="rail" path={path} />
-      <Sidebar variant="desktop" path={path} expanded={expanded} onToggle={toggle} />
+    <ToastProvider>
+      <div className="app-shell min-h-dvh md:grid md:grid-cols-[calc(72px+env(safe-area-inset-left))_1fr] lg:grid-cols-[calc(var(--sidebar-w)+env(safe-area-inset-left))_1fr]">
+        <Sidebar variant="rail" path={path} />
+        <Sidebar variant="desktop" path={path} expanded={expanded} onToggle={toggle} />
 
-      <div className="flex min-w-0 flex-col">
-        {/* Phone top bar */}
-        <header className="sticky top-0 z-10 flex min-h-14 items-center justify-between gap-3 border-b border-line bg-surface/90 pb-2 pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur min-[360px]:pl-[max(1rem,env(safe-area-inset-left))] min-[360px]:pr-[max(1rem,env(safe-area-inset-right))] md:hidden [@media(max-height:499px)]:min-h-11">
-          <Link href="/" className="flex min-w-0 items-center gap-2 font-bold">
-            <Mark size={32} /> <span className="truncate">Mandarin AI</span>
-          </Link>
-          <SyncChip />
-        </header>
-        <main
-          id="main"
-          className="mx-auto w-full max-w-[1120px] flex-1 px-3 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-4 min-[360px]:px-4 md:pb-10 md:pl-6 md:pr-[max(1.5rem,env(safe-area-inset-right))] md:pt-8 lg:pl-8 lg:pr-[max(2rem,env(safe-area-inset-right))] xl:pl-10 xl:pr-[max(2.5rem,env(safe-area-inset-right))]"
-        >
-          <CompatibilityNotice />
-          {children}
-        </main>
+        <div className="flex min-w-0 flex-col">
+          {/* Phone top bar */}
+          <header className="sticky top-0 z-10 flex min-h-14 items-center justify-between gap-3 border-b border-line bg-surface/90 pb-2 pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur min-[360px]:pl-[max(1rem,env(safe-area-inset-left))] min-[360px]:pr-[max(1rem,env(safe-area-inset-right))] md:hidden [@media(max-height:499px)]:min-h-11">
+            <Link href="/" className="flex min-w-0 items-center gap-2 font-bold">
+              <Mark size={32} /> <span className="truncate">Mandarin AI</span>
+            </Link>
+            <SyncIndicator />
+          </header>
+          <OfflineBanner />
+          <main
+            id="main"
+            className="mx-auto w-full max-w-[1120px] flex-1 px-3 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-4 min-[360px]:px-4 md:pb-10 md:pl-6 md:pr-[max(1.5rem,env(safe-area-inset-right))] md:pt-8 lg:pl-8 lg:pr-[max(2rem,env(safe-area-inset-right))] xl:pl-10 xl:pr-[max(2.5rem,env(safe-area-inset-right))]"
+          >
+            <CompatibilityNotice />
+            {children}
+          </main>
+        </div>
+
+        <BottomNav path={path} />
       </div>
-
-      <BottomNav path={path} />
-    </div>
+    </ToastProvider>
   );
 }
