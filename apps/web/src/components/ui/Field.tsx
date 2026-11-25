@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  useEffect,
   useId,
   useRef,
   useState,
@@ -144,10 +145,19 @@ export function PasswordInput({
   optional,
   className,
   'aria-describedby': extra,
+  concealSignal,
   ...props
-}: FieldProps & Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'>) {
+}: FieldProps &
+  Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'> & {
+    /** Any change hides the password again (e.g. a submit counter: it never stays revealed). */
+    concealSignal?: unknown;
+  }) {
   const f = useFieldIds(hint, error, extra, props.id);
   const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setVisible(false);
+  }, [concealSignal]);
   return (
     <FieldFrame {...{ label, hint, error, hideLabel, optional, className }} {...f}>
       <div className="relative">

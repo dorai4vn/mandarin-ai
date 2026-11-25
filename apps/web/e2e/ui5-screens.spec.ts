@@ -84,3 +84,30 @@ test('profile: account copy matches D-038 (e-mail + password, no OTP)', async ({
   await expect(main).toContainText('email và mật khẩu do quản trị viên cấp');
   await expect(main).not.toContainText('OTP');
 });
+
+test('login form (V2 fields): labels, password hidden again and focused after a failed attempt', async ({
+  page,
+}) => {
+  const { interceptAuth, invalidCredentials } = await import('./auth-helpers');
+  await interceptAuth(page, invalidCredentials);
+  await page.goto('/lab/session');
+  await expect(page.getByLabel('Email', { exact: true })).toHaveAttribute(
+    'autocomplete',
+    'username',
+  );
+  const pw = page.getByLabel('Mật khẩu', { exact: true });
+  await expect(pw).toHaveAttribute('autocomplete', 'current-password');
+  await expect(page.getByTestId('login-email')).toBeEnabled();
+  await page.getByTestId('login-email').fill('duoc.cap@example.com');
+  await pw.fill('mat-khau-sai-1234');
+  const reveal = page.getByRole('button', { name: 'Hiện mật khẩu' }).first();
+  await reveal.click();
+  await expect(pw).toHaveAttribute('type', 'text');
+  await page.getByTestId('login-submit').click();
+  await expect(page.getByTestId('login-message')).toBeVisible();
+  await expect(pw).toHaveAttribute('type', 'password');
+  await expect(reveal).toHaveAttribute('aria-pressed', 'false');
+  await expect(pw).toBeFocused();
+  await expect(pw).toHaveValue('');
+  await expectNoHorizontalScroll(page);
+});

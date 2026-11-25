@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Button, Card, PageHeader } from '@/components/ui';
+import { Button, Card, Input, PageHeader, PasswordInput } from '@/components/ui/index';
 import { signInWithEmailPassword } from '@/lib/auth-password';
 import { DEV_TOKEN_ENABLED, readDevToken, supabase, writeDevToken } from '@/lib/session';
 
@@ -22,6 +22,7 @@ export default function SessionLab() {
   // X1: the server-rendered form is inert until React has hydrated and owns onSubmit. Before that
   // the inputs and the button are disabled, so the browser can never submit credentials natively.
   const [ready, setReady] = useState(false);
+  const [attempts, setAttempts] = useState(0);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -34,11 +35,14 @@ export default function SessionLab() {
     if (!sb || busy || !ready) return;
     setBusy(true);
     const res = await signInWithEmailPassword(sb.auth, email, password);
-    // The password never outlives the attempt in component state.
+    // The password never outlives the attempt in component state, and is hidden again.
     setPassword('');
+    setAttempts((n) => n + 1);
     setBusy(false);
     setMsg(res.message);
     if (res.ok) setSignedIn(true);
+    // Failed attempt: back to the (now empty) password field (SCREEN_BLUEPRINTS_V2 §1).
+    else requestAnimationFrame(() => document.getElementById('login-password')?.focus());
   };
 
   return (
@@ -58,8 +62,8 @@ export default function SessionLab() {
             <div>
               <p data-testid="login-signed-in">Đã đăng nhập.</p>
               <Button
-                variant="ghost"
-                className="mt-2"
+                variant="secondary"
+                className="mt-3"
                 onClick={() =>
                   void sb.auth.signOut().then(() => {
                     setSignedIn(false);
@@ -77,7 +81,7 @@ export default function SessionLab() {
               // `name`, so the browser serializes nothing — there is no server handler either.
               method="post"
               aria-busy={!ready}
-              className="flex flex-col gap-2"
+              className="flex max-w-[400px] flex-col gap-4"
               onSubmit={(e) => {
                 e.preventDefault();
                 void signIn();
@@ -88,7 +92,8 @@ export default function SessionLab() {
                   Cần bật JavaScript để đăng nhập.
                 </p>
               </noscript>
-              <input
+              <Input
+                label="Email"
                 type="email"
                 id="login-email"
                 required
@@ -97,27 +102,36 @@ export default function SessionLab() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="email@vidu.vn"
                 autoComplete="username"
-                aria-label="Email"
+                autoCapitalize="none"
+                spellCheck={false}
+                inputMode="email"
+                enterKeyHint="next"
                 data-testid="login-email"
-                className="rounded-xl border border-line-strong bg-surface px-3 py-2"
               />
-              <input
-                type="password"
+              <PasswordInput
+                label="Mật khẩu"
                 id="login-password"
                 required
                 disabled={!ready}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mật khẩu"
                 autoComplete="current-password"
-                aria-label="Mật khẩu"
+                enterKeyHint="go"
+                concealSignal={attempts}
                 data-testid="login-password"
-                className="rounded-xl border border-line-strong bg-surface px-3 py-2"
               />
-              <Button type="submit" disabled={!ready || busy} data-testid="login-submit">
+              <Button
+                type="submit"
+                size="lg"
+                fullWidth
+                disabled={!ready}
+                loading={busy}
+                data-testid="login-submit"
+                className="mt-2"
+              >
                 {!ready ? 'Đang tải…' : busy ? 'Đang đăng nhập…' : 'Đăng nhập'}
               </Button>
-              <p className="text-sm text-ink-2" data-testid="invite-only-note">
+              <p className="text-sm text-fg-muted" data-testid="invite-only-note">
                 Chưa có tài khoản? Mandarin AI chỉ dành cho người được chủ ứng dụng cấp quyền — hãy
                 liên hệ chủ ứng dụng. Quên mật khẩu: nhờ quản trị viên cấp mật khẩu tạm mới.
               </p>
@@ -131,16 +145,16 @@ export default function SessionLab() {
         </Card>
         {DEV_TOKEN_ENABLED && (
           <Card title="Token phát triển (chỉ môi trường dev)">
-            <p className="text-sm text-ink-2">
+            <p className="text-sm text-fg-muted">
               Dán access token để thử các API khi chưa có Supabase. Lưu trong sessionStorage của tab
               này.
             </p>
-            <input
+            <PasswordInput
+              label="Access token"
               value={devToken}
               onChange={(e) => setDevToken(e.target.value)}
-              type="password"
-              aria-label="Access token"
-              className="mt-2 w-full rounded-xl border border-line-strong bg-surface px-3 py-2"
+              autoComplete="off"
+              className="mt-3"
             />
             <div className="mt-2 flex gap-2">
               <Button
@@ -153,7 +167,7 @@ export default function SessionLab() {
                 Lưu
               </Button>
               <Button
-                variant="ghost"
+                variant="secondary"
                 onClick={() => {
                   writeDevToken(null);
                   setHasDevToken(false);
