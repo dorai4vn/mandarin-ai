@@ -30,17 +30,21 @@ export function Tooltip({
   content,
   children,
   side = 'top',
+  bubbleClassName = '',
 }: {
   content: ReactNode;
   children: ReactElement<TriggerProps>;
-  side?: 'top' | 'bottom';
+  /** 'right' (sidebar rail): beside the trigger, no flip/shift needed. */
+  side?: 'top' | 'bottom' | 'right';
+  /** Extra classes on the bubble (e.g. hide it when the trigger already shows its label). */
+  bubbleClassName?: string;
 }) {
   const id = useId();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [shift, setShift] = useState(0);
-  const [placement, setPlacement] = useState<'top' | 'bottom'>(side);
+  const [placement, setPlacement] = useState<'top' | 'bottom' | 'right'>(side);
   const bubble = useRef<HTMLSpanElement>(null);
   const open = (hovered || focused) && !dismissed;
 
@@ -65,7 +69,7 @@ export function Tooltip({
   // scroll while open (rotation, window resize, sticky header).
   const place = useCallback(() => {
     const el = bubble.current;
-    if (!el) return;
+    if (!el || side === 'right') return;
     const margin = 8;
     const trigger = el.parentElement?.getBoundingClientRect();
     if (trigger) {
@@ -141,8 +145,16 @@ export function Tooltip({
         hidden={!open}
         data-shift={Math.round(shift)}
         data-placement={placement}
-        style={{ translate: `calc(-50% + ${shift}px) 0` }}
-        className={`absolute left-1/2 z-30 w-max max-w-[min(240px,calc(100vw-16px))] ${placement === 'top' ? 'bottom-full pb-2' : 'top-full pt-2'}`}
+        style={
+          placement === 'right'
+            ? { translate: '0 -50%' }
+            : { translate: `calc(-50% + ${shift}px) 0` }
+        }
+        className={`${bubbleClassName} absolute z-30 w-max max-w-[min(240px,calc(100vw-16px))] ${
+          placement === 'right'
+            ? 'left-full top-1/2 pl-2'
+            : `left-1/2 ${placement === 'top' ? 'bottom-full pb-2' : 'top-full pt-2'}`
+        }`}
       >
         <span className="block rounded-control bg-inverse px-2.5 py-1.5 text-center text-sm font-medium leading-5 text-fg-inverse shadow-md">
           {content}

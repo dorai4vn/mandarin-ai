@@ -125,3 +125,17 @@ export const PencilFilledIcon = (p: SVGProps<SVGSVGElement>) => (
     <path d="M3 21.6h9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity=".55" />
   </svg>
 );
+export const MoreIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <rect x="4" y="4" width="6" height="6" rx="1.5" />
+    <rect x="14" y="4" width="6" height="6" rx="1.5" />
+    <rect x="4" y="14" width="6" height="6" rx="1.5" />
+    <rect x="14" y="14" width="6" height="6" rx="1.5" />
+  </svg>
+);
+export const PanelLeftIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <rect x="3" y="4" width="18" height="16" rx="3" />
+    <path d="M9 4v16" />
+  </svg>
+);
