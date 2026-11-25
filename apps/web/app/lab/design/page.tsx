@@ -26,7 +26,7 @@ import {
   Textarea,
   Tooltip,
   useShowAfter,
-} from '@/components/ui/index';
+} from '@/components/ui';
 import { HanziText, Pinyin } from '@/components/Hanzi';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ArrowRightIcon, CloseIcon, PlusIcon, SearchIcon } from '@/components/icons';

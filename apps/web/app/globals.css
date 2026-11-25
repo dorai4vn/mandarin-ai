@@ -86,19 +86,6 @@
   --color-brand-name: var(--brand-name);
   --color-brand-tagline: var(--brand-tagline);
 
-  /*
-   * TEMPORARY aliases for M0 class names (UI_MIGRATION_PLAN §2) so every screen moves to V2 in
-   * one step without touching layouts. Removed in UI-8. `seal` is NOT aliased: it meant both
-   * "brand" and "error", so each use was replaced by `primary*`, `error*` or `logo` by meaning.
-   */
-  --color-paper: var(--bg-page);
-  --color-paper-2: var(--bg-subtle);
-  --color-ink: var(--fg-default);
-  --color-ink-2: var(--fg-muted);
-  --color-jade: var(--success-text);
-  --color-amber: var(--warning-text);
-  --color-sky: var(--primary-text);
-
   /* Typography — fonts self-hosted at build time by next/font (no runtime Google request) */
   --font-sans:
     var(--font-inter), system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,

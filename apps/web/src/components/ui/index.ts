@@ -11,6 +11,7 @@ export { ProgressBar, ProgressRing } from './Progress';
 export { EmptyState } from './EmptyState';
 export type { EmptyVariant } from './EmptyState';
 export { PageHeader } from './PageHeader';
+export { Mono } from './Mono';
 // Client components ('use client'): can still be rendered from Server Components as boundaries.
 export { Button, IconButton } from './Button';
 export { Input, PasswordInput, SearchInput, Textarea } from './Field';

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Button, Card, Input, PageHeader, PasswordInput } from '@/components/ui/index';
+import { Button, Card, Input, PageHeader, PasswordInput } from '@/components/ui';
 import { signInWithEmailPassword } from '@/lib/auth-password';
 import { DEV_TOKEN_ENABLED, readDevToken, supabase, writeDevToken } from '@/lib/session';
 

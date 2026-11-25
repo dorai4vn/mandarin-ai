@@ -1,6 +1,6 @@
 'use client';
 import { SYNC_DISABLED_MESSAGE, useOffline } from '@/components/OfflineProvider';
-import { Card } from '@/components/ui/index';
+import { Card } from '@/components/ui';
 
 export function SyncCard() {
   const { online, pending, store, lastSync, syncAvailability } = useOffline();

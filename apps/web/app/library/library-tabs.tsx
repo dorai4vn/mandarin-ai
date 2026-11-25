@@ -1,5 +1,5 @@
 'use client';
-import { ButtonLink, EmptyState, Tabs } from '@/components/ui/index';
+import { ButtonLink, EmptyState, Tabs } from '@/components/ui';
 
 export function LibraryTabs() {
   return (

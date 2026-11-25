@@ -1,4 +1,4 @@
-import { Card, CardLink, EmptyState, PageHeader, StudyCard } from '@/components/ui/index';
+import { Card, CardLink, EmptyState, PageHeader, StudyCard } from '@/components/ui';
 import { SyncCard } from './sync-card';
 
 /**

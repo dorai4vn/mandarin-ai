@@ -2,8 +2,7 @@
 import type { PronunciationAssessmentResult } from '@mandarin/contracts';
 import { useEffect, useRef, useState } from 'react';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Mono } from '@/components/ui';
-import { Button, Card, PageHeader, Segmented } from '@/components/ui/index';
+import { Button, Card, Mono, PageHeader, Segmented } from '@/components/ui';
 import { MicIcon, PlayIcon, StopIcon } from '@/components/icons';
 import { api, describeApiError } from '@/lib/api-client';
 import { labelForResult } from '@/lib/status';
