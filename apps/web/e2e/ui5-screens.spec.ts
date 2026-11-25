@@ -111,3 +111,40 @@ test('login form (V2 fields): labels, password hidden again and focused after a 
   await expect(pw).toHaveValue('');
   await expectNoHorizontalScroll(page);
 });
+
+test('upload (V2 §21): file row with status, rejection, offline disables the picker', async ({
+  page,
+  context,
+}) => {
+  const { signIn, SAMPLE_PDF } = await import('./helpers');
+  await signIn(page);
+  await page.goto('/lab/upload');
+  const input = page.getByTestId('pdf-input');
+  await expect(input).toBeEnabled();
+  await input.setInputFiles({
+    name: 'sai.pdf',
+    mimeType: 'application/pdf',
+    buffer: Buffer.from('<html>'),
+  });
+  const row = page.getByTestId('upload-file');
+  await expect(row).toHaveAttribute('data-phase', 'error');
+  await expect(row).toContainText('sai.pdf');
+  await expect(row).toContainText('Lỗi');
+  await expect(page.getByRole('status')).toContainText('Tệp không phải PDF');
+  await input.setInputFiles({
+    name: 'bai-mau.pdf',
+    mimeType: 'application/pdf',
+    buffer: SAMPLE_PDF,
+  });
+  await expect(row).toHaveAttribute('data-phase', 'saved');
+  await expect(row).toContainText('Đã lưu');
+  // Keyboard reachable: the (visually hidden) file input takes focus inside the drop zone.
+  await input.focus();
+  await expect(input).toBeFocused();
+  await context.setOffline(true);
+  await expect(input).toBeDisabled();
+  await expect(page.getByTestId('upload-offline')).toBeVisible();
+  await context.setOffline(false);
+  await expect(input).toBeEnabled();
+  await expectNoHorizontalScroll(page);
+});
