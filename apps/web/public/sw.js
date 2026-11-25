@@ -7,7 +7,8 @@
 // Bumped for X1: activating this worker deletes every older cache, including any navigation
 // cached under a URL that carried credentials.
 // m0-pwa-3: UI-7B icons (cached cache-first under /icons/) — a new version drops the old ones.
-const VERSION = 'm0-pwa-3';
+// m0-pwa-4: offline.html with dark mode and truthful sync wording (FU-2).
+const VERSION = 'm0-pwa-4';
 const SHELL = `shell-${VERSION}`;
 const STATIC = `static-${VERSION}`;
 const PRECACHE = ['/', '/offline.html', '/manifest.webmanifest', '/icons/icon-192.png'];

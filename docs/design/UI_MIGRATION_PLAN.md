@@ -238,6 +238,7 @@ Chi tiết: `docs/design/UI7B_REPORT.md`.
 
 - **Alias M0:** đã xóa alias màu M0 (FU-4).
 - **API M0:** đã bỏ entry `ui.tsx`; `@/components/ui` = V2.
+- **FU-2:** `offline.html` có chế độ tối và nội dung trung thực.
 
 Chi tiết: `docs/design/UI8_REPORT.md`.
 
@@ -246,7 +247,7 @@ Chi tiết: `docs/design/UI8_REPORT.md`.
 | ID   | Vấn đề                                                                                                                                                                                                         | Đề xuất                                                 |
 | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | FU-1 | **Đã sửa ở UI-3.** Tràn ngang ở 320 px **có từ M0** (đo trên `main`): `/lab` 23 px (bảng khả năng), `/lab/offline` 73 px (khối trạng thái; V2 giảm còn 59 px); `/lab/session` 93 px khi chưa cấu hình Supabase | Sửa trong UI-3/UI-5 (`min-w-0`, xuống dòng chuỗi dài)   |
-| FU-2 | `public/offline.html` đã đổi màu V2 nhưng thiết bị đã cài giữ bản cũ trong cache của service worker tới lần đổi phiên bản SW; câu "Dữ liệu học chưa gửi sẽ tự đồng bộ khi có mạng" chưa đúng khi sync đang tắt | PR có phạm vi SW riêng (bump `VERSION`) + sửa nội dung  |
+| FU-2 | `public/offline.html` đã đổi màu V2 nhưng thiết bị đã cài giữ bản cũ trong cache của service worker tới lần đổi phiên bản SW; câu "Dữ liệu học chưa gửi sẽ tự đồng bộ khi có mạng" chưa đúng khi sync đang tắt | **Đã sửa ở UI-8** (SW `m0-pwa-4`)                       |
 | FU-3 | M0 có dark mode theo hệ thống; UI-1 chỉ Light → người dùng đặt hệ điều hành ở chế độ tối thấy giao diện sáng (đã chấp nhận, D-039 quyết định 5)                                                                | **Đã làm ở UI-6**                                       |
 | FU-4 | Alias token M0 còn trong code                                                                                                                                                                                  | **Đã xong ở UI-8**                                      |
 | FU-5 | Chữ Hán trong nội dung người dùng nhập (ghi chú offline) và placeholder `Ví dụ: 山 = núi` không gắn `lang` theo đoạn                                                                                           | Tách đoạn tự động khi làm Input/HanziText ở UI-2+       |

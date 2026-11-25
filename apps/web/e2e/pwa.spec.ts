@@ -114,3 +114,19 @@ test('UI-7B brand: approved icons are served, manifest lists any + maskable 192/
     expect(r.headers()['content-type'], path).toMatch(/image\//);
   }
 });
+
+test('offline fallback page (FU-2): no sync promise, dark when the system is dark', async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/offline.html');
+  await expect(page.locator('main')).not.toContainText('sẽ tự đồng bộ');
+  await expect(page.locator('main')).toContainText('nếu đồng bộ đám mây đã được bật');
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(
+    'rgb(14, 20, 34)',
+  );
+  await page.emulateMedia({ colorScheme: 'light' });
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(
+    'rgb(247, 249, 253)',
+  );
+});
