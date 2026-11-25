@@ -1,6 +1,6 @@
 # Kế hoạch UI-2B — Component primitives (đợt 2) + dọn Minor của UI-2
 
-Trạng thái: **CHỜ CHỦ DỰ ÁN DUYỆT.** Chưa viết code. Không bắt đầu UI-3, UI-7B hoặc M1.
+Trạng thái: **Đã duyệt** (chỉ đạo trong issue #6, 2026-11-25). Triển khai: PR #9, báo cáo `docs/design/UI2B_REPORT.md`.
 Nền: `main` `5b583ca` (UI-2, PR #5). Nhánh dự kiến: `feat/ui-2b-primitives` từ `main` mới nhất.
 
 ## 1. Nguyên tắc (giữ nguyên quyết định đã duyệt)
@@ -9,7 +9,7 @@ Nền: `main` `5b583ca` (UI-2, PR #5). Nhánh dự kiến: `feat/ui-2b-primitive
 - Không đổi logo, typography (Inter / Noto Sans SC; Nunito chỉ cho lockup ở UI-7B), màu thương hiệu, shell, Dark mode.
 - Không đổi Auth, API, DB/RLS, Service Worker, offline/sync, logic nghiệp vụ. Không thêm dependency.
 - Mọi `data-testid` giữ nguyên. Không nới tiêu chí test để đạt PASS.
-- FU-7 (upload flaky, issue #6) **không** sửa trong UI-2B.
+- FU-7 (upload flaky, issue #6) **không** sửa trong UI-2B — đã sửa riêng ở PR #12.
 
 ## 2. Phạm vi
 
