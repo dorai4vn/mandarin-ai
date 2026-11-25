@@ -35,7 +35,10 @@ test('search finds 山 via 山, shan1, shān and núi; add it, write notes and t
   await detail.getByTestId('word-notes').fill('Giống ba đỉnh núi');
   await detail.getByTestId('word-tags').fill('HSK1, thiên nhiên');
   await detail.getByTestId('word-save').click();
-  await expect(page.getByTestId('toast-region')).toContainText('Đã lưu');
+  // Exact text: "Đã lưu vào từ điển cá nhân." (the add) must not satisfy the notes-saved check.
+  await expect(
+    page.getByTestId('toast-region').getByText('Đã lưu.', { exact: true }),
+  ).toBeVisible();
 
   await page.reload();
   await search.fill('');
@@ -45,6 +48,20 @@ test('search finds 山 via 山, shan1, shān and núi; add it, write notes and t
   await expect(page.getByTestId('word-notes')).toHaveValue('Giống ba đỉnh núi');
   await expect(page.getByTestId('word-personal')).toContainText('HSK1');
   await expect(page.getByTestId('word-additions')).toContainText('Từ từ điển');
+  // Results are grouped: saved words vs suggestions from the shared word bank.
+  const back = page.getByRole('button', { name: /Danh sách/ });
+  if (await back.isVisible()) await back.click(); // phone: back from the detail to the list
+  await search.fill('shu');
+  await expect(page.getByTestId('dictionary-search-note')).toContainText('gợi ý từ kho từ chung');
+  const suggested = page.getByTestId('dictionary-group-suggested');
+  await expect(suggested).toContainText('Gợi ý từ kho chung');
+  await expect(suggested.getByTestId('dictionary-row').first()).toContainText('Gợi ý');
+  await expect(page.getByTestId('dictionary-group-saved')).toHaveCount(0);
+  await search.fill('shan');
+  await expect(page.getByTestId('dictionary-group-saved')).toContainText('Đã lưu (1)');
+  await expect(page.getByTestId('dictionary-group-saved')).toContainText('山');
+  await search.fill('');
+  await rows(page).first().click();
   // The example's translation is still shown for a word copied from the shared lexicon.
   await expect(page.getByTestId('word-detail')).toContainText('Ngọn núi này rất cao.');
   await expectNoHorizontalScroll(page);

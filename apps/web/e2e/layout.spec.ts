@@ -37,8 +37,8 @@ test.describe('responsive layout (D-030)', () => {
     await page.goto('/dictionary');
     await page.getByTestId('dictionary-search').fill('shan');
     await page.getByTestId('dictionary-row').first().click();
-    const list = await page.getByTestId('dictionary-results').boundingBox();
-    const detail = await page.getByTestId('word-detail').boundingBox();
+    const list = await page.getByRole('region', { name: 'Kết quả tìm kiếm' }).boundingBox();
+    const detail = await page.getByRole('region', { name: 'Chi tiết từ' }).boundingBox();
     expect(Math.abs((list?.y ?? 0) - (detail?.y ?? 1))).toBeLessThan(40);
     expect((detail?.x ?? 0) >= (list?.x ?? 0) + (list?.width ?? 0)).toBe(true);
   });
@@ -53,7 +53,9 @@ test.describe('responsive layout (D-030)', () => {
     for (let i = 0; i < 12; i++) {
       await page.keyboard.press('Tab');
       if (
-        (await page.evaluate(() => document.activeElement?.textContent ?? '')).includes('Từ điển cá nhân')
+        (await page.evaluate(() => document.activeElement?.textContent ?? '')).includes(
+          'Từ điển cá nhân',
+        )
       )
         break;
     }

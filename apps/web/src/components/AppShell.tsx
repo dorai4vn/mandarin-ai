@@ -243,8 +243,10 @@ function BottomNav({ path }: { path: string }) {
   const typing = useTyping(path);
   const moreActive = SECONDARY.some((i) => isActive(path, i.href));
   const cell =
-    'flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium [@media(max-height:499px)]:min-h-12';
-  const label = '[@media(max-height:499px)]:sr-only';
+    'flex min-h-14 flex-col items-center justify-center gap-0.5 py-1 text-xs font-medium [@media(max-height:499px)]:min-h-12 [@media(max-height:499px)]:py-0';
+  // Full names, never truncated (e.g. "Từ điển cá nhân" wraps to two centred lines on narrow phones).
+  const label =
+    'max-w-full px-0.5 text-center leading-[14px] [overflow-wrap:anywhere] [@media(max-height:499px)]:sr-only';
   return (
     <>
       <nav
@@ -267,7 +269,9 @@ function BottomNav({ path }: { path: string }) {
               >
                 <Icon width={22} height={22} />
               </span>
-              <span className={label}>{text}</span>
+              <span className={label} data-testid="nav-bottom-label">
+                {text}
+              </span>
             </Link>
           );
         })}
@@ -284,7 +288,9 @@ function BottomNav({ path }: { path: string }) {
           >
             <MoreIcon width={22} height={22} />
           </span>
-          <span className={label}>Thêm</span>
+          <span className={label} data-testid="nav-bottom-label">
+            Thêm
+          </span>
         </button>
       </nav>
       <Sheet open={more} onClose={() => setMore(false)} title="Thêm" data-testid="more-sheet">

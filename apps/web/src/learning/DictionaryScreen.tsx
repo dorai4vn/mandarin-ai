@@ -51,8 +51,8 @@ export function DictionaryScreen() {
     <>
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <SearchInput
-          label="Tìm trong từ điển cá nhân"
-          placeholder="Tìm từ đã lưu: Hán tự, pinyin hoặc tiếng Việt"
+          label="Tìm trong từ đã lưu và kho từ chung"
+          placeholder="Hán tự, pinyin hoặc tiếng Việt"
           value={query}
           onValueChange={setQuery}
           className="min-w-0 flex-1"
@@ -64,7 +64,8 @@ export function DictionaryScreen() {
       </div>
       {contentStatus === 'unavailable' && !content && (
         <p className="mb-4 text-sm text-fg-muted" role="note" data-testid="content-unavailable">
-          Chưa tải được kho từ chung dùng để gợi ý (cần mạng lần đầu). Từ đã lưu của bạn vẫn dùng được.
+          Chưa tải được kho từ chung dùng để gợi ý (cần mạng lần đầu). Từ đã lưu của bạn vẫn dùng
+          được.
         </p>
       )}
 
@@ -73,6 +74,12 @@ export function DictionaryScreen() {
           aria-label={query ? 'Kết quả tìm kiếm' : 'Từ đã lưu'}
           className={current ? 'hidden lg:block' : ''}
         >
+          {query && (
+            <p className="mb-2 text-sm text-fg-muted" data-testid="dictionary-search-note">
+              Kết quả gồm từ bạn đã lưu và gợi ý từ kho từ chung — bấm một gợi ý để lưu vào từ điển
+              cá nhân.
+            </p>
+          )}
           <h2 className="mb-2 text-sm font-semibold text-fg-muted">
             {query
               ? `Kết quả (${results.length}${results.length === 50 ? '+' : ''})`
@@ -109,30 +116,50 @@ export function DictionaryScreen() {
               </Card>
             )
           ) : (
-            <ul className="flex flex-col gap-2" data-testid="dictionary-results">
-              {results.map((r) => (
-                <li key={r.key}>
-                  <button
-                    type="button"
-                    onClick={() => setSelected(r.key)}
-                    aria-current={current?.key === r.key ? 'true' : undefined}
-                    className={`flex w-full min-w-0 items-center gap-3 rounded-card border px-4 py-3 text-left transition-colors ${current?.key === r.key ? 'border-primary-base bg-primary-subtle' : 'border-line bg-surface hover:bg-[var(--state-hover)]'}`}
-                    data-testid="dictionary-row"
-                  >
-                    <HanziText className="shrink-0 text-2xl">{r.simplified}</HanziText>
-                    <span className="min-w-0 flex-1">
-                      <Pinyin className="block text-sm text-fg-muted">{r.pinyin}</Pinyin>
-                      <span className="block truncate">{r.meaningVi}</span>
-                    </span>
-                    {r.mine ? (
-                      <Badge variant="primary">Đã lưu</Badge>
-                    ) : (
-                      <Badge>Gợi ý từ kho chung</Badge>
+            <div className="flex flex-col gap-4" data-testid="dictionary-results">
+              {[
+                { id: 'saved', title: 'Đã lưu', rows: results.filter((r) => r.mine) },
+                {
+                  id: 'suggested',
+                  title: 'Gợi ý từ kho chung',
+                  rows: results.filter((r) => !r.mine),
+                },
+              ]
+                .filter((g) => g.rows.length > 0)
+                .map((g) => (
+                  <div key={g.id} data-testid={`dictionary-group-${g.id}`}>
+                    {query && (
+                      <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-fg-muted">
+                        {g.title} ({g.rows.length})
+                      </h3>
                     )}
-                  </button>
-                </li>
-              ))}
-            </ul>
+                    <ul className="flex flex-col gap-2">
+                      {g.rows.map((r) => (
+                        <li key={r.key}>
+                          <button
+                            type="button"
+                            onClick={() => setSelected(r.key)}
+                            aria-current={current?.key === r.key ? 'true' : undefined}
+                            className={`flex w-full min-w-0 items-center gap-3 rounded-card border px-4 py-3 text-left transition-colors ${current?.key === r.key ? 'border-primary-base bg-primary-subtle' : r.mine ? 'border-line bg-surface hover:bg-[var(--state-hover)]' : 'border-dashed border-line-strong/50 bg-sunken hover:bg-[var(--state-hover)]'}`}
+                            data-testid="dictionary-row"
+                          >
+                            <HanziText className="shrink-0 text-2xl">{r.simplified}</HanziText>
+                            <span className="min-w-0 flex-1">
+                              <Pinyin className="block text-sm text-fg-muted">{r.pinyin}</Pinyin>
+                              <span className="block truncate">{r.meaningVi}</span>
+                            </span>
+                            {r.mine ? (
+                              <Badge variant="primary">Đã lưu</Badge>
+                            ) : (
+                              <Badge>Gợi ý</Badge>
+                            )}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+            </div>
           )}
         </section>
 

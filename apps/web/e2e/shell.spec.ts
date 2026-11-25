@@ -118,6 +118,32 @@ test('phone: 5 bottom items; "Thêm" sheet opens, focuses, and closes by Esc, ba
   await expect(bottom.locator('a, button')).toHaveCount(5);
   for (const name of ['Trang chủ', 'Luyện tập', 'Từ điển cá nhân', 'Thư viện'])
     await expect(bottom.getByRole('link', { name, exact: true })).toBeVisible();
+  // Full names, never cut: every visible label fits its cell (wrapping allowed, no overflow).
+  const labels = bottom.getByTestId('nav-bottom-label');
+  // On very low screens (landscape) labels are visually hidden by design (icons + accessible names).
+  if (!(await page.evaluate(() => matchMedia('(max-height: 499px)').matches))) {
+    await expect(labels).toHaveText([
+      'Trang chủ',
+      'Luyện tập',
+      'Từ điển cá nhân',
+      'Thư viện',
+      'Thêm',
+    ]);
+    const fits = await labels.evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect();
+        const cell = el.parentElement!.getBoundingClientRect();
+        return (
+          el.scrollWidth <= el.clientWidth + 1 &&
+          el.scrollHeight <= el.clientHeight + 1 &&
+          r.left >= cell.left - 0.5 &&
+          r.right <= cell.right + 0.5 &&
+          r.bottom <= cell.bottom + 0.5
+        );
+      }),
+    );
+    expect(fits).toEqual([true, true, true, true, true]);
+  }
   const more = page.getByTestId('nav-more');
   await expect(more).toHaveAccessibleName('Thêm');
   await expect(more).toHaveAttribute('aria-haspopup', 'dialog');
