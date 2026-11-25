@@ -20,13 +20,22 @@ test.describe('responsive layout (D-030)', () => {
   test('desktop is not a stretched phone layout', async ({ page }) => {
     test.skip(deviceClass(page) !== 'desktop', 'desktop-only check');
     await page.goto('/');
-    const cards = page.locator('main section');
-    const first = await cards.nth(0).boundingBox();
-    const second = await cards.nth(1).boundingBox();
-    // Today + sync cards sit side by side on desktop.
+    // Today + sync cards sit side by side on desktop (UI-5 home).
+    const first = await page.getByTestId('home-today').boundingBox();
+    const second = await page.getByTestId('home-sync').boundingBox();
     expect(Math.abs((first?.y ?? 0) - (second?.y ?? 1))).toBeLessThan(4);
+    expect((second?.x ?? 0) > (first?.x ?? 0) + (first?.width ?? 0) - 1).toBe(true);
+    // The three study tiles share one row.
+    const tiles = page.getByTestId('home-study').locator('> *');
+    const ys = await tiles.evaluateAll((els) =>
+      els.map((e) => Math.round(e.getBoundingClientRect().y)),
+    );
+    expect(new Set(ys).size).toBe(1);
     await page.goto('/dictionary');
-    await expect(page.getByRole('heading', { name: 'Chi tiết' })).toBeVisible();
+    // List-and-detail style two-column layout on desktop (UI-5 dictionary).
+    const a = await page.getByTestId('dictionary-empty').boundingBox();
+    const b = await page.getByRole('heading', { name: 'Sắp có', exact: true }).boundingBox();
+    expect(Math.abs((a?.y ?? 0) - ((b?.y ?? 0) - 16))).toBeLessThan(40);
   });
 
   test('navigation works by keyboard on desktop', async ({ page, browserName }) => {
