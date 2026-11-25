@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { api, isProviderUnavailable } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth';
-import { localDbName, openLocalStore, type LocalStore } from '@/offline/store';
+import { deleteLocalDb, localDbName, openLocalStore, type LocalStore } from '@/offline/store';
 import { SyncEngine, type SyncSummary } from '@/offline/sync';
 import { SyncAvailabilityProbe, type SyncAvailability } from '@/offline/sync-availability';
 
@@ -161,8 +161,10 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     setPending(0);
     setRejected(0);
     setLastSync(null);
-    await s?.destroy();
-  }, [store]);
+    // Delete even if the store had not finished opening (or failed and fell back to memory).
+    if (s) await s.destroy();
+    if (userId) await deleteLocalDb(userId);
+  }, [store, userId]);
 
   useEffect(() => {
     if (!store) return;

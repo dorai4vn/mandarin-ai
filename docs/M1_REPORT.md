@@ -42,15 +42,35 @@ Ngày: 2026-11-25 · Nhánh: `claude/serene-feynman-joougp` · Phạm vi: `docs/
 | 6 | Chưa đăng nhập không truy cập được dữ liệu riêng | API 401; `anon` không có quyền trên bảng; E2E: không mở IndexedDB, không gọi sync | Đạt |
 | 7 | Đăng xuất / chuyển tài khoản không rò rỉ | E2E: đăng xuất xóa DB và phiên; tài khoản B không thấy dữ liệu A (đã thử dùng chung tên DB → test thất bại như mong đợi) | Đạt |
 | 8 | Offline, outbox, đồng bộ theo đặc tả | E2E `offline.spec` (sống sót khi đóng tab, exactly once, phản hồi bị mất, từ chối G1); `m1-auth` hai thiết bị cùng tài khoản; Postgres thật trong CI | Đạt (server dev MOCK cho E2E; Postgres thật trong job database) |
-| 9 | Giữ yêu cầu hiệu năng, thực dụng | G2 đã sửa (SDK không còn trong JS tải lần đầu); JS khoảng 229 KB/route (trước 275–294 KB); index cho predicate RLS | Cải thiện; vẫn trên mục tiêu P10 200 KB (dưới ngưỡng fail 300 KB) |
-| 10 | CI và kiểm thử bảo mật thiết yếu đạt | Xem PR | Chờ CI |
+| 9 | Giữ yêu cầu hiệu năng, thực dụng | G2 đã sửa (SDK không còn trong JS tải lần đầu); JS khoảng 229 KB/route (trước 275–294 KB); index cho predicate RLS | Đạt theo chỉ đạo chủ dự án: 229 KB dưới ngưỡng fail 300 KB; tối ưu về 200 KB **để sau** (không chặn milestone) |
+| 10 | CI và kiểm thử bảo mật thiết yếu đạt | CI PR #22: lint/typecheck/test/build, database (pgTAP + GoTrue thật + cách ly dữ liệu), E2E 3 engine | Xem PR |
 | 11 | Không phá M0 và Design System V2 | Toàn bộ E2E hiện có pass (tại máy 370+ test Chromium) | Đạt (tại máy); 3 engine: chờ CI |
 
-## Việc chủ dự án cần làm để bật đồng bộ thật trên Preview
-1. Áp migration `supabase/migrations/20261125100000_m1_sync_operations.sql` lên dự án Supabase (SQL Editor, hoặc `supabase db push`).
-2. Railway: đặt `SUPABASE_PUBLISHABLE_KEY` (giá trị công khai, giống `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` của Vercel).
-3. Chạy smoke M1 trong `docs/SMOKE_TEST.md`.
-4. Nếu bảng `app_members` hoặc `admin_audit_log` từng được áp thủ công lên cloud (PR #20/#21 chưa merge nên CI không áp), có thể để nguyên vì không policy nào dùng. Xóa khi tiện, sau khi kiểm tra không có dữ liệu cần giữ.
+## Hướng dẫn triển khai cho chủ dự án (khoảng 10 phút)
+
+> Claude không áp migration và không đổi cấu hình cloud. Từ môi trường của Claude cũng không mở được Preview, vì Vercel Deployment Protection chuyển mọi request sang trang đăng nhập SSO.
+
+**Bước 1. Kiểm tra Auth chặn đăng ký và đăng nhập ẩn danh** (chỉ đọc, không tạo gì). Thay `<ref>` và publishable key:
+```bash
+curl -s https://<ref>.supabase.co/auth/v1/settings -H "apikey: sb_publishable_..."
+```
+Kết quả đúng: `"disable_signup": true` và trong `external`: `"anonymous_users": false`, `"email": true`, các provider khác `false`. Nếu sai, sửa ở Authentication → Sign In / Providers (`docs/ACCESS_CONTROL.md` §4).
+
+**Bước 2. Áp migration M1.** Dashboard → SQL Editor → dán toàn bộ nội dung `supabase/migrations/20261125100000_m1_sync_operations.sql` → Run. Kiểm tra lại:
+- Table Editor có bảng `sync_operations`, có biểu tượng RLS bật.
+- Database → Functions có hàm `sync_push`.
+
+Migration chỉ **thêm** bảng và hàm mới, không sửa hay xóa dữ liệu cũ.
+
+**Bước 3. Railway (API):** thêm biến `SUPABASE_PUBLISHABLE_KEY` = giá trị `sb_publishable_…`, cùng giá trị với `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` trên Vercel. Đây là khóa công khai, không phải secret. Redeploy, rồi mở `<API>/health` → `providers.sync` phải là `"live"`.
+
+**Bước 4. Vercel:** không cần đổi biến nào. Preview của PR tự build lại.
+
+**Bước 5. Smoke:** chạy mục **M1** trong `docs/SMOKE_TEST.md` (M1-1 … M1-8) trên một điện thoại và một máy tính, ghi đạt/không đạt vào issue #19.
+
+**Hoàn tác nếu cần:** bỏ biến `SUPABASE_PUBLISHABLE_KEY` trên Railway → sync trở về `disabled` và dữ liệu nằm trên thiết bị như M0. Bảng `sync_operations` có thể để nguyên.
+
+Nếu `app_members` hoặc `admin_audit_log` từng được áp tay lên cloud (từ PR #20/#21, chưa từng vào `main`), có thể để nguyên vì không policy nào dùng. Xóa khi tiện, sau khi kiểm tra không có dữ liệu cần giữ.
 
 ## Giới hạn / rủi ro chấp nhận (D-042)
 - **Phiên trong `localStorage`:** lộ nếu có XSS.

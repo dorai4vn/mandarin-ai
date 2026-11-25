@@ -40,6 +40,12 @@ export interface LocalStore {
 /** Name of an account's local database: never shared between accounts (D-042). */
 export const localDbName = (userId: string) => `mandarin-ai:${userId}`;
 
+/** Deletes an account's local database even if it is not open in this tab (sign-out). */
+export async function deleteLocalDb(userId: string): Promise<void> {
+  if (typeof indexedDB === 'undefined' || indexedDB === null) return;
+  await Dexie.delete(localDbName(userId));
+}
+
 /** Notes carried by a pulled `spike_note` create (other entity types arrive in later milestones). */
 function pulledNotes(ops: PulledSyncOperation[]): SpikeNote[] {
   return ops.flatMap((op) => {
