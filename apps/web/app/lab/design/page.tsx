@@ -572,7 +572,7 @@ export default function DesignGallery() {
         <Section id="feedback" title="Toast · Dialog">
           <Card>
             <div className="flex flex-col gap-5">
-              <Row label="Toast (không lấy focus, tự ẩn 4 s / 6 s nếu có hành động)">
+              <Row label="Toast (không lấy focus, tự ẩn sau 4 s; có hành động thì chờ người dùng)">
                 <Button
                   variant="secondary"
                   data-testid="toast-neutral"
@@ -583,13 +583,14 @@ export default function DesignGallery() {
                 <Button
                   variant="secondary"
                   data-testid="toast-success"
-                  onClick={() =>
+                  onClick={() => {
+                    setDeleted((n) => n + 1);
                     toast({
                       message: 'Đã xóa 1 mục (ví dụ).',
                       tone: 'success',
                       action: { label: 'Hoàn tác', onClick: () => setDeleted((n) => n - 1) },
-                    })
-                  }
+                    });
+                  }}
                 >
                   Có “Hoàn tác”
                 </Button>
@@ -642,6 +643,8 @@ export default function DesignGallery() {
                   data-testid="dialog-confirm-delete"
                   onClick={() => {
                     setDeleted((n) => n + 1);
+                    // Shown while the dialog is still open: the provider waits until it closes.
+                    toast({ message: 'Đã xóa tài liệu (ví dụ).', tone: 'success' });
                     setConfirmOpen(false);
                   }}
                 >

@@ -14,7 +14,7 @@ export function Dialog(props: Omit<Parameters<typeof Sheet>[0], 'variant'>) {
  *  - Focus goes to the first meaningful element (not the close button) when opened, and back to
  *    the opener when closed.
  *  - Closing: Escape, the close button, a click on the backdrop, or the browser/Android Back
- *    button (the sheet pushes one history entry while open; Back pops it).
+ *    button for sheets (one history entry while open; Back pops it — `history`, off for dialogs).
  *  - Page scroll is locked while open.
  */
 export function Sheet({
@@ -26,6 +26,7 @@ export function Sheet({
   variant = 'sheet',
   actions,
   dismissible = true,
+  history: withHistory = variant === 'sheet',
   'data-testid': testId,
 }: {
   open: boolean;
@@ -39,6 +40,11 @@ export function Sheet({
   actions?: ReactNode;
   /** false: a backdrop click does not close (e.g. unsaved input). Esc and buttons still do. */
   dismissible?: boolean;
+  /**
+   * Push a history entry while open so Back closes it (default for sheets). Off by default for
+   * dialogs: a confirmation whose action navigates (router.push) must not race history.back().
+   */
+  history?: boolean;
   'data-testid'?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -60,20 +66,26 @@ export function Sheet({
       opener.current = document.activeElement;
       d.showModal();
       // First meaningful element: the first link/button inside the content, not the close button.
+      const ok = ':not([disabled]):not([type=hidden]):not([tabindex="-1"])';
       const first =
         d.querySelector<HTMLElement>('[data-autofocus]') ??
         d.querySelector<HTMLElement>(
-          '[data-sheet-body] a[href], [data-sheet-body] button, [data-sheet-body] input, [data-sheet-body] textarea, [data-sheet-body] select, [data-sheet-actions] button',
+          ['a[href]', 'button', 'input', 'textarea', 'select']
+            .map((t) => `[data-sheet-body] ${t}${ok}`)
+            .concat(`[data-sheet-actions] button${ok}`)
+            .join(', '),
         );
       first?.focus();
       prevOverflow.current = document.documentElement.style.overflow;
       document.documentElement.style.overflow = 'hidden';
-      history.pushState({ ...history.state, sheet: id }, '');
-      pushed.current = true;
+      if (withHistory) {
+        history.pushState({ ...history.state, sheet: id }, '');
+        pushed.current = true;
+      }
     } else if (!open && d.open) {
       d.close();
     }
-  }, [open, id]);
+  }, [open, id, withHistory]);
 
   // Unmounted while open: restore scrolling and drop the history entry.
   useEffect(
