@@ -110,11 +110,12 @@
   --stroke-hint: #476dff;
 
   /*
-   * Logo identity — unchanged on purpose (D-039 decision 6: the logo is only researched, not
-   * replaced). Kept separate from the brand primary so UI-1 does not alter the mark.
+   * Brand (UI-7B, D-041): the approved raster mark and the lockup text colours measured on the
+   * reference image (docs/design/brand/README.md). The mark is an image, swapped per theme.
    */
-  --logo-bg: #b8322a;
-  --logo-fg: #ffffff;
+  --brand-mark: url('/brand/mark-light.webp');
+  --brand-name: #0a1b2f;
+  --brand-tagline: #53617b;
 
   /* Shadows (light, one light source from above) */
   --elevation-xs: 0 1px 2px rgb(24 36 58 / 0.06);
@@ -224,6 +225,11 @@
   --stroke-guide: #33405a;
   --stroke-hint: #8aa2ff;
 
+  /* Brand (UI-7B): dark mark (its shadow only reads on dark backgrounds) */
+  --brand-mark: url('/brand/mark-dark.webp');
+  --brand-name: #ffffff;
+  --brand-tagline: #baceed;
+
   /* Shadows keep their shape; layering comes from lighter surfaces + borders */
   --elevation-xs: 0 1px 2px rgb(0 0 0 / 0.4);
   --elevation-sm: 0 1px 3px rgb(0 0 0 / 0.4), 0 1px 2px rgb(0 0 0 / 0.3);
@@ -324,6 +330,11 @@
     --stroke-ink: #e8edf7;
     --stroke-guide: #33405a;
     --stroke-hint: #8aa2ff;
+
+    /* Brand (UI-7B): dark mark (its shadow only reads on dark backgrounds) */
+    --brand-mark: url('/brand/mark-dark.webp');
+    --brand-name: #ffffff;
+    --brand-tagline: #baceed;
 
     /* Shadows keep their shape; layering comes from lighter surfaces + borders */
     --elevation-xs: 0 1px 2px rgb(0 0 0 / 0.4);

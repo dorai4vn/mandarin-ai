@@ -9,7 +9,7 @@ import { join } from 'node:path';
 
 const ROOT = new URL('../apps/web/', import.meta.url).pathname;
 /** Set outside CSS: next/font injects these on <html>. */
-const RUNTIME = new Set(['font-inter', 'font-noto-sc']);
+const RUNTIME = new Set(['font-inter', 'font-noto-sc', 'font-nunito']);
 
 const files = [];
 const walk = (dir) => {

@@ -72,15 +72,32 @@ function useSidebarPref() {
   return { expanded: ready ? expanded : undefined, toggle };
 }
 
-function Mark({ size = 36 }: { size?: number }) {
+/** Brand mark (D-041): the approved raster image, light/dark per theme via `--brand-mark`. */
+function Mark({ size = 40 }: { size?: number }) {
+  return <span aria-hidden style={{ width: size, height: size }} className="brand-mark shrink-0" />;
+}
+
+/**
+ * Lockup text (docs/design/brand/README.md): "Mandarin AI" Nunito 800, −0.02em, line-height 1.1;
+ * tagline Nunito 600, uppercase, 0.16em, 38 % of the name size. Name size = 0.52 × mark (sidebar).
+ */
+function Lockup({ tagline = true, nameSize }: { tagline?: boolean; nameSize: number }) {
   return (
-    <span
-      lang="zh-Hans"
-      aria-hidden
-      style={{ width: size, height: size }}
-      className="hanzi grid shrink-0 place-items-center rounded-control bg-logo text-lg text-logo-ink"
-    >
-      学
+    <span className="flex min-w-0 flex-col font-brand" aria-hidden>
+      <span
+        style={{ fontSize: nameSize }}
+        className="truncate font-extrabold leading-[1.1] tracking-[-0.02em] text-brand-name"
+      >
+        Mandarin AI
+      </span>
+      {tagline && (
+        <span
+          style={{ fontSize: Math.round(nameSize * 0.38 * 10) / 10 }}
+          className="truncate font-semibold uppercase leading-[1.3] tracking-[0.16em] text-brand-tagline"
+        >
+          Tự học tiếng Trung
+        </span>
+      )}
     </span>
   );
 }
@@ -123,12 +140,12 @@ function Sidebar({
     >
       <Link
         href="/"
-        className="mb-4 flex h-11 items-center gap-3 rounded-control px-1.5 text-lg font-bold"
+        className="mb-4 flex h-12 items-center gap-2.5 rounded-control px-1"
         aria-label="Mandarin AI — Trang chủ"
       >
-        <Mark />
-        <span className="nav-label whitespace-nowrap" aria-hidden>
-          Mandarin AI
+        <Mark size={40} />
+        <span className="nav-label min-w-0">
+          <Lockup nameSize={21} />
         </span>
       </Link>
       <nav aria-label="Điều hướng chính" className="flex flex-col gap-1">
@@ -313,8 +330,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="flex min-w-0 flex-col">
           {/* Phone top bar */}
           <header className="sticky top-0 z-10 flex min-h-14 items-center justify-between gap-3 border-b border-line bg-surface/90 pb-2 pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur min-[360px]:pl-[max(1rem,env(safe-area-inset-left))] min-[360px]:pr-[max(1rem,env(safe-area-inset-right))] md:hidden [@media(max-height:499px)]:min-h-11">
-            <Link href="/" className="flex min-w-0 items-center gap-2 font-bold">
-              <Mark size={32} /> <span className="truncate">Mandarin AI</span>
+            <Link
+              href="/"
+              className="flex min-w-0 items-center gap-2"
+              aria-label="Mandarin AI — Trang chủ"
+            >
+              <Mark size={32} />
+              <Lockup nameSize={17} tagline={false} />
             </Link>
             <SyncIndicator />
           </header>

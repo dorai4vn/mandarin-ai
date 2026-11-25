@@ -80,5 +80,37 @@ test('service worker never caches a navigation that carries a query string (X1)'
     return { names: await caches.keys(), urls };
   });
   expect(keys.urls.filter((u) => new URL(u).search !== '')).toEqual([]);
-  expect(keys.names.every((n) => n.endsWith('m0-pwa-2'))).toBe(true);
+  // Only the current service-worker version's caches exist (older ones are purged on activate).
+  const version = /const VERSION = '([^']+)'/.exec(
+    await (await page.request.get('/sw.js')).text(),
+  )![1]!;
+  expect(keys.names.length).toBeGreaterThan(0);
+  expect(keys.names.every((n) => n.endsWith(version))).toBe(true);
+});
+
+test('UI-7B brand: approved icons are served, manifest lists any + maskable 192/512', async ({
+  request,
+}) => {
+  const manifest = await (await request.get('/manifest.webmanifest')).json();
+  const icons = manifest.icons as { src: string; sizes: string; purpose: string }[];
+  expect(icons.map((i) => `${i.purpose} ${i.sizes}`).sort()).toEqual([
+    'any 192x192',
+    'any 512x512',
+    'maskable 192x192',
+    'maskable 512x512',
+  ]);
+  for (const path of [
+    ...icons.map((i) => i.src),
+    '/icons/apple-touch-icon.png',
+    '/icons/favicon-16.png',
+    '/icons/favicon-32.png',
+    '/icons/favicon-48.png',
+    '/favicon.ico',
+    '/brand/mark-light.webp',
+    '/brand/mark-dark.webp',
+  ]) {
+    const r = await request.get(path);
+    expect(r.ok(), path).toBe(true);
+    expect(r.headers()['content-type'], path).toMatch(/image\//);
+  }
 });
