@@ -1,7 +1,11 @@
-import Link from 'next/link';
-import { Card, PageHeader } from '@/components/ui';
+import { Card, CardLink, EmptyState, PageHeader, StudyCard } from '@/components/ui/index';
 import { SyncCard } from './sync-card';
 
+/**
+ * Home — honest M0 version (SCREEN_BLUEPRINTS_V2 §2): no streak / XP / due counts before the
+ * engines exist (M3/M7). The study tiles of the reference ("Hôm nay học gì?") are shown as
+ * "Sắp có", never with made-up numbers. Sync status is real data.
+ */
 const LAB = [
   {
     href: '/lab/handwriting',
@@ -42,29 +46,46 @@ export default function Home() {
         title="Chào bạn 👋"
         lead="Mandarin AI chạy trực tiếp trên trình duyệt của máy tính, máy tính bảng và điện thoại. Cài đặt lên màn hình chính là tùy chọn."
       />
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <Card title="Hôm nay" className="xl:col-span-2">
-          <p className="text-ink-2">
-            Lịch ôn tập, từ mới trong ngày và chuỗi ngày học sẽ xuất hiện ở đây từ milestone M3. Bản
-            M0 này dùng để kiểm tra nền tảng kỹ thuật trên nhiều trình duyệt.
-          </p>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2" data-testid="home-today">
+          <EmptyState
+            variant="coming-soon"
+            hanzi="学"
+            headingLevel="h2"
+            title="Lịch ôn hằng ngày sẽ có ở đây"
+            description="Thẻ đến hạn, mục tiêu ngày và từ mới trong ngày."
+            milestone="M3"
+          />
         </Card>
         <SyncCard />
       </div>
-      <h2 className="mb-3 mt-8 text-xl font-semibold">Phòng thử M0</h2>
-      <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {LAB.map((l) => (
-          <li key={l.href}>
-            <Link
-              href={l.href}
-              className="block h-full rounded-2xl border border-line bg-surface p-4 transition hover:border-primary-base hover:shadow-sm"
-            >
-              <span className="font-semibold">{l.title} ›</span>
-              <span className="mt-1 block text-sm text-ink-2">{l.desc}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+
+      <section aria-labelledby="study" className="mt-10">
+        <h2 id="study" className="mb-4 text-[22px] font-semibold leading-[30px] text-fg">
+          Hôm nay học gì?
+        </h2>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4" data-testid="home-study">
+          <StudyCard tone="blue" title="Từ vựng mới" comingSoon />
+          <StudyCard tone="lavender" title="Nghe hiểu" comingSoon />
+          <StudyCard tone="mint" title="Luyện viết" comingSoon />
+        </div>
+      </section>
+
+      <section aria-labelledby="lab" className="mt-10">
+        <h2 id="lab" className="mb-1 text-[22px] font-semibold leading-[30px] text-fg">
+          Phòng thử M0
+        </h2>
+        <p className="mb-4 text-sm text-fg-muted">
+          Kiểm tra nền tảng kỹ thuật trên trình duyệt này — không phải bài học.
+        </p>
+        <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {LAB.map((l) => (
+            <li key={l.href}>
+              <CardLink href={l.href} title={l.title} description={l.desc} className="h-full" />
+            </li>
+          ))}
+        </ul>
+      </section>
     </>
   );
 }

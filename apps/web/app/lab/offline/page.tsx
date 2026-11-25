@@ -52,7 +52,7 @@ export default function OfflineLab() {
         <p
           role="alert"
           data-testid="memory-fallback"
-          className="mb-4 rounded-xl border-2 border-amber p-3 text-sm"
+          className="mb-4 rounded-xl border-2 border-warning-text p-3 text-sm"
         >
           Trình duyệt này không cho lưu trữ offline (IndexedDB). Ứng dụng vẫn hoạt động khi có mạng;
           dữ liệu chưa gửi sẽ mất nếu đóng trang.
@@ -110,7 +110,7 @@ export default function OfflineLab() {
             <p
               role="note"
               data-testid="mock-sync-note"
-              className="mt-2 rounded-lg border-2 border-amber p-2 text-sm"
+              className="mt-2 rounded-lg border-2 border-warning-text p-2 text-sm"
             >
               Máy chủ đồng bộ đang ở chế độ MOCK: dữ liệu chỉ nằm trong bộ nhớ RAM của API, không
               phải cơ sở dữ liệu, và mất khi API khởi động lại (cơ sở dữ liệu thật làm ở M1).
@@ -128,7 +128,7 @@ export default function OfflineLab() {
               Xin giữ dữ liệu lâu dài
             </Button>
           </div>
-          <p className="mt-2 text-sm text-ink-2">Lưu trữ lâu dài: {persisted}</p>
+          <p className="mt-2 text-sm text-fg-muted">Lưu trữ lâu dài: {persisted}</p>
           <h3 className="mt-4 font-semibold">Hàng đợi (outbox)</h3>
           <ul className="text-sm" data-testid="outbox">
             {outbox.map((e) => (

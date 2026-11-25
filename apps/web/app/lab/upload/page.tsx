@@ -7,7 +7,10 @@ import {
 } from '@mandarin/contracts';
 import { useEffect, useState, type DragEvent } from 'react';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Card, Mono, PageHeader } from '@/components/ui';
+import { useOffline } from '@/components/OfflineProvider';
+import { FileIcon, UploadIcon } from '@/components/icons';
+import { Mono } from '@/components/ui';
+import { Badge, Card, PageHeader, ProgressBar, buttonClasses } from '@/components/ui/index';
 import { api, describeApiError } from '@/lib/api-client';
 import { labelForResult } from '@/lib/status';
 
@@ -37,45 +40,69 @@ async function validate(file: File): Promise<string | null> {
   return null;
 }
 
+type Phase = 'checking' | 'sending' | 'saved' | 'error';
+const PHASE: Record<Phase, { text: string; variant: 'neutral' | 'primary' | 'success' | 'error' }> =
+  {
+    checking: { text: 'Đang kiểm tra', variant: 'neutral' },
+    sending: { text: 'Đang tải', variant: 'primary' },
+    saved: { text: 'Đã lưu', variant: 'success' },
+    error: { text: 'Lỗi', variant: 'error' },
+  };
+
+/** File Upload V2 (COMPONENT_SPEC_V2 §21). M0 checks and flow unchanged. */
 export default function UploadLab() {
+  const { online } = useOffline();
   const [result, setResult] = useState<PdfUploadResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const [sending, setSending] = useState<string | null>(null);
+  const [file, setFile] = useState<{ name: string; size: number; phase: Phase } | null>(null);
+  const [rejected, setRejected] = useState(false);
   // A file chosen before React hydrates would be silently dropped (no onChange yet): keep the
   // picker disabled until the page is interactive (same pattern as the sign-in form, X1).
   const [ready, setReady] = useState(false);
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setReady(true), []);
+  const disabled = !ready || busy || !online;
 
-  const handle = async (file: File | undefined) => {
-    if (!file || busy) return;
+  const handle = async (f: File | undefined) => {
+    if (!f || busy) return;
     setResult(null);
-    const problem = await validate(file);
+    setRejected(false);
+    setFile({ name: f.name, size: f.size, phase: 'checking' });
+    const problem = await validate(f);
     if (problem) {
       setError(problem);
+      setRejected(true);
+      setFile({ name: f.name, size: f.size, phase: 'error' });
       return;
     }
     setError(null);
     setBusy(true);
-    setSending(`${file.name} · ${formatMb(file.size)}`);
+    setFile({ name: f.name, size: f.size, phase: 'sending' });
     try {
-      setResult(await api.uploadPdf(file));
+      setResult(await api.uploadPdf(f));
+      setFile({ name: f.name, size: f.size, phase: 'saved' });
     } catch (e) {
       setError(describeApiError(e));
+      setFile({ name: f.name, size: f.size, phase: 'error' });
     } finally {
       setBusy(false);
-      setSending(null);
     }
   };
 
   const onDrop = (e: DragEvent) => {
     e.preventDefault();
     setDragging(false);
-    if (!ready) return;
+    if (disabled) return;
     void handle(e.dataTransfer.files[0]);
   };
+
+  const zone = dragging
+    ? 'border-primary-base bg-primary-subtle'
+    : rejected
+      ? 'border-error-base bg-sunken'
+      : 'border-line-strong bg-sunken';
 
   return (
     <>
@@ -84,32 +111,38 @@ export default function UploadLab() {
         lead="Chọn tệp (điện thoại: ứng dụng Tệp/Files) hoặc kéo-thả vào khung (máy tính). Tệp được lưu riêng tư."
       />
       <Card>
+        {!online && (
+          <p className="mb-4 text-sm text-fg-muted" data-testid="upload-offline">
+            Đang offline — cần có mạng để tải tệp lên. Hãy thử lại khi có kết nối.
+          </p>
+        )}
         <label
           onDragOver={(e) => {
             e.preventDefault();
-            setDragging(true);
+            if (!disabled) setDragging(true);
           }}
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
           data-testid="dropzone"
-          className={`flex min-h-48 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-6 text-center ${dragging ? 'border-primary-base bg-primary-subtle' : 'border-line'}`}
+          aria-disabled={disabled || undefined}
+          className={`flex min-h-48 flex-col items-center justify-center gap-3 rounded-card border-2 border-dashed p-6 text-center has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--border-focus)] ${disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'} ${zone}`}
         >
-          <span className="text-lg font-semibold">
-            {!ready ? 'Đang tải…' : busy ? 'Đang tải lên…' : 'Chọn tệp PDF'}
+          <UploadIcon width={32} height={32} className="text-primary-base" />
+          <span className="text-base text-fg">
+            <span className="hidden md:inline">Kéo thả PDF vào đây hoặc </span>
+            <span
+              className={`${buttonClasses({ variant: 'primary', size: 'lg' })} mt-1 md:mt-0 md:inline-flex md:h-auto md:bg-transparent md:p-0 md:font-semibold md:text-link md:underline md:shadow-none max-md:w-full`}
+            >
+              {!ready ? 'Đang tải…' : busy ? 'Đang tải lên…' : 'Chọn tệp PDF'}
+            </span>
           </span>
-          <span className="hidden text-sm text-ink-2 md:block">hoặc kéo-thả tệp vào đây</span>
-          <span className="text-sm text-ink-2" data-testid="pdf-limit">
+          <span className="text-sm text-fg-muted" data-testid="pdf-limit">
             Tối đa {PDF_UPLOAD_LIMITS.maxLabel} mỗi tệp
           </span>
-          {sending && (
-            <span className="text-sm" aria-live="polite" data-testid="pdf-sending">
-              Đang gửi {sending} — tệp lớn có thể mất vài phút trên mạng di động.
-            </span>
-          )}
           <input
             type="file"
             accept="application/pdf,.pdf"
-            disabled={!ready || busy}
+            disabled={disabled}
             className="sr-only"
             data-testid="pdf-input"
             onChange={(e) => {
@@ -118,11 +151,40 @@ export default function UploadLab() {
             }}
           />
         </label>
+
+        {file && (
+          <div
+            className="mt-4 flex items-start gap-3 rounded-control border border-line p-3"
+            data-testid="upload-file"
+            data-phase={file.phase}
+          >
+            <FileIcon width={24} height={24} className="mt-0.5 shrink-0 text-fg-muted" />
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="min-w-0 font-semibold [overflow-wrap:anywhere]">{file.name}</span>
+                <Badge variant={PHASE[file.phase].variant}>{PHASE[file.phase].text}</Badge>
+              </div>
+              <span className="text-sm text-fg-muted tabular-nums">{formatMb(file.size)}</span>
+              {file.phase === 'sending' && (
+                <>
+                  <ProgressBar label={`Đang tải ${file.name}`} thin className="mt-2" />
+                  <span className="mt-1 block text-sm text-fg-muted" data-testid="pdf-sending">
+                    Đang gửi {file.name} · {formatMb(file.size)} — tệp lớn có thể mất vài phút trên
+                    mạng di động.
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="mt-4">
           <StatusBadge label={labelForResult(result?.source ?? null, error)} />
         </div>
         {result && (
-          <Mono>{`đường dẫn: ${result.storagePath}\nkích thước: ${result.sizeBytes} bytes\nsha256: ${result.sha256}`}</Mono>
+          <div className="mt-3">
+            <Mono>{`đường dẫn: ${result.storagePath}\nkích thước: ${result.sizeBytes} bytes\nsha256: ${result.sha256}`}</Mono>
+          </div>
         )}
       </Card>
     </>
