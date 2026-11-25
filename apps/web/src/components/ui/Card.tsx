@@ -74,7 +74,7 @@ export function Card({
   return (
     <Tag
       {...rest}
-      className={`rounded-card ${VARIANT[variant]} ${variant === 'highlight' ? HIGHLIGHT[tone] : ''} ${PAD} ${className}`}
+      className={`min-w-0 rounded-card ${VARIANT[variant]} ${variant === 'highlight' ? HIGHLIGHT[tone] : ''} ${PAD} ${className}`}
     >
       <Header title={title} action={action} as={headingLevel} />
       {children}

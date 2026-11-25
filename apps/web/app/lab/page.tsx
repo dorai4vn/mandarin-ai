@@ -30,7 +30,7 @@ export default function LabOverview() {
     setCaps(detectCapabilities(window as never));
     setEnv({
       viewport: `${w}×${window.innerHeight} @${window.devicePixelRatio}x`,
-      deviceClass: w < 768 ? 'phone' : w < 1280 ? 'tablet' : 'desktop',
+      deviceClass: w < 768 ? 'phone' : w < 1024 ? 'tablet' : 'desktop',
       pointer: [
         matchMedia('(pointer: coarse)').matches && 'coarse',
         matchMedia('(pointer: fine)').matches && 'fine',
@@ -89,7 +89,7 @@ export default function LabOverview() {
         <Card title="Môi trường">
           {env && (
             <dl
-              className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm"
+              className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm [&_dd]:[overflow-wrap:anywhere]"
               data-testid="env-info"
               data-device-class={env.deviceClass}
             >

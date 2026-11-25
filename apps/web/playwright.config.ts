@@ -69,9 +69,28 @@ export default defineConfig({
     serviceWorkers: 'block',
     locale: 'vi-VN',
   },
-  projects: ENGINES.flatMap((e) =>
-    (['mobile', 'tablet', 'desktop'] as const).map((s) => project(e, s)),
-  ),
+  projects: [
+    ...ENGINES.flatMap((e) => (['mobile', 'tablet', 'desktop'] as const).map((s) => project(e, s))),
+    // UI-3 (RESPONSIVE_V2 §1): extra viewports for layout/shell checks only — smallest phone,
+    // phone landscape (low height) and the 1024 desktop boundary (collapsed sidebar).
+    ...ENGINES.flatMap((e) =>
+      (
+        [
+          ['small', { width: 320, height: 568 }, 'mobile'],
+          ['landscape', { width: 844, height: 390 }, 'mobile'],
+          ['laptop', { width: 1024, height: 768 }, 'desktop'],
+        ] as const
+      ).map(([name, viewport, like]) => {
+        const p = project(e, like);
+        return {
+          ...p,
+          name: `${e}-${name}`,
+          testMatch: /(layout|shell)\.spec\.ts$/,
+          use: { ...p.use, viewport },
+        };
+      }),
+    ),
+  ],
   webServer: [
     {
       command: 'node ../api/dist/server.js',

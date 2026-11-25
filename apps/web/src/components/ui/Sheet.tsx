@@ -31,6 +31,8 @@ export function Sheet({
   const id = useId();
   const opener = useRef<Element | null>(null);
   const pushed = useRef(false);
+  // Set when a link inside the sheet was activated: the navigation owns history then.
+  const navigating = useRef(false);
   const close = useRef(onClose);
   useEffect(() => {
     close.current = onClose;
@@ -71,9 +73,11 @@ export function Sheet({
     document.documentElement.style.overflow = '';
     if (pushed.current) {
       pushed.current = false;
-      // Drop the history entry the sheet added, unless a link already navigated away.
-      if (history.state?.sheet === id) history.back();
+      // Drop the history entry the sheet added — unless a link inside the sheet is navigating
+      // (history.back() would cancel that navigation).
+      if (!navigating.current && history.state?.sheet === id) history.back();
     }
+    navigating.current = false;
     (opener.current as HTMLElement | null)?.focus?.();
     close.current();
   };
@@ -87,6 +91,9 @@ export function Sheet({
       onCancel={(e) => {
         e.preventDefault();
         ref.current?.close();
+      }}
+      onClickCapture={(e) => {
+        if ((e.target as Element).closest?.('a[href]')) navigating.current = true;
       }}
       onClick={(e) => {
         // A click on the dialog element itself (not its content) is a click on the backdrop.

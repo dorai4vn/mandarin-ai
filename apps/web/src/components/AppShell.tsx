@@ -166,7 +166,7 @@ function Sidebar({
     <aside
       id={desktop ? 'sidebar' : undefined}
       data-testid={desktop ? 'nav-sidebar' : 'nav-rail'}
-      className={`${desktop ? 'sidebar-desktop hidden lg:flex' : 'sidebar-rail hidden md:flex lg:hidden'} sticky top-0 z-20 h-dvh flex-col gap-1 border-r border-line bg-surface px-3 py-4`}
+      className={`${desktop ? 'sidebar-desktop hidden lg:flex' : 'sidebar-rail hidden md:flex lg:hidden'} sticky top-0 z-20 h-dvh flex-col gap-1 overflow-y-auto overflow-x-hidden border-r border-line bg-surface px-3 py-4`}
     >
       <Link
         href="/"
@@ -228,11 +228,21 @@ function useTyping() {
           !['checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'range', 'color'].includes(
             el.type,
           )));
-    const onIn = (e: FocusEvent) => setTyping(isText(e.target));
-    const onOut = () => setTyping(false);
+    // Show the bar again only after the keyboard had time to close: re-showing it at once on
+    // focusout would put it under the finger mid-tap (e.g. a button just below a text field).
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const onIn = (e: FocusEvent) => {
+      clearTimeout(timer);
+      if (isText(e.target)) setTyping(true);
+    };
+    const onOut = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => setTyping(isText(document.activeElement)), 250);
+    };
     document.addEventListener('focusin', onIn);
     document.addEventListener('focusout', onOut);
     return () => {
+      clearTimeout(timer);
       document.removeEventListener('focusin', onIn);
       document.removeEventListener('focusout', onOut);
     };
