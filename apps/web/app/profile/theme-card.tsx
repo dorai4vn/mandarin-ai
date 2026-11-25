@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, Segmented } from '@/components/ui/index';
+import { Card, Segmented } from '@/components/ui';
 
 type Choice = 'system' | 'light' | 'dark';
 const KEY = 'mandarin.theme';

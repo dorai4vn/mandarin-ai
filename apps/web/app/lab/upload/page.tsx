@@ -9,8 +9,7 @@ import { useEffect, useState, type DragEvent } from 'react';
 import { StatusBadge } from '@/components/StatusBadge';
 import { useOffline } from '@/components/OfflineProvider';
 import { FileIcon, UploadIcon } from '@/components/icons';
-import { Mono } from '@/components/ui';
-import { Badge, Card, PageHeader, ProgressBar, buttonClasses } from '@/components/ui/index';
+import { Badge, Card, Mono, PageHeader, ProgressBar, buttonClasses } from '@/components/ui';
 import { api, describeApiError } from '@/lib/api-client';
 import { labelForResult } from '@/lib/status';
 

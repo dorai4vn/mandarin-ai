@@ -1,5 +1,5 @@
 import { LibraryTabs } from './library-tabs';
-import { PageHeader } from '@/components/ui/index';
+import { PageHeader } from '@/components/ui';
 
 export const metadata = { title: 'Thư viện' };
 

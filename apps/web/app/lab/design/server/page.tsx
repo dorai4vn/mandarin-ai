@@ -5,7 +5,7 @@ import {
   PageHeader,
   ProgressBar,
   controlClasses,
-} from '@/components/ui/index';
+} from '@/components/ui';
 
 /**
  * UI-2B (M2): this route is a SERVER Component. It must build and render the V2 primitives —

@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
     <title>Offline · Mandarin AI</title>
     <style>
       body {
@@ -16,8 +17,9 @@
           'Segoe UI',
           Roboto,
           sans-serif;
-        background: #f7f9fd; /* V2 bg.page (D-039, light) */
-        color: #18243a; /* V2 fg.default */
+        /* V2 tokens (static copy: this page must work without the app's CSS) */
+        background: #f7f9fd; /* bg.page */
+        color: #18243a; /* fg.default */
         padding: 24px;
       }
       main {
@@ -28,9 +30,35 @@
         padding: 10px 16px;
         border-radius: 12px;
         border: 0;
-        background: #335dff; /* V2 primary.solid */
-        color: #fff;
+        background: #335dff; /* primary.solid */
+        color: #fff; /* primary.on */
         font-weight: 600;
+        cursor: pointer;
+      }
+      p {
+        color: #4f5d73; /* fg.muted */
+        line-height: 1.5;
+      }
+      button:focus-visible {
+        outline: 2px solid #476dff; /* border.focus */
+        outline-offset: 2px;
+      }
+      /* Dark (UI-6): follows the system; the in-app choice is not readable here without JS. */
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #0e1422;
+          color: #e8edf7;
+        }
+        p {
+          color: #a9b4c7;
+        }
+        button {
+          background: #7b95ff;
+          color: #0e1422;
+        }
+        button:focus-visible {
+          outline-color: #8aa2ff;
+        }
       }
     </style>
   </head>
@@ -39,9 +67,10 @@
       <h1>Bạn đang offline</h1>
       <p>
         Trang này chưa được lưu để dùng offline. Những trang bạn đã mở trước đó vẫn xem được. Dữ
-        liệu học chưa gửi sẽ tự đồng bộ khi có mạng.
+        liệu học đã lưu trên thiết bị này vẫn còn; ứng dụng sẽ thử gửi khi có mạng (nếu đồng bộ đám
+        mây đã được bật).
       </p>
-      <button onclick="location.reload()">Thử lại</button>
+      <button type="button" onclick="location.reload()">Thử lại</button>
     </main>
   </body>
 </html>

@@ -1,4 +1,4 @@
-import { Badge, Card, EmptyState, PageHeader } from '@/components/ui/index';
+import { Badge, Card, EmptyState, PageHeader } from '@/components/ui';
 
 export const metadata = { title: 'Từ điển' };
 

@@ -1,6 +1,6 @@
 'use client';
 import { usePwa } from '@/components/PwaProvider';
-import { Button, Card } from '@/components/ui/index';
+import { Button, Card } from '@/components/ui';
 
 /** Optional install (progressive enhancement). Each browser has its own menu; nothing is required. */
 export function InstallCard() {

@@ -2,7 +2,7 @@
 import type { OutboxEntry } from '@mandarin/domain';
 import { useCallback, useEffect, useState } from 'react';
 import { SYNC_DISABLED_MESSAGE, useOffline } from '@/components/OfflineProvider';
-import { Button, Card, Mono, PageHeader } from '@/components/ui';
+import { Button, Card, Input, Mono, PageHeader } from '@/components/ui';
 import type { SpikeNote } from '@/offline/store';
 
 export default function OfflineLab() {
@@ -61,20 +61,21 @@ export default function OfflineLab() {
       <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
         <Card title="Thêm ghi chú">
           <form
-            className="flex gap-2"
+            className="flex items-end gap-2"
             onSubmit={(e) => {
               e.preventDefault();
               void add();
             }}
           >
-            <input
+            <Input
+              label="Nội dung ghi chú"
+              hideLabel
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Ví dụ: 山 = núi"
-              aria-label="Nội dung ghi chú"
               data-testid="note-input"
               disabled={!store}
-              className="min-w-0 flex-1 rounded-xl border border-line-strong bg-surface px-3 py-2"
+              className="flex-1"
             />
             <Button type="submit" data-testid="note-add" disabled={!store}>
               Lưu
@@ -124,7 +125,7 @@ export default function OfflineLab() {
             >
               Đồng bộ ngay
             </Button>
-            <Button variant="ghost" onClick={() => void askPersist()}>
+            <Button variant="secondary" onClick={() => void askPersist()}>
               Xin giữ dữ liệu lâu dài
             </Button>
           </div>

@@ -1,4 +1,4 @@
-import { CardLink, Card, PageHeader } from '@/components/ui/index';
+import { CardLink, Card, PageHeader } from '@/components/ui';
 import { InstallCard } from './install-card';
 import { ThemeCard } from './theme-card';
 

@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { ErrorState } from '@/components/ui/index';
+import { ErrorState } from '@/components/ui';
 
 /** UI-2B: page-level ErrorState sample (focus moves to "Thử lại" on mount). Sample only. */
 export default function ErrorPageSample() {
