@@ -231,7 +231,7 @@ function WordDetail({
       {example && (
         <div className="mt-4 rounded-control bg-subtle p-3">
           <HanziText className="block">{example}</HanziText>
-          {!mine?.example && lx?.exampleVi && (
+          {lx?.exampleVi && example === lx.example && (
             <p className="mt-1 text-sm text-fg-muted">{lx.exampleVi}</p>
           )}
         </div>

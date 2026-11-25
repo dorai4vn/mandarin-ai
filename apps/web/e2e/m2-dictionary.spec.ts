@@ -45,6 +45,8 @@ test('search finds 山 via 山, shan1, shān and núi; add it, write notes and t
   await expect(page.getByTestId('word-notes')).toHaveValue('Giống ba đỉnh núi');
   await expect(page.getByTestId('word-personal')).toContainText('HSK1');
   await expect(page.getByTestId('word-additions')).toContainText('Từ từ điển');
+  // The example's translation is still shown for a word copied from the shared lexicon.
+  await expect(page.getByTestId('word-detail')).toContainText('Ngọn núi này rất cao.');
   await expectNoHorizontalScroll(page);
 });
 
