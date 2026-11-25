@@ -44,23 +44,47 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
   const costLimiter = new FixedWindowLimiter(config.RATE_LIMIT_PER_MINUTE);
   const generalLimiter = new FixedWindowLimiter(config.RATE_LIMIT_PER_MINUTE * 10);
 
-  // Per-IP guard for every request (including unauthenticated ones), before any other work.
-  const ipLimiter = new FixedWindowLimiter(config.IP_RATE_LIMIT_PER_MINUTE);
-  app.addHook('onRequest', async (req, reply) => {
-    if (!ipLimiter.take(`ip:${req.ip}`)) {
-      return reply.code(429).send(err('rate_limited', 'Too many requests'));
-    }
-  });
-
   // Browsers on any platform call the API cross-origin; only the web app origins are allowed.
   const allowOrigin = (origin: string | undefined) =>
     origin !== undefined &&
     (config.webOrigins.includes(origin) || config.webOriginRegex?.test(origin) === true);
+
+  // Preflight flood guard. Preflights are answered by the CORS plugin before the per-IP guard
+  // (below), so they would otherwise be unlimited. A separate counter, registered before CORS,
+  // caps them per IP without eating the budget of real requests (and vice versa), so a flood of
+  // OPTIONS can neither starve real traffic nor make the real request's 429 unreadable. Browsers
+  // cache a preflight for `maxAge` (600 s) per URL, so a legitimate client sends few; the limit
+  // equals the per-IP request limit. An over-limit preflight gets a bare 429 with no CORS grant:
+  // a failed preflight is a network error in the browser whatever its body, so nothing is lost.
+  const preflightLimiter = new FixedWindowLimiter(config.IP_RATE_LIMIT_PER_MINUTE);
+  app.addHook('onRequest', async (req, reply) => {
+    if (req.method === 'OPTIONS' && !preflightLimiter.take(`preflight:${req.ip}`)) {
+      return reply
+        .code(429)
+        .header('retry-after', '60')
+        .send(err('rate_limited', 'Too many requests'));
+    }
+  });
+
+  // CORS is registered BEFORE the per-IP guard (Fastify runs onRequest hooks in registration
+  // order): it answers preflights itself and sets Access-Control-Allow-Origin + Vary: Origin on
+  // every response, including the guard's 429. Without that a 429 (or a rate-limited preflight)
+  // is unreadable for the browser: fetch() rejects and the web app reports "cannot reach the
+  // API" instead of "too many requests" (FU-7, issue #6). Preflights carry no body and do no
+  // work beyond this plugin's reply.
   void app.register(cors, {
     origin: (origin, cb) => cb(null, allowOrigin(origin)),
     methods: ['GET', 'POST'],
     allowedHeaders: ['Authorization', 'Content-Type'],
     maxAge: 600,
+  });
+
+  // Per-IP guard for every non-preflight request (including unauthenticated ones), before auth.
+  const ipLimiter = new FixedWindowLimiter(config.IP_RATE_LIMIT_PER_MINUTE);
+  app.addHook('onRequest', async (req, reply) => {
+    if (!ipLimiter.take(`ip:${req.ip}`)) {
+      return reply.code(429).send(err('rate_limited', 'Too many requests'));
+    }
   });
 
   app.addContentTypeParser(
