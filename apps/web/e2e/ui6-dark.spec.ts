@@ -102,7 +102,14 @@ test('dark: no serious/critical axe violations on the main screens', async ({ pa
     '/lab/design',
   ]) {
     await hydrated(page, path);
-    if (path === '/lab/session') await expect(page.getByTestId('login-email')).toBeEnabled();
+    // Controls enabled asynchronously (hydration, IndexedDB open) must be settled before a
+    // contrast scan, or axe reads a colour mid-transition from the disabled style.
+    const READY: Record<string, string> = {
+      '/lab/session': 'login-email',
+      '/lab/offline': 'note-add',
+      '/lab/upload': 'pdf-input',
+    };
+    if (READY[path]) await expect(page.getByTestId(READY[path]!)).toBeEnabled();
     await page.waitForFunction(() =>
       document.getAnimations().every((a) => !(a instanceof CSSTransition)),
     );
