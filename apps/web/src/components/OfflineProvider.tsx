@@ -14,9 +14,9 @@ import { openLocalStore, type LocalStore } from '@/offline/store';
 import { SyncEngine, type SyncSummary } from '@/offline/sync';
 import { SyncAvailabilityProbe, type SyncAvailability } from '@/offline/sync-availability';
 
-/** Shown wherever sync status appears while cloud sync is not enabled on the server (M0). */
-export const SYNC_DISABLED_MESSAGE =
-  'Dữ liệu đã lưu trên thiết bị. Đồng bộ đám mây chưa được kích hoạt.';
+import type { SyncResult } from '@/offline/sync-message';
+export { SYNC_DISABLED_MESSAGE } from '@/offline/sync-message';
+export type { SyncResult } from '@/offline/sync-message';
 
 interface OfflineState {
   store: LocalStore | null;
@@ -28,8 +28,12 @@ interface OfflineState {
   /** Whether the server has cloud sync enabled (from GET /health; 'unknown' until probed). */
   syncAvailability: SyncAvailability;
   refresh: () => Promise<void>;
-  /** `force` re-checks the server's sync status first (manual "sync now", back online). */
-  syncNow: (opts?: { force?: boolean }) => Promise<SyncSummary | null>;
+  /**
+   * `force` re-checks the server's sync status first (manual "sync now", back online). The result
+   * carries the state AFTER the run (`after`), so callers report what is true now, not only what
+   * this run did (G1: another tab may hold the sync lock, the outbox may be empty, sync may be off).
+   */
+  syncNow: (opts?: { force?: boolean }) => Promise<SyncResult | null>;
 }
 
 const Ctx = createContext<OfflineState | null>(null);
@@ -48,12 +52,20 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   const engine = useRef<SyncEngine | null>(null);
   const probe = useRef<SyncAvailabilityProbe | null>(null);
 
-  const refresh = useCallback(async () => {
-    if (!store) return;
+  const count = useCallback(async () => {
+    if (!store) return { pending: 0, rejected: 0 };
     const outbox = await store.listOutbox();
-    setPending(outbox.filter((e) => e.status === 'pending').length);
-    setRejected(outbox.filter((e) => e.status === 'rejected').length);
+    const c = {
+      pending: outbox.filter((e) => e.status === 'pending').length,
+      rejected: outbox.filter((e) => e.status === 'rejected').length,
+    };
+    setPending(c.pending);
+    setRejected(c.rejected);
+    return c;
   }, [store]);
+  const refresh = useCallback(async () => {
+    await count();
+  }, [count]);
 
   const syncNow = useCallback(
     async (opts: { force?: boolean } = {}) => {
@@ -63,10 +75,10 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
       const notAttempted = s.error === 'sync_unavailable' || s.error === 'sync_status_unknown';
       if (s.applied + s.duplicate + s.rejected + s.retried > 0 || (s.error && !notAttempted))
         setLastSync({ ...s, at: new Date().toISOString() });
-      await refresh();
-      return s;
+      const c = await count();
+      return { ...s, after: { ...c, availability: probe.current?.current ?? 'unknown' } };
     },
-    [refresh],
+    [count],
   );
 
   useEffect(() => {

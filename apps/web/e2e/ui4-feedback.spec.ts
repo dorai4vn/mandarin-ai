@@ -22,7 +22,7 @@ test('sync indicator: popover with details; Esc and outside click close it', asy
   const panel = page.locator(`[id="${(await c.getAttribute('aria-controls'))!}"]`);
   await expect(panel).toBeVisible();
   await expect(panel).toHaveAttribute('role', 'dialog');
-  for (const t of ['Mạng', 'Chờ gửi', 'Lỗi', 'Lần cuối'])
+  for (const t of ['Mạng', 'Chờ gửi', 'Lỗi', 'Lần thử cuối'])
     await expect(panel.getByText(t, { exact: true })).toBeVisible();
   await expect(panel.getByRole('button', { name: 'Đồng bộ ngay', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
@@ -44,10 +44,55 @@ test('sync indicator: "Đồng bộ ngay" reports the result in a toast without 
   await c.click();
   const now = page.getByTestId('sync-popover-now').filter({ visible: true });
   await now.click();
-  const toast = page.getByTestId('toast').first();
-  await expect(toast).toBeVisible();
-  await expect(page.getByTestId('toast-region')).toContainText(/đồng bộ|gửi|thiết bị/i);
-  await expect(toast).not.toBeFocused();
+  await expect(page.getByTestId('toast').first()).toBeVisible();
+  // Empty outbox: never "Đã đồng bộ …" (G1) — nothing was synced by this click.
+  await expect(page.getByTestId('toast-region')).toHaveText('Không có thay đổi nào cần đồng bộ.');
+  await expect(now).toBeFocused();
+  expect(
+    await page.evaluate(() =>
+      document.querySelector('[data-testid="toast-region"]')!.contains(document.activeElement),
+    ),
+  ).toBe(false);
+});
+
+test('sync indicator: with cloud sync disabled, "Đồng bộ ngay" says data stays on the device', async ({
+  page,
+}) => {
+  await page.route('**/health', async (route) => {
+    const response = await route.fetch();
+    const json = await response.json();
+    json.providers.sync = 'disabled';
+    await route.fulfill({ response, json });
+  });
+  await hydrated(page);
+  const c = chip(page);
+  await expect(c).toHaveAttribute('data-sync-state', 'local-only');
+  await c.click();
+  await page.getByTestId('sync-popover-now').filter({ visible: true }).click();
+  await expect(page.getByTestId('toast-region')).toHaveText(
+    'Dữ liệu đã lưu trên thiết bị. Đồng bộ đám mây chưa được kích hoạt.',
+  );
+  await expect(page.getByTestId('toast-region')).not.toContainText('Đã đồng bộ');
+});
+
+test('sync indicator: the expanded desktop sidebar does not clip the popover', async ({ page }) => {
+  test.skip(deviceClass(page) !== 'desktop', 'expanded sidebar (≥ 1280 px)');
+  await hydrated(page);
+  const c = page.getByTestId('nav-sidebar').getByTestId('sync-chip').filter({ visible: true });
+  await c.click();
+  const panel = page.locator(`[id="${(await c.getAttribute('aria-controls'))!}"]`);
+  await expect(panel).toBeVisible();
+  const hits = await panel.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return [
+      // Inset past the 16 px corner radius (hit testing follows the rounded shape).
+      [r.left + 16, r.top + 16],
+      [r.right - 16, r.top + 16],
+      [r.right - 16, r.bottom - 16],
+    ].map(([x, y]) => el.contains(document.elementFromPoint(x!, y!)));
+  });
+  expect(hits).toEqual([true, true, true]);
+  await expect(panel.getByTestId('sync-popover-now')).toBeInViewport({ ratio: 1 });
 });
 
 test('collapsed sidebar shows the sync status as a dot; text stays accessible', async ({
@@ -59,7 +104,13 @@ test('collapsed sidebar shows the sync status as a dot; text stays accessible', 
   const c = page.getByTestId('nav-rail').getByTestId('sync-chip').filter({ visible: true });
   const box = (await c.boundingBox())!;
   expect(box.width).toBeLessThanOrEqual(32);
-  await expect(c).toHaveAccessibleName(/đồng bộ|Offline|thiết bị/i);
+  const TEXT: Record<string, RegExp> = {
+    synced: /^Đã đồng bộ/,
+    'local-only': /^Lưu trên thiết bị — Dữ liệu đã lưu trên thiết bị/,
+  };
+  const state = (await c.getAttribute('data-sync-state'))!;
+  expect(Object.keys(TEXT)).toContain(state);
+  await expect(c).toHaveAccessibleName(TEXT[state]!);
   // The popover opens beside the rail and is not clipped by it.
   await c.click();
   const panel = page.locator(`[id="${(await c.getAttribute('aria-controls'))!}"]`);
@@ -82,8 +133,13 @@ test('offline banner appears when offline, can be collapsed, returns next time',
   await expect(banner).toHaveCount(0);
   await context.setOffline(true);
   await expect(banner).toBeVisible();
-  await expect(banner).toHaveAttribute('role', 'status');
+  // Announced: the message appears inside an always-mounted live region.
+  await expect(page.getByTestId('offline-banner-live')).toHaveAttribute('aria-live', 'polite');
+  await expect(page.getByTestId('offline-banner-live').getByTestId('offline-banner')).toHaveCount(
+    1,
+  );
   await expect(banner).toContainText('Đang offline');
+  await expect(banner).toContainText('gửi khi có mạng'); // E2E build: sync available (mock)
   await expect(chip(page)).toContainText('Offline');
   await banner.getByRole('button', { name: 'Thu gọn thông báo offline' }).click();
   await expect(banner).toHaveCount(0);
@@ -110,8 +166,9 @@ test('toast: polite live region, no focus steal, auto-hides, pauses on hover, ma
   // Auto-hide after ~4 s.
   await expect(region.getByTestId('toast')).toHaveCount(0, { timeout: 7000 });
 
-  // Max 3 stacked.
-  for (let i = 0; i < 4; i++) await trigger.click();
+  // Max 3 stacked (toasts with an action do not auto-hide, so the count is stable).
+  const withAction = page.getByTestId('toast-success');
+  for (let i = 0; i < 4; i++) await withAction.click();
   await expect(page.getByTestId('toast')).toHaveCount(3);
   // Close button.
   await page.getByRole('button', { name: 'Đóng thông báo' }).first().click();
@@ -141,9 +198,18 @@ test('toast with an action: "Hoàn tác" runs and dismisses', async ({ page }) =
   const count = page.getByTestId('dialog-deleted');
   await expect(count).toHaveText('Đã xóa: 0');
   await page.getByTestId('toast-success').click();
-  await page.getByRole('button', { name: 'Hoàn tác', exact: true }).click();
-  await expect(count).toHaveText('Đã xóa: -1');
+  await expect(count).toHaveText('Đã xóa: 1');
+  // An action toast waits for the user (WCAG 2.2.1): still there after the 4 s timeout.
+  await page.mouse.move(0, 0);
+  await page.waitForTimeout(4500);
+  const undo = page.getByRole('button', { name: 'Hoàn tác', exact: true });
+  await expect(undo).toBeVisible();
+  await undo.focus();
+  await page.keyboard.press('Enter');
+  await expect(count).toHaveText('Đã xóa: 0');
   await expect(page.getByTestId('toast')).toHaveCount(0);
+  // Focus is not dropped to <body> when the focused toast goes away.
+  expect(await page.evaluate(() => document.activeElement?.tagName)).not.toBe('BODY');
 });
 
 test('dialog: focus first action, Esc closes and returns focus, confirm acts', async ({ page }) => {
@@ -159,10 +225,19 @@ test('dialog: focus first action, Esc closes and returns focus, confirm acts', a
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
   await expect(open).toBeFocused();
+  // A dialog does not add a history entry (only sheets do).
+  const before = await page.evaluate(() => history.length);
   await open.click();
+  expect(await page.evaluate(() => history.length)).toBe(before);
   await page.getByTestId('dialog-confirm-delete').click();
   await expect(dialog).toBeHidden();
   await expect(page.getByTestId('dialog-deleted')).toHaveText('Đã xóa: 1');
+  // The toast raised from inside the dialog shows once it has closed, and is not inert.
+  const toast = page.getByTestId('toast').filter({ hasText: 'Đã xóa tài liệu' });
+  await expect(toast).toBeVisible();
+  expect(await toast.evaluate((el) => el.closest('[inert]') === null)).toBe(true);
+  await toast.getByRole('button', { name: 'Đóng thông báo' }).click();
+  await expect(toast).toHaveCount(0);
 });
 
 test('dialog with unsaved input: a backdrop click does not close it; Esc does', async ({
