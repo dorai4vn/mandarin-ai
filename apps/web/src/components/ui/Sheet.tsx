@@ -122,11 +122,19 @@ export function Sheet({
           : 'm-auto w-[calc(100%-2rem)] max-w-[480px] rounded-panel'
       }`}
     >
-      <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 md:p-6">
-        <div
-          aria-hidden
-          className="mx-auto mb-3 h-1 w-10 rounded-full bg-line-strong/40 md:hidden"
-        />
+      <div
+        className={
+          variant === 'sheet'
+            ? 'px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 md:p-6'
+            : 'p-5 md:p-6'
+        }
+      >
+        {variant === 'sheet' && (
+          <div
+            aria-hidden
+            className="mx-auto mb-3 h-1 w-10 rounded-full bg-line-strong/40 md:hidden"
+          />
+        )}
         <div className="mb-2 flex items-start justify-between gap-3">
           <h2 id={`${id}-title`} className="text-lg font-semibold leading-[26px]">
             {title}

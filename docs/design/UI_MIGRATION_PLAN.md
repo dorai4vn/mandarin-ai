@@ -202,6 +202,15 @@ Breakpoint D-039:
 
 Thêm Sheet trên `<dialog>`. Đã sửa FU-1 (tràn ngang 320 px). Thêm project E2E 320×568, 844×390, 1024×768. Chi tiết: `docs/design/UI3_REPORT.md`.
 
+### UI-4 — Trạng thái & phản hồi · nhánh `feat/ui-4-feedback`
+
+- **Sync Indicator:** logic G1 và testid giữ nguyên, thêm popover "Đồng bộ ngay".
+- **Offline banner:** lời nhắn trung thực theo trạng thái sync.
+- **Toast:** vùng `aria-live`, không lấy focus.
+- **Dialog:** dựa trên Sheet / `<dialog>`.
+
+Chi tiết: `docs/design/UI4_REPORT.md`.
+
 ### Follow-up phát hiện trong UI-1 (không sửa — ngoài phạm vi)
 
 | ID   | Vấn đề                                                                                                                                                                                                         | Đề xuất                                                 |
