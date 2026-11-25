@@ -78,6 +78,7 @@ export default defineConfig({
         [
           ['small', { width: 320, height: 568 }, 'mobile'],
           ['landscape', { width: 844, height: 390 }, 'mobile'],
+          ['phone-low', { width: 740, height: 360 }, 'mobile'],
           ['laptop', { width: 1024, height: 768 }, 'desktop'],
         ] as const
       ).map(([name, viewport, like]) => {

@@ -63,6 +63,9 @@ export function SyncIndicator({
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  // Compact (collapsed sidebar): the popover is `fixed` beside the pill so the scrolling sidebar
+  // (overflow) cannot clip it.
+  const [fixedAt, setFixedAt] = useState<{ left: number; bottom: number } | null>(null);
   const id = useId();
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -127,7 +130,13 @@ export function SyncIndicator({
         data-sync-state={state}
         aria-expanded={open}
         aria-controls={`${id}-panel`}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          if (compact && trigger.current) {
+            const r = trigger.current.getBoundingClientRect();
+            setFixedAt({ left: r.right + 8, bottom: window.innerHeight - r.bottom });
+          }
+          setOpen((v) => !v);
+        }}
         className={`inline-flex h-7 min-w-7 items-center justify-center gap-1.5 rounded-full border border-line bg-surface text-xs font-medium text-fg hover:bg-[var(--state-hover)] ${compact ? 'w-7 px-0' : 'w-fit px-2.5'} before:absolute before:-inset-2 before:content-[''] relative`}
       >
         <span aria-hidden className={`size-2 shrink-0 rounded-full ${DOT[state]}`} />
@@ -142,7 +151,8 @@ export function SyncIndicator({
         aria-label="Trạng thái đồng bộ"
         hidden={!open}
         data-testid="sync-popover"
-        className={`absolute z-40 mt-2 w-64 rounded-card border border-line bg-surface p-4 text-sm shadow-lg ${compact ? 'bottom-0 left-full ml-2' : align === 'end' ? 'right-0 top-full' : 'left-0 bottom-full mb-2'}`}
+        style={compact && fixedAt ? { left: fixedAt.left, bottom: fixedAt.bottom } : undefined}
+        className={`z-40 w-64 rounded-card border border-line bg-surface p-4 text-sm shadow-lg ${compact ? 'fixed' : align === 'end' ? 'absolute right-0 top-full mt-2' : 'absolute bottom-full left-0 mb-2'}`}
       >
         <p className="mb-2 font-semibold text-fg">{text}</p>
         {localOnly && <p className="mb-2 text-fg-muted">{SYNC_DISABLED_MESSAGE}</p>}

@@ -50,7 +50,7 @@ export default function SessionLab() {
       <div className="grid gap-4 xl:grid-cols-2">
         <Card title="Đăng nhập">
           {!sb ? (
-            <p role="alert" data-testid="login-blocked">
+            <p role="alert" data-testid="login-blocked" className="[overflow-wrap:anywhere]">
               BLOCKED — chưa cấu hình dự án Supabase (NEXT_PUBLIC_SUPABASE_URL /
               NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).
             </p>

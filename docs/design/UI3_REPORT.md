@@ -56,3 +56,38 @@ Thay mốc 1280 của M0 (D-030). Nhãn điều hướng giữ nguyên nhãn M0 
 - **Menu tài khoản, Đăng xuất**: M1.
 - **Logo mới**: UI-7B.
 - **Phím tắt desktop**: sau.
+
+## Review độc lập (PR #13) và xử lý
+
+**Kết quả review: 0 Critical, 5 Important, ~15 Minor.** Đã sửa cả 5 Important:
+
+1. **Safe-area khi xoay ngang:** cột sidebar, padding của rail và lề phải nội dung cộng thêm `env(safe-area-inset-*)`.
+2. **Lựa chọn sidebar đã nhớ bị nháy khi tải lại:**
+   - Script inline trong `app/layout.tsx` đặt `data-sidebar` trên `<html>` trước lần vẽ đầu; CSS đọc thuộc tính đó.
+   - Hai nhãn nút được render sẵn và CSS chọn nhãn đúng, nên đúng cả trước hydration. `aria-expanded` chỉ đặt sau hydration.
+   - Test: tải lại khi **chặn JavaScript** vẫn ra đúng độ rộng và nhãn. Kiểm thử đột biến: bỏ script → FAIL.
+3. **Điều hướng từ sheet để lại mục lịch sử thừa:**
+   - Link trong sheet dùng `replace`.
+   - Chỉ coi là "đang điều hướng" khi bấm chuột trái thường tới trang khác.
+   - Test kiểm `history.length` không tăng, Back rồi Forward đúng, `history.state.sheet` được xóa sau `Esc`.
+4. **Thanh điều hướng có thể bị ẩn mãi:**
+   - Kiểm lại khi đổi route, và khi `visualViewport` lớn lại (bàn phím đóng mà ô nhập không mất focus).
+   - Chỉ ô nhập mới bật trạng thái ẩn ngay; việc tắt luôn qua hẹn giờ 250 ms. Cách hiện thực đầu tiên theo gợi ý của review đã làm quay lại lỗi che nút mật khẩu; test phát hiện và đã chỉnh.
+5. **Sync chip ở dạng thu gọn không vừa 72 px:** chỉ hiện chấm màu; chữ trạng thái và mô tả vẫn dành cho trình đọc màn hình. Có test chế độ offline.
+
+**Minor đã sửa:**
+
+- Nhãn nút thu gọn không còn bị đọc hai lần.
+- Sheet trả lại giá trị `overflow` cũ và dọn dẹp khi unmount.
+- Mục sidebar khi mở rộng chiếm cả hàng.
+- Tooltip bên phải bỏ class `absolute` thừa.
+- `/lab/session` ngắt chuỗi dài, nên FU-1 đã đóng hẳn.
+- Thêm project `phone-low` 740×360 để kiểm bottom nav ở màn hình thấp.
+
+**Minor còn mở:**
+
+- Bottom nav cao 56 px thay vì 64 px.
+- Chạm lại tab đang chọn chưa cuộn về đầu trang.
+- Chưa có chuyển động mở rộng sidebar và mở sheet.
+- Sheet lồng nhau.
+- Tooltip vẫn hiện khi trigger cuộn ra khỏi sidebar.

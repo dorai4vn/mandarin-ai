@@ -53,6 +53,15 @@ test('desktop sidebar: collapsed below 1280, expanded from 1280; toggle is remem
   );
   await expect.poll(sideWidth).toBe(wide ? 72 : 248);
   await expect(page.getByTestId('sidebar-toggle')).toHaveAttribute('aria-expanded', String(!wide));
+  // No flash: the server HTML + inline script already lay the remembered width out before React.
+  // JavaScript blocked (CSS still loads): what the user sees before hydration.
+  await page.route(/\/_next\/static\/chunks\/.*\.js/, (r) => r.abort());
+  await page.reload();
+  expect(await sideWidth()).toBe(wide ? 72 : 248);
+  await expect(page.getByTestId('sidebar-toggle')).toContainText(
+    wide ? 'Mở rộng thanh bên' : 'Thu gọn thanh bên',
+  );
+  await page.unroute(/\/_next\/static\/chunks\/.*\.js/);
   await expectNoHorizontalScroll(page);
 });
 
@@ -123,6 +132,8 @@ test('phone: 5 bottom items; "Thêm" sheet opens, focuses, and closes by Esc, ba
   await page.keyboard.press('Escape');
   await expect(sheet).toBeHidden();
   await expect(more).toBeFocused(); // focus returns to the opener
+  // The sheet's history entry was dropped.
+  await expect.poll(() => page.evaluate(() => history.state?.sheet ?? null)).toBeNull();
   const url = page.url();
   // Backdrop click (top of the screen, outside the sheet)
   await more.click();
@@ -138,7 +149,14 @@ test('phone: 5 bottom items; "Thêm" sheet opens, focuses, and closes by Esc, ba
   expect(page.url()).toBe(url);
   // Navigating from the sheet
   await more.click();
+  const historyLength = await page.evaluate(() => history.length);
   await sheet.getByRole('link', { name: 'Phòng thử M0', exact: true }).click();
+  await expect(page).toHaveURL(/\/lab$/);
+  // The navigation replaced the sheet's own entry: no dead entry, Back returns to the page.
+  expect(await page.evaluate(() => history.length)).toBe(historyLength);
+  await page.goBack();
+  await expect(page).toHaveURL(url);
+  await page.goForward();
   await expect(page).toHaveURL(/\/lab$/);
   await expect(sheet).toBeHidden();
   await expect(page.getByTestId('nav-more')).toHaveAttribute('aria-expanded', 'false');
@@ -173,4 +191,23 @@ test('phone landscape / low height: navigation still fully reachable', async ({ 
     await expect(links.nth(i)).toBeInViewport();
   }
   await expectNoHorizontalScroll(page);
+});
+
+test('collapsed bars show the sync status as a dot only (fits 72 px), text stays accessible', async ({
+  page,
+  context,
+}) => {
+  const cls = deviceClass(page);
+  test.skip(cls === 'phone', 'no sidebar on phones');
+  await hydrated(page);
+  if (cls === 'desktop' && width(page) >= 1280) await page.getByTestId('sidebar-toggle').click();
+  const bar = page.getByTestId(cls === 'tablet' ? 'nav-rail' : 'nav-sidebar');
+  await context.setOffline(true);
+  const c = bar.getByTestId('sync-chip').filter({ visible: true });
+  await expect(c).toContainText('Offline'); // screen-reader text
+  const b = (await c.boundingBox())!;
+  const barBox = (await bar.boundingBox())!;
+  expect(b.width).toBeLessThanOrEqual(32);
+  expect(b.x + b.width).toBeLessThanOrEqual(barBox.x + barBox.width);
+  await context.setOffline(false);
 });
