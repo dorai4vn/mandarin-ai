@@ -72,6 +72,17 @@ test('collapsed sidebar shows the label as a tooltip on keyboard focus', async (
   const tip = page.locator(`[id="${(await link.getAttribute('aria-describedby'))!}"]`);
   await expect(tip).toBeVisible();
   await expect(tip).toHaveText('Thư viện');
+  // Fully visible beside the bar — not clipped by the sidebar's scroll container.
+  const l = (await link.boundingBox())!;
+  const b = (await tip.boundingBox())!;
+  expect(b.x).toBeGreaterThanOrEqual(l.x + l.width - 1);
+  expect(b.width).toBeGreaterThan(40);
+  const visibleWidth = await tip.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const hit = document.elementFromPoint(r.left + r.width - 6, r.top + r.height / 2);
+    return el.contains(hit);
+  });
+  expect(visibleWidth).toBe(true);
   await page.keyboard.press('Escape');
   await expect(tip).toBeHidden();
 });

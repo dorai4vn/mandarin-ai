@@ -44,6 +44,8 @@ export function Tooltip({
   const [focused, setFocused] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [shift, setShift] = useState(0);
+  // side='right' is positioned `fixed` from the trigger rect so a scrolling sidebar cannot clip it.
+  const [fixedAt, setFixedAt] = useState<{ left: number; top: number } | null>(null);
   const [placement, setPlacement] = useState<'top' | 'bottom' | 'right'>(side);
   const bubble = useRef<HTMLSpanElement>(null);
   const open = (hovered || focused) && !dismissed;
@@ -69,7 +71,12 @@ export function Tooltip({
   // scroll while open (rotation, window resize, sticky header).
   const place = useCallback(() => {
     const el = bubble.current;
-    if (!el || side === 'right') return;
+    if (!el) return;
+    if (side === 'right') {
+      const t = el.parentElement?.getBoundingClientRect();
+      if (t) setFixedAt({ left: t.right, top: t.top + t.height / 2 });
+      return;
+    }
     const margin = 8;
     const trigger = el.parentElement?.getBoundingClientRect();
     if (trigger) {
@@ -147,12 +154,12 @@ export function Tooltip({
         data-placement={placement}
         style={
           placement === 'right'
-            ? { translate: '0 -50%' }
+            ? { translate: '0 -50%', left: fixedAt?.left ?? 0, top: fixedAt?.top ?? 0 }
             : { translate: `calc(-50% + ${shift}px) 0` }
         }
         className={`${bubbleClassName} absolute z-30 w-max max-w-[min(240px,calc(100vw-16px))] ${
           placement === 'right'
-            ? 'left-full top-1/2 pl-2'
+            ? 'fixed pl-2'
             : `left-1/2 ${placement === 'top' ? 'bottom-full pb-2' : 'top-full pt-2'}`
         }`}
       >
