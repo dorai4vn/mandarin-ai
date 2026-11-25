@@ -211,6 +211,13 @@ Thêm Sheet trên `<dialog>`. Đã sửa FU-1 (tràn ngang 320 px). Thêm projec
 
 Chi tiết: `docs/design/UI4_REPORT.md`.
 
+### UI-5 — Các màn M0 trên V2 · nhánh `feat/ui-5a-learning-screens`
+
+- **Màn học:** trang chủ, luyện tập, từ điển, thư viện, hồ sơ — nội dung trung thực, không số liệu giả.
+- **Màn Lab:** đăng nhập, tải PDF, viết tay, ghi âm theo §21–§23; X1 giữ nguyên.
+
+Chi tiết: `docs/design/UI5_REPORT.md`.
+
 ### Follow-up phát hiện trong UI-1 (không sửa — ngoài phạm vi)
 
 | ID   | Vấn đề                                                                                                                                                                                                         | Đề xuất                                                 |
@@ -218,7 +225,7 @@ Chi tiết: `docs/design/UI4_REPORT.md`.
 | FU-1 | **Đã sửa ở UI-3.** Tràn ngang ở 320 px **có từ M0** (đo trên `main`): `/lab` 23 px (bảng khả năng), `/lab/offline` 73 px (khối trạng thái; V2 giảm còn 59 px); `/lab/session` 93 px khi chưa cấu hình Supabase | Sửa trong UI-3/UI-5 (`min-w-0`, xuống dòng chuỗi dài)   |
 | FU-2 | `public/offline.html` đã đổi màu V2 nhưng thiết bị đã cài giữ bản cũ trong cache của service worker tới lần đổi phiên bản SW; câu "Dữ liệu học chưa gửi sẽ tự đồng bộ khi có mạng" chưa đúng khi sync đang tắt | PR có phạm vi SW riêng (bump `VERSION`) + sửa nội dung  |
 | FU-3 | M0 có dark mode theo hệ thống; UI-1 chỉ Light → người dùng đặt hệ điều hành ở chế độ tối thấy giao diện sáng (đã chấp nhận, D-039 quyết định 5)                                                                | UI-6 Dark mode                                          |
-| FU-4 | Alias token M0 còn trong code                                                                                                                                                                                  | Thay dần (UI-2→UI-5), xóa ở UI-8                        |
+| FU-4 | Alias token M0 còn trong code                                                                                                                                                                                  | Đã thay hết trong trang (UI-5); xóa định nghĩa ở UI-8   |
 | FU-5 | Chữ Hán trong nội dung người dùng nhập (ghi chú offline) và placeholder `Ví dụ: 山 = núi` không gắn `lang` theo đoạn                                                                                           | Tách đoạn tự động khi làm Input/HanziText ở UI-2+       |
 | FU-6 | Thang radius V2 (12/16/20/24) chưa áp vào thang Tailwind (giữ để không đổi hình logo/thành phần)                                                                                                               | **Đã xong ở UI-2** (`rounded-control/card/panel/sheet`) |
 | FU-7 | E2E upload kéo-thả lỗi không ổn định — nguyên nhân gốc: 429 của bộ giới hạn IP thiếu CORS (trình duyệt báo "không kết nối được") + mọi trình duyệt E2E chung IP 127.0.0.1 dưới mức 300/phút                    | **Đã sửa** — PR #12 (merge `c759a76`), issue #6 đã đóng |

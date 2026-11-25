@@ -138,9 +138,14 @@ export default function AudioLab() {
             <>
               <p className="text-sm text-fg-muted" data-testid="mic-permission">
                 Quyền micro:{' '}
-                {permission === 'unknown'
-                  ? 'chưa rõ (trình duyệt sẽ hỏi khi bạn bấm ghi)'
-                  : permission}
+                {
+                  {
+                    unknown: 'chưa rõ (trình duyệt sẽ hỏi khi bạn bấm ghi)',
+                    prompt: 'chưa cấp (trình duyệt sẽ hỏi khi bạn bấm ghi)',
+                    granted: 'đã cho phép',
+                    denied: 'bị từ chối',
+                  }[permission]
+                }
               </p>
               {permission === 'denied' && (
                 <p className="mt-2 rounded-control bg-error-subtle p-3 text-sm text-error-strong">
