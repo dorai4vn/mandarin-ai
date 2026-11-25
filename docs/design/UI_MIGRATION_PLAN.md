@@ -192,11 +192,21 @@ Quy tắc cho mọi PR UI: phạm vi rõ, checklist QC (mục 8) và kết quả
 
 Xem `docs/design/UI2B_PLAN.md` (Tabs, ProgressBar/Ring, Skeleton, EmptyState/ErrorState, Tooltip, PageHeader V2 + Minor của UI-2). Báo cáo triển khai: `docs/design/UI2B_REPORT.md` (PR #9).
 
+### UI-3 — Shell & breakpoint · nhánh `feat/ui-3-shell`
+
+Breakpoint D-039:
+
+- phone < 768: top bar + bottom nav 5 mục, có sheet "Thêm";
+- tablet 768–1023: sidebar thu gọn;
+- desktop ≥ 1024: sidebar thu gọn ở 1024–1279, mở rộng từ 1280, người dùng đổi được và lựa chọn được ghi nhớ.
+
+Thêm Sheet trên `<dialog>`. Đã sửa FU-1 (tràn ngang 320 px). Thêm project E2E 320×568, 844×390, 1024×768. Chi tiết: `docs/design/UI3_REPORT.md`.
+
 ### Follow-up phát hiện trong UI-1 (không sửa — ngoài phạm vi)
 
 | ID   | Vấn đề                                                                                                                                                                                                         | Đề xuất                                                 |
 | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| FU-1 | Tràn ngang ở 320 px **có từ M0** (đo trên `main`): `/lab` 23 px (bảng khả năng), `/lab/offline` 73 px (khối trạng thái; V2 giảm còn 59 px); `/lab/session` 93 px khi chưa cấu hình Supabase                    | Sửa trong UI-3/UI-5 (`min-w-0`, xuống dòng chuỗi dài)   |
+| FU-1 | **Đã sửa ở UI-3.** Tràn ngang ở 320 px **có từ M0** (đo trên `main`): `/lab` 23 px (bảng khả năng), `/lab/offline` 73 px (khối trạng thái; V2 giảm còn 59 px); `/lab/session` 93 px khi chưa cấu hình Supabase | Sửa trong UI-3/UI-5 (`min-w-0`, xuống dòng chuỗi dài)   |
 | FU-2 | `public/offline.html` đã đổi màu V2 nhưng thiết bị đã cài giữ bản cũ trong cache của service worker tới lần đổi phiên bản SW; câu "Dữ liệu học chưa gửi sẽ tự đồng bộ khi có mạng" chưa đúng khi sync đang tắt | PR có phạm vi SW riêng (bump `VERSION`) + sửa nội dung  |
 | FU-3 | M0 có dark mode theo hệ thống; UI-1 chỉ Light → người dùng đặt hệ điều hành ở chế độ tối thấy giao diện sáng (đã chấp nhận, D-039 quyết định 5)                                                                | UI-6 Dark mode                                          |
 | FU-4 | Alias token M0 còn trong code                                                                                                                                                                                  | Thay dần (UI-2→UI-5), xóa ở UI-8                        |
