@@ -15,6 +15,7 @@ import {
   HanziLookupRecognizer,
   OpenAIRealtimeSessions,
   SupabaseObjectStorage,
+  SupabaseSyncStore,
 } from '@mandarin/adapters/server';
 import type { AppConfig } from './config.js';
 
@@ -23,7 +24,7 @@ export interface Providers {
   pronunciation: { port: PronunciationAssessmentPort; mode: 'live' | 'mock' } | null;
   handwriting: { port: HandwritingRecognitionPort; mode: 'live' | 'mock' } | null;
   storage: ObjectStoragePort | null;
-  /** M0: in-memory (mock) until the Postgres sync_operations table lands in M1. */
+  /** M1: Postgres `sync_operations` via PostgREST as the user (live); memory mock in dev only. */
   sync: SyncOperationStore | null;
 }
 
@@ -69,7 +70,15 @@ export function createProviders(config: AppConfig): Providers {
         : allowStatefulMock
           ? new MemoryObjectStorage()
           : null,
-    sync: allowStatefulMock ? new MemorySyncOperationStore() : null,
+    sync:
+      config.SUPABASE_URL && config.SUPABASE_PUBLISHABLE_KEY
+        ? new SupabaseSyncStore({
+            url: config.SUPABASE_URL,
+            publishableKey: config.SUPABASE_PUBLISHABLE_KEY,
+          })
+        : allowStatefulMock
+          ? new MemorySyncOperationStore()
+          : null,
   };
 }
 

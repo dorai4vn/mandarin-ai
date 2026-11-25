@@ -143,7 +143,7 @@ jobs:
         run: pnpm prebuild:ios
 
   database:
-    name: Supabase migrations + RLS + invite-only Auth + Storage limit tests
+    name: Supabase migrations + RLS + invite-only Auth + data isolation + Storage limit tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -164,7 +164,9 @@ jobs:
         run: pnpm exec supabase db lint --level warning --fail-on error
       - name: Auth is invite-only, e-mail + password (real local GoTrue, no dev token — D-038)
         run: node scripts/test-auth-invite-only.mjs
-      - name: Build the storage adapter used by the API
-        run: pnpm turbo run build --filter "@mandarin/adapters..."
+      - name: Build the API and its adapters
+        run: pnpm turbo run build --filter "@mandarin/api..."
+      - name: Data isolation + exactly-once sync (two real accounts, real API, PostgREST — M1/D-042)
+        run: node scripts/test-data-isolation.mjs
       - name: PDF limit 50 MB on real Supabase Storage (D-040)
         run: node scripts/test-storage-upload-limit.mjs

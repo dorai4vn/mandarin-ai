@@ -5,11 +5,13 @@ import {
   PDF_UPLOAD_LIMITS,
   checkPdfSize,
   PronunciationAssessmentRequestSchema,
+  SyncPullQuerySchema,
   SyncPushRequestSchema,
   looksLikePdf,
   type ApiError,
   type HealthResponse,
   type PdfUploadResult,
+  type SyncPullResponse,
   type SyncPushResponse,
 } from '@mandarin/contracts';
 import { createHash, randomUUID } from 'node:crypto';
@@ -114,6 +116,14 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
     }
   };
 
+  // The database rejected the user's token (expired between our check and the call) → 401 so the
+  // client refreshes its session; anything else is an upstream failure (never "synced", G1).
+  const syncFailure = (reply: FastifyReply, e: unknown) => {
+    if (e instanceof ProviderError && e.code === 'unauthorized')
+      return reply.code(401).send(err('unauthenticated', 'Invalid or expired token'));
+    return providerFailure(reply, e);
+  };
+
   const providerFailure = (reply: FastifyReply, e: unknown) => {
     if (e instanceof ProviderError) {
       app.log.warn({ provider: e.provider, code: e.code, status: e.status }, 'provider error');
@@ -187,6 +197,12 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
     return providers.handwriting.port.recognize(parsed.data);
   });
 
+  const syncCaller = (req: FastifyRequest) => ({
+    userId: req.user!.id,
+    // requireUser verified this exact token; the store forwards it so RLS runs as the user.
+    accessToken: req.headers.authorization!.slice('Bearer '.length),
+  });
+
   app.post(
     '/v1/sync/push',
     { preHandler: requireUser },
@@ -196,12 +212,36 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
         return reply.code(400).send(err('invalid_request', 'Body does not match contract'));
       if (!providers.sync)
         return reply.code(503).send(err('provider_unavailable', 'Sync store is not configured'));
-      const results = [];
-      for (const op of parsed.data.operations) {
-        const r = await providers.sync.apply(req.user!.id, op);
-        results.push({ operationId: op.operationId, ...r });
+      try {
+        const results = await providers.sync.push(syncCaller(req), parsed.data.operations);
+        return { source: providers.sync.mode, results };
+      } catch (e) {
+        return syncFailure(reply, e);
       }
-      return { source: providers.sync.mode, results };
+    },
+  );
+
+  app.get(
+    '/v1/sync/pull',
+    { preHandler: requireUser },
+    async (req, reply): Promise<SyncPullResponse | void> => {
+      const parsed = SyncPullQuerySchema.safeParse(req.query);
+      if (!parsed.success)
+        return reply.code(400).send(err('invalid_request', 'Query does not match contract'));
+      if (!providers.sync)
+        return reply.code(503).send(err('provider_unavailable', 'Sync store is not configured'));
+      const { after, limit } = parsed.data;
+      try {
+        const { operations, hasMore } = await providers.sync.pull(syncCaller(req), after, limit);
+        return {
+          source: providers.sync.mode,
+          operations,
+          nextAfter: operations.at(-1)?.serverSeq ?? after,
+          hasMore,
+        };
+      } catch (e) {
+        return syncFailure(reply, e);
+      }
     },
   );
 

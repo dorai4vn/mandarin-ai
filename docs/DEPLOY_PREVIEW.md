@@ -60,6 +60,7 @@ Lấy giá trị ở **Project Settings → API Keys** (Project URL, publishable
 | `SUPABASE_URL` | cấu hình — **bắt buộc** | Project URL (2.1), phải là `https://` — API lấy khóa công khai (JWKS) từ đây và kiểm tra `iss = <Project URL>/auth/v1`; thiếu → API không khởi động |
 | `WEB_ORIGINS` | cấu hình | URL Vercel cố định của branch, ví dụ `https://mandarin-ai-git-claude-m0-pwa-<team>.vercel.app` |
 | `WEB_ORIGIN_REGEX` | cấu hình (tùy chọn) | `^https://mandarin-ai-[a-z0-9-]+-<team>\.vercel\.app$` — thay `<team>` bằng slug team Vercel của anh/chị |
+| `SUPABASE_PUBLISHABLE_KEY` | công khai | (M1) Publishable key `sb_publishable_…` (cùng giá trị với `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` của Vercel). Bật **đồng bộ đám mây thật**: API ghi/đọc bảng `sync_operations` bằng **token của chính người dùng** (RLS). Thiếu → `/health` báo sync `disabled`, dữ liệu chỉ lưu trên thiết bị. **Áp migration `supabase/migrations/20261125100000_m1_sync_operations.sql` lên dự án trước khi đặt biến này.** |
 | `SUPABASE_SECRET_KEY` | **BÍ MẬT** | Secret key `sb_secret_…` (2.1) — để upload PDF vào bucket private. (Tên cũ `SUPABASE_SERVICE_ROLE_KEY` vẫn được chấp nhận) |
 | `STORAGE_BUCKET` | cấu hình | `documents` |
 | `HANDWRITING_ADAPTER` | cấu hình | **`disabled`** (D-029: `hanzilookup` bị API từ chối ngoài development) |
