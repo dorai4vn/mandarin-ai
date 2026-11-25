@@ -14,7 +14,9 @@ import type {
   HandwritingRecognitionPort,
   ObjectStoragePort,
   PronunciationAssessmentPort,
+  SyncCaller,
   SyncOperationStore,
+  SyncPushResult,
 } from '../ports.js';
 
 /**
@@ -117,8 +119,8 @@ export class MemoryObjectStorage implements ObjectStoragePort {
 }
 
 /**
- * In-memory idempotent sync store (MOCK until the Postgres `sync_operations` table lands in M1).
- * Same semantics as the planned `operation_id UNIQUE` constraint.
+ * In-memory sync store (MOCK, local development / E2E only). Same semantics as the Postgres
+ * `sync_operations` table + `sync_push()` (M1): globally unique operation ids, per-user pull order.
  */
 export class MemorySyncOperationStore implements SyncOperationStore {
   readonly mode = 'mock' as const;
@@ -128,19 +130,42 @@ export class MemorySyncOperationStore implements SyncOperationStore {
   /** Bounded so a public preview cannot be used to exhaust server memory. Lost on restart. */
   constructor(private readonly maxOperations = 10_000) {}
 
-  async apply(userId: string, op: SyncOperation) {
-    const existing = this.ops.get(op.operationId);
-    if (existing) {
-      return existing.userId === userId
-        ? { status: 'duplicate' as const, serverVersion: existing.version, error: null }
-        : { status: 'rejected' as const, serverVersion: null, error: 'operation_id_conflict' };
-    }
-    if (this.ops.size >= this.maxOperations) {
-      return { status: 'rejected' as const, serverVersion: null, error: 'mock_store_full' };
-    }
-    this.version += 1;
-    this.ops.set(op.operationId, { userId, op, version: this.version });
-    return { status: 'applied' as const, serverVersion: this.version, error: null };
+  async push(caller: SyncCaller, ops: SyncOperation[]): Promise<SyncPushResult[]> {
+    return ops.map((op) => {
+      const base = { operationId: op.operationId };
+      const existing = this.ops.get(op.operationId);
+      if (existing) {
+        return existing.userId === caller.userId
+          ? { ...base, status: 'duplicate' as const, serverVersion: existing.version, error: null }
+          : {
+              ...base,
+              status: 'rejected' as const,
+              serverVersion: null,
+              error: 'operation_id_conflict',
+            };
+      }
+      if (this.ops.size >= this.maxOperations) {
+        return {
+          ...base,
+          status: 'rejected' as const,
+          serverVersion: null,
+          error: 'mock_store_full',
+        };
+      }
+      this.version += 1;
+      this.ops.set(op.operationId, { userId: caller.userId, op, version: this.version });
+      return { ...base, status: 'applied' as const, serverVersion: this.version, error: null };
+    });
+  }
+
+  async pull(caller: SyncCaller, after: number, limit: number) {
+    const mine = [...this.ops.values()]
+      .filter((o) => o.userId === caller.userId && o.version > after)
+      .sort((a, b) => a.version - b.version);
+    return {
+      operations: mine.slice(0, limit).map((o) => ({ ...o.op, serverSeq: o.version })),
+      hasMore: mine.length > limit,
+    };
   }
 
   countFor(userId: string): number {

@@ -1,4 +1,9 @@
-import { SYNC_MAX_BATCH, type SyncOperation, type SyncPushResponse } from '@mandarin/contracts';
+import {
+  SYNC_MAX_BATCH,
+  type SyncOperation,
+  type SyncPullResponse,
+  type SyncPushResponse,
+} from '@mandarin/contracts';
 import { nextBatch, reconcile } from '@mandarin/domain';
 import type { LocalStore } from './store';
 import type { SyncAvailability } from './sync-availability';
@@ -8,11 +13,14 @@ export interface SyncSummary {
   duplicate: number;
   rejected: number;
   retried: number;
+  /** Operations received from the server (other devices of the same account). */
+  pulled: number;
   source: 'live' | 'mock' | null;
   error: string | null;
 }
 
 export type PushFn = (ops: SyncOperation[]) => Promise<SyncPushResponse>;
+export type PullFn = (after: number) => Promise<SyncPullResponse>;
 
 /** Optional gate: never push while the server reports sync as not enabled (M0 Preview, D-035). */
 export interface SyncGate {
@@ -52,6 +60,11 @@ export class SyncEngine {
      */
     private readonly acceptMockAcks = false,
     private readonly gate?: SyncGate,
+    /**
+     * M1: `pull` brings the account's operations from other devices; `lockName` scopes the
+     * cross-tab lock to one account so two accounts never share a sync run.
+     */
+    private readonly options: { pull?: PullFn; lockName?: string } = {},
   ) {}
 
   private forceCheck = false;
@@ -72,8 +85,10 @@ export class SyncEngine {
     const run = () => this.runOnce();
     this.running = (
       this.locks
-        ? this.locks.request('mandarin-sync', { ifAvailable: true }, (lock) =>
-            lock ? run() : Promise.resolve(empty(null)),
+        ? this.locks.request(
+            this.options.lockName ?? 'mandarin-sync',
+            { ifAvailable: true },
+            (lock) => (lock ? run() : Promise.resolve(empty(null))),
           )
         : run()
     ).finally(() => {
@@ -85,8 +100,9 @@ export class SyncEngine {
   private async runOnce(): Promise<SyncSummary> {
     const summary = empty(null);
     if (this.gate) {
-      // Nothing queued → nothing to ask the server (no request at all).
-      if (nextBatch(await this.store.listOutbox(), 1).length === 0) return summary;
+      // Nothing queued and nothing to pull → nothing to ask the server (no request at all).
+      if (!this.options.pull && nextBatch(await this.store.listOutbox(), 1).length === 0)
+        return summary;
       const force = this.forceCheck;
       this.forceCheck = false;
       const availability = await this.gate.check(force);
@@ -138,7 +154,25 @@ export class SyncEngine {
       summary.retried += rec.retry.length;
       if (rec.retry.length > 0) break;
     }
+    if (this.options.pull && !summary.error) await this.pullAll(summary);
     return summary;
+  }
+
+  /** Pulls the account's operations after the stored cursor, page by page (bounded). */
+  private async pullAll(summary: SyncSummary) {
+    for (let page = 0; page < 20; page++) {
+      let res: SyncPullResponse;
+      try {
+        res = await this.options.pull!(await this.store.pullCursor());
+      } catch (e) {
+        summary.error = e instanceof Error ? e.message : String(e);
+        return;
+      }
+      summary.source ??= res.source;
+      await this.store.applyPulled(res.operations, res.nextAfter);
+      summary.pulled += res.operations.length;
+      if (!res.hasMore) return;
+    }
   }
 }
 
@@ -147,6 +181,7 @@ const empty = (source: SyncSummary['source']): SyncSummary => ({
   duplicate: 0,
   rejected: 0,
   retried: 0,
+  pulled: 0,
   source,
   error: null,
 });

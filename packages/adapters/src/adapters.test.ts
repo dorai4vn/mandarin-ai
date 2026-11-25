@@ -10,6 +10,7 @@ import {
   AzurePronunciationAssessment,
   OpenAIRealtimeSessions,
   SupabaseObjectStorage,
+  SupabaseSyncStore,
   storageAuthHeaders,
   buildPronunciationHeader,
   mapAzureResponse,
@@ -139,27 +140,126 @@ describe('cross-platform handwriting + sync/storage mocks', () => {
     expect(r.candidates).toHaveLength(2);
   });
 
+  const op = {
+    operationId: '01JD8Z6Q9K2V4N7P3R5T8W1Y0A',
+    deviceId: 'device-12345678',
+    entityType: 'spike_note',
+    opType: 'create' as const,
+    schemaVersion: 1,
+    logicalClock: 1,
+    occurredAt: '2026-11-23T10:00:00+07:00',
+    payload: {},
+  };
+  const A = { userId: 'user-a', accessToken: 'token-a' };
+  const B = { userId: 'user-b', accessToken: 'token-b' };
+
   it('memory sync store is idempotent per operation id and rejects cross-user reuse', async () => {
     const store = new MemorySyncOperationStore();
-    const op = {
-      operationId: '01JD8Z6Q9K2V4N7P3R5T8W1Y0A',
-      deviceId: 'device-12345678',
-      entityType: 'spike_note',
-      opType: 'create' as const,
-      schemaVersion: 1,
-      logicalClock: 1,
-      occurredAt: '2026-11-23T10:00:00+07:00',
-      payload: {},
-    };
-    expect((await store.apply('user-a', op)).status).toBe('applied');
-    expect((await store.apply('user-a', op)).status).toBe('duplicate');
-    expect((await store.apply('user-b', op)).status).toBe('rejected');
+    expect((await store.push(A, [op]))[0]!.status).toBe('applied');
+    expect((await store.push(A, [op]))[0]!.status).toBe('duplicate');
+    const rej = (await store.push(B, [op]))[0]!;
+    expect(rej).toMatchObject({ status: 'rejected', serverVersion: null });
     expect(store.countFor('user-a')).toBe(1);
     const tiny = new MemorySyncOperationStore(1);
-    await tiny.apply('u', op);
+    await tiny.push(A, [op]);
     expect(
-      (await tiny.apply('u', { ...op, operationId: '01JD8Z6Q9K2V4N7P3R5T8W1Y0Z' })).error,
+      (await tiny.push(A, [{ ...op, operationId: '01JD8Z6Q9K2V4N7P3R5T8W1Y0Z' }]))[0]!.error,
     ).toBe('mock_store_full');
+  });
+
+  it("memory sync store pulls only the caller's operations, in order, with a cursor", async () => {
+    const store = new MemorySyncOperationStore();
+    const ids = [
+      '01JD8Z6Q9K2V4N7P3R5T8W1Y01',
+      '01JD8Z6Q9K2V4N7P3R5T8W1Y02',
+      '01JD8Z6Q9K2V4N7P3R5T8W1Y03',
+    ];
+    await store.push(A, [{ ...op, operationId: ids[0]! }]);
+    await store.push(B, [{ ...op, operationId: ids[1]! }]);
+    await store.push(A, [{ ...op, operationId: ids[2]! }]);
+    const first = await store.pull(A, 0, 1);
+    expect(first.operations.map((o) => o.operationId)).toEqual([ids[0]]);
+    expect(first.hasMore).toBe(true);
+    const rest = await store.pull(A, first.operations[0]!.serverSeq, 10);
+    expect(rest.operations.map((o) => o.operationId)).toEqual([ids[2]]);
+    expect(rest.hasMore).toBe(false);
+    expect((await store.pull(B, 0, 10)).operations.map((o) => o.operationId)).toEqual([ids[1]]);
+  });
+
+  it('supabase sync store calls PostgREST with the USER token and the publishable key only', async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      calls.push({ url, init: init! });
+      if (url.includes('/rpc/sync_push')) {
+        return Response.json([
+          { operation_id: op.operationId, status: 'applied', server_seq: 7 },
+          { operation_id: 'other', status: 'rejected', server_seq: null },
+        ]);
+      }
+      return Response.json([
+        {
+          operation_id: op.operationId,
+          device_id: op.deviceId,
+          entity_type: 'spike_note',
+          op_type: 'create',
+          schema_version: 1,
+          logical_clock: 1,
+          occurred_at: '2026-11-23T03:00:00+00:00',
+          payload: { text: 'x' },
+          server_seq: 7,
+        },
+      ]);
+    });
+    const s = new SupabaseSyncStore({
+      url: 'https://x.supabase.co/',
+      publishableKey: 'sb_publishable_test',
+      fetch: fetchMock,
+    });
+    const res = await s.push(A, [op, { ...op, operationId: '01JD8Z6Q9K2V4N7P3R5T8W1Y0B' }]);
+    expect(res).toEqual([
+      { operationId: op.operationId, status: 'applied', serverVersion: 7, error: null },
+      {
+        operationId: '01JD8Z6Q9K2V4N7P3R5T8W1Y0B',
+        status: 'rejected',
+        serverVersion: null,
+        error: 'operation_id_conflict',
+      },
+    ]);
+    const headers = calls[0]!.init.headers as Record<string, string>;
+    expect(calls[0]!.url).toBe('https://x.supabase.co/rest/v1/rpc/sync_push');
+    expect(headers.Authorization).toBe('Bearer token-a');
+    expect(headers.apikey).toBe('sb_publishable_test');
+    expect(JSON.stringify(headers)).not.toContain('sb_secret');
+
+    const pulled = await s.pull(A, 3, 1);
+    const url = new URL(calls[1]!.url);
+    expect(url.pathname).toBe('/rest/v1/sync_operations');
+    expect(url.searchParams.get('user_id')).toBe('eq.user-a');
+    expect(url.searchParams.get('server_seq')).toBe('gt.3');
+    expect(url.searchParams.get('order')).toBe('server_seq.asc');
+    expect(url.searchParams.get('limit')).toBe('2');
+    expect(pulled.operations[0]).toMatchObject({ operationId: op.operationId, serverSeq: 7 });
+    expect(pulled.hasMore).toBe(false);
+  });
+
+  it('supabase sync store maps a rejected token to 401 and other failures to provider errors', async () => {
+    const mk = (status: number) =>
+      new SupabaseSyncStore({
+        url: 'https://x.supabase.co',
+        publishableKey: 'sb_publishable_test',
+        fetch: async () => new Response('{}', { status }),
+      });
+    await expect(mk(401).push(A, [op])).rejects.toMatchObject({
+      code: 'unauthorized',
+      status: 401,
+    });
+    await expect(mk(500).pull(A, 0, 10)).rejects.toMatchObject({ code: 'failed' });
+    const short = new SupabaseSyncStore({
+      url: 'https://x.supabase.co',
+      publishableKey: 'k',
+      fetch: async () => Response.json([]),
+    });
+    await expect(short.push(A, [op])).rejects.toMatchObject({ code: 'bad_response' });
   });
 
   it('supabase storage writes to the private bucket path and rejects traversal', async () => {

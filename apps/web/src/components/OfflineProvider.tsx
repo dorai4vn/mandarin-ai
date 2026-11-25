@@ -10,7 +10,8 @@ import {
   type ReactNode,
 } from 'react';
 import { api, isProviderUnavailable } from '@/lib/api-client';
-import { openLocalStore, type LocalStore } from '@/offline/store';
+import { useAuth } from '@/lib/auth';
+import { deleteLocalDb, localDbName, openLocalStore, type LocalStore } from '@/offline/store';
 import { SyncEngine, type SyncSummary } from '@/offline/sync';
 import { SyncAvailabilityProbe, type SyncAvailability } from '@/offline/sync-availability';
 
@@ -19,7 +20,10 @@ export { SYNC_DISABLED_MESSAGE } from '@/offline/sync-message';
 export type { SyncResult } from '@/offline/sync-message';
 
 interface OfflineState {
+  /** The signed-in account's local store; null while signed out (nothing personal is open). */
   store: LocalStore | null;
+  /** True when someone is signed in (local data and sync exist). */
+  signedIn: boolean;
   online: boolean;
   pending: number;
   /** Operations the server refused — shown as an error, never as "synced" (G1). */
@@ -34,15 +38,20 @@ interface OfflineState {
    * this run did (G1: another tab may hold the sync lock, the outbox may be empty, sync may be off).
    */
   syncNow: (opts?: { force?: boolean }) => Promise<SyncResult | null>;
+  /** Sign-out (D-042): closes and DELETES the current account's local database. */
+  forgetLocalData: () => Promise<void>;
 }
 
 const Ctx = createContext<OfflineState | null>(null);
 
 /**
- * Opens the local store (IndexedDB or memory fallback) and runs sync on open, `online`,
- * tab becoming visible and every 30 s while visible (no Background Sync assumed, D-021).
+ * Local data and sync for the signed-in account (D-021, D-042). One IndexedDB per account
+ * (`mandarin-ai:<userId>`), opened only after sign-in; switching accounts closes the previous one
+ * and resets every in-memory counter before the next account's database is opened. Sync runs on
+ * open, `online`, the tab becoming visible and every 30 s while visible (no Background Sync).
  */
 export function OfflineProvider({ children }: { children: ReactNode }) {
+  const { userId } = useAuth();
   const [store, setStore] = useState<LocalStore | null>(null);
   const [online, setOnline] = useState(true);
   const [pending, setPending] = useState(0);
@@ -51,6 +60,65 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   const [syncAvailability, setSyncAvailability] = useState<SyncAvailability>('unknown');
   const engine = useRef<SyncEngine | null>(null);
   const probe = useRef<SyncAvailabilityProbe | null>(null);
+  // Dev/E2E builds only: accept acknowledgements from the in-memory MOCK sync server.
+  const acceptMock = process.env.NEXT_PUBLIC_ALLOW_MOCK_SYNC === 'true';
+
+  // Network state and the server's sync availability do not depend on who is signed in.
+  useEffect(() => {
+    const p = new SyncAvailabilityProbe(() => api.health(), { acceptMock });
+    p.onChange(setSyncAvailability);
+    probe.current = p;
+    // One GET /health (always 200) so the UI can say whether cloud sync exists at all.
+    if (navigator.onLine) void p.check();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOnline(navigator.onLine);
+    const onOnline = () => setOnline(true);
+    const onOffline = () => setOnline(false);
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
+  }, [acceptMock]);
+
+  // The account's database: opened for this userId only, closed on change/sign-out.
+  useEffect(() => {
+    // Reset first: nothing of the previous account may remain visible.
+    engine.current = null;
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setStore(null);
+    setPending(0);
+    setRejected(0);
+    setLastSync(null);
+    /* eslint-enable react-hooks/set-state-in-effect */
+    if (!userId) return;
+    let cancelled = false;
+    let opened: LocalStore | null = null;
+    void openLocalStore(localDbName(userId)).then((s) => {
+      if (cancelled) return s.close();
+      opened = s;
+      const p = probe.current!;
+      engine.current = new SyncEngine(
+        s,
+        (ops) => api.syncPush(ops),
+        undefined,
+        acceptMock,
+        {
+          check: (force) => p.check(force),
+          markUnavailable: () => p.markUnavailable(),
+          isUnavailableError: isProviderUnavailable,
+        },
+        { pull: (after) => api.syncPull(after), lockName: `mandarin-sync:${userId}` },
+      );
+      setStore(s);
+    });
+    return () => {
+      cancelled = true;
+      engine.current = null;
+      opened?.close();
+    };
+  }, [userId, acceptMock]);
 
   const count = useCallback(async () => {
     if (!store) return { pending: 0, rejected: 0 };
@@ -69,11 +137,16 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
 
   const syncNow = useCallback(
     async (opts: { force?: boolean } = {}) => {
-      if (!engine.current || !navigator.onLine) return null;
-      const s = await engine.current.syncNow(opts);
+      const e = engine.current;
+      if (!e || !navigator.onLine) return null;
+      const s = await e.syncNow(opts);
+      if (engine.current !== e) return null; // account changed meanwhile: report nothing
       // "Sync not enabled / status unknown" is not an attempt and not an error: no lastSync entry.
       const notAttempted = s.error === 'sync_unavailable' || s.error === 'sync_status_unknown';
-      if (s.applied + s.duplicate + s.rejected + s.retried > 0 || (s.error && !notAttempted))
+      if (
+        s.applied + s.duplicate + s.rejected + s.retried + s.pulled > 0 ||
+        (s.error && !notAttempted)
+      )
         setLastSync({ ...s, at: new Date().toISOString() });
       const c = await count();
       return { ...s, after: { ...c, availability: probe.current?.current ?? 'unknown' } };
@@ -81,60 +154,64 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     [count],
   );
 
-  useEffect(() => {
-    let cancelled = false;
-    void openLocalStore().then((s) => {
-      if (cancelled) return;
-      // Dev/E2E builds only: accept acknowledgements from the in-memory MOCK sync server.
-      const acceptMock = process.env.NEXT_PUBLIC_ALLOW_MOCK_SYNC === 'true';
-      const p = new SyncAvailabilityProbe(() => api.health(), { acceptMock });
-      p.onChange(setSyncAvailability);
-      probe.current = p;
-      engine.current = new SyncEngine(s, (ops) => api.syncPush(ops), undefined, acceptMock, {
-        check: (force) => p.check(force),
-        markUnavailable: () => p.markUnavailable(),
-        isUnavailableError: isProviderUnavailable,
-      });
-      // One GET /health (always 200) so the UI can say whether cloud sync exists at all.
-      if (navigator.onLine) void p.check();
-      setStore(s);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const forgetLocalData = useCallback(async () => {
+    const s = store;
+    engine.current = null;
+    setStore(null);
+    setPending(0);
+    setRejected(0);
+    setLastSync(null);
+    // Delete even if the store had not finished opening (or failed and fell back to memory).
+    if (s) await s.destroy();
+    if (userId) await deleteLocalDb(userId);
+  }, [store, userId]);
 
   useEffect(() => {
     if (!store) return;
-    // External-system sync: browser online state and visibility drive sync attempts.
+    // External-system sync: open, `online`, visibility and a timer drive sync attempts.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setOnline(navigator.onLine);
     void refresh().then(() => syncNow());
-    const onOnline = () => {
-      setOnline(true);
-      void syncNow({ force: true });
-    };
-    const onOffline = () => setOnline(false);
+    const onOnline = () => void syncNow({ force: true });
     const onVisible = () => {
       if (document.visibilityState === 'visible') void syncNow();
     };
     window.addEventListener('online', onOnline);
-    window.addEventListener('offline', onOffline);
     document.addEventListener('visibilitychange', onVisible);
     const timer = window.setInterval(() => {
       if (document.visibilityState === 'visible') void syncNow();
     }, 30_000);
     return () => {
       window.removeEventListener('online', onOnline);
-      window.removeEventListener('offline', onOffline);
       document.removeEventListener('visibilitychange', onVisible);
       window.clearInterval(timer);
     };
   }, [store, refresh, syncNow]);
 
   const value = useMemo(
-    () => ({ store, online, pending, rejected, lastSync, syncAvailability, refresh, syncNow }),
-    [store, online, pending, rejected, lastSync, syncAvailability, refresh, syncNow],
+    () => ({
+      store,
+      signedIn: Boolean(userId),
+      online,
+      pending,
+      rejected,
+      lastSync,
+      syncAvailability,
+      refresh,
+      syncNow,
+      forgetLocalData,
+    }),
+    [
+      store,
+      userId,
+      online,
+      pending,
+      rejected,
+      lastSync,
+      syncAvailability,
+      refresh,
+      syncNow,
+      forgetLocalData,
+    ],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

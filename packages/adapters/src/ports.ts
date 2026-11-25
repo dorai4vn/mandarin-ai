@@ -5,6 +5,7 @@ import type {
   InkRecognitionResult,
   PronunciationAssessmentRequest,
   PronunciationAssessmentResult,
+  PulledSyncOperation,
   RealtimeSessionGrant,
   SyncOperation,
 } from '@mandarin/contracts';
@@ -44,21 +45,33 @@ export interface ObjectStoragePort {
   put(path: string, body: Uint8Array, contentType: string): Promise<void>;
 }
 
-/** Server-side idempotent store for outbox operations (D-021). */
+/** Who is syncing: the verified user id and their own access token (RLS runs as them). */
+export interface SyncCaller {
+  userId: string;
+  accessToken: string;
+}
+
+export type SyncPushResult = {
+  operationId: string;
+  status: 'applied' | 'duplicate' | 'rejected';
+  serverVersion: number | null;
+  error: string | null;
+};
+
+/** Server-side store for outbox operations (D-021, M1 `sync_operations`). */
 export interface SyncOperationStore {
   readonly mode: 'live' | 'mock';
   /**
-   * Applies the operation once per `operationId`. Returns `duplicate` when it was already
-   * stored for the same user, `rejected` when the id belongs to another user.
+   * Stores each operation once per `operationId` (results in input order): `duplicate` when the
+   * caller already stored it, `rejected` when the id belongs to another user (nothing revealed).
    */
-  apply(
-    userId: string,
-    op: SyncOperation,
-  ): Promise<{
-    status: 'applied' | 'duplicate' | 'rejected';
-    serverVersion: number | null;
-    error: string | null;
-  }>;
+  push(caller: SyncCaller, ops: SyncOperation[]): Promise<SyncPushResult[]>;
+  /** The caller's operations with `serverSeq > after`, ascending, at most `limit`. */
+  pull(
+    caller: SyncCaller,
+    after: number,
+    limit: number,
+  ): Promise<{ operations: PulledSyncOperation[]; hasMore: boolean }>;
 }
 
 /** Minimal fetch signature so adapters can be tested without network access. */

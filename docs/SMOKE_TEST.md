@@ -55,6 +55,23 @@ Ký hiệu cột "Cần": `—` = không cần tài khoản/khóa · `SB` = cầ
 | C6 | Menu ⋮ → **Cài đặt ứng dụng / Thêm vào màn hình chính** | Cài được; không cài vẫn dùng được | — | |
 | C7 | Đăng nhập email + mật khẩu | Như A12, A12a, A12d | SB | |
 
+## M1 — Tài khoản, đăng xuất, đồng bộ hai thiết bị (D-042)
+
+Cần: dự án Supabase có migration `20261125100000_m1_sync_operations.sql`, API Railway có `SUPABASE_PUBLISHABLE_KEY`, hai tài khoản tạo trên Dashboard (A, B).
+
+| # | Bước | Mong đợi |
+|---|---|---|
+| M1-1 | Chủ dự án tạo tài khoản A trên Dashboard (Add user → Create new user, Auto Confirm) | Tạo được, không cần email |
+| M1-2 | Mở `/login` trên **điện thoại**, đăng nhập A | Về trang chủ; Hồ sơ hiện email A |
+| M1-3 | Tải lại trang, đóng mở lại tab/ứng dụng đã cài | Vẫn đăng nhập |
+| M1-4 | `/lab/offline`: bật chế độ máy bay, thêm ghi chú, tắt chế độ máy bay | "chờ=1" rồi "chờ=0"; chip không báo "Đã đồng bộ" trước khi gửi xong |
+| M1-5 | Đăng nhập A trên **máy tính**, mở `/lab/offline` | Thấy ghi chú từ điện thoại (đúng một lần) |
+| M1-6 | Hồ sơ → Đăng xuất trên máy tính | Về `/login`; `/lab/offline` yêu cầu đăng nhập |
+| M1-7 | Đăng nhập B trên máy tính | Không thấy ghi chú của A |
+| M1-8 | Thử đăng ký: không có nút đăng ký; (tùy chọn) gọi `POST <Project URL>/auth/v1/signup` bằng publishable key | Bị từ chối |
+
+Ghi kết quả từng bước (đạt/không đạt + thiết bị/trình duyệt). Trước khi có kết quả này, M1 ghi "smoke thiết bị thật: chưa xác minh".
+
 ## D. Kết luận cho mỗi thiết bị
 - Tổng ĐẠT / KHÔNG ĐẠT; liệt kê lỗi kèm ảnh.
 - Ghi rõ những mục **không kiểm** vì thiếu Supabase/khóa (SB/MOCK/KEY).

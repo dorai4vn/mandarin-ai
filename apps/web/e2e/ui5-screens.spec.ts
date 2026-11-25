@@ -97,10 +97,12 @@ test('practice: six modes with milestones; no simulated quiz', async ({ page }) 
   await expect(page.locator('main button')).toHaveCount(0);
 });
 
-test('profile: account copy matches D-038 (e-mail + password, no OTP)', async ({ page }) => {
+test('profile: account copy matches D-042 (e-mail + password created by the owner, no OTP)', async ({
+  page,
+}) => {
   await page.goto('/profile');
   const main = page.locator('main');
-  await expect(main).toContainText('email và mật khẩu do quản trị viên cấp');
+  await expect(main).toContainText('email và mật khẩu chủ ứng dụng đã tạo');
   await expect(main).not.toContainText('OTP');
 });
 

@@ -76,8 +76,7 @@ Package dependency direction (no cycles, enforced by lint/CI): `contracts` <- `d
 This is the target model. M0 ships only the migration template and the `profiles` baseline with RLS tests; the remaining tables are created by reviewed migrations in M1 (identity/sync), M2 (lexicon, vocabulary, tags/topics, course/library), M3 (quiz/review) and later milestones.
 
 ### Identity & content
-`app_members(user_id PK→auth.users, role owner|admin|member, status pending|active|disabled, password_change_required, approved_by, approved_at, password_changed_at, disabled_at, disabled_reason)` — approved-only access (D-037, D-038); row created `pending` by a trigger on `auth.users`; readable only by the member, writable only by service role/admin SQL; `is_active_member()` (active **and** initial password changed) used by every learner-data policy; changes audited by trigger into `admin_audit_log`.
-`admin_audit_log(id, actor_id, action, target_user_id, details_json, created_at)` — admin actions (M1).
+`sync_operations(user_id → auth.users, operation_id, device_id, entity_type, op_type, schema_version, logical_clock, occurred_at, payload, server_seq, received_at)` — M1 server log of outbox operations; unique `(user_id, operation_id)` (exactly-once), owner-only RLS, pull by `server_seq`. (D-042: no `app_members`/`admin_audit_log`.)
 `profiles(id auth.uid FK, settings, created_at)`
 `courses(id, owner_id, title, language_level, visibility, latest_version_id)`
 `course_versions(id, course_id, version_number, status, source_document_id)`
@@ -190,16 +189,14 @@ All rows carry `user_id`/`owner_id`; RLS: owner only. Composite foreign keys `(i
 | Touch gestures (scroll, zoom, edge swipe) vs mouse/pen | phones/tablets | Canvas `touch-action: none`, Pointer Events with `pointerType`, pressure when present |
 | `100vh`, on-screen keyboards, notches | phones/tablets | `dvh`, `viewport-fit=cover`, `env(safe-area-inset-*)`, inputs ≥ 16 px |
 
-## Access control — private, approved accounts only (D-037, D-038)
+## Access control — private accounts, standard Supabase Auth (D-037, D-038, D-042)
 
-Details and admin runbook: `docs/ACCESS_CONTROL.md`.
-- Supabase Auth with sign-ups **disabled**, anonymous sign-ins disabled, only the Email provider enabled; accounts are created with an initial password by administrators (Dashboard first, admin scripts with the secret key on the server/admin machine later). There is no sign-up UI or API.
-- Deny by default: a valid Supabase JWT (D-036) is necessary but **not sufficient**; the user must be an `active` row in `app_members`. Enforced twice: RLS (`and public.is_active_member()` on all learner-data policies) and the Fastify API (membership lookup cached ≤ 60 s → 403 `not_a_member`).
-- **Identity vs access:** sign-in is e-mail + password (`signInWithPassword`, minimum length 12) and only proves identity; access is the admin-approved membership. No OTP, magic link or sign-up; one generic error for wrong password / unknown e-mail.
-- First sign-in: `password_change_required` blocks learner data in the API (403 `password_change_required`, except `GET /v1/me` and `POST /v1/me/password`) **and** in RLS. Password change runs on the API (secret key): verify current password → update → revoke all sessions + reject JWTs issued before `password_changed_at` → clear the flag; every partial failure leaves the user blocked (fail closed). Passwords are never stored or logged by Mandarin AI.
-- Password recovery by e-mail is deferred (needs custom SMTP); admins issue temporary passwords instead. Sign-in never depends on e-mail delivery.
-- Sessions per `docs/AUTH_SESSION_DESIGN.md` (HttpOnly cookie on the web origin, Bearer to the API).
-- Disabling a member takes effect at the API within ≤ 60 s and immediately in RLS; Auth-level ban via Admin API `ban_duration` from a server-side script.
+Details and owner runbook: `docs/ACCESS_CONTROL.md`; session: `docs/AUTH_SESSION_DESIGN.md`.
+- Supabase Auth with sign-ups **disabled**, anonymous sign-ins disabled, only the Email provider enabled; the owner creates accounts in the Dashboard. There is no sign-up UI or API.
+- **Every account of the project is a user** (D-042): no membership table, no approval states, no forced password change, no admin scripts or audit log. Revocation uses Supabase itself (reset password / delete user); access tokens already issued stay valid ≤ 1 h (accepted).
+- Sign-in: e-mail + password (`signInWithPassword`, minimum length 12), one generic error for wrong password / unknown e-mail. Session: official `supabase-js` persistence and auto-refresh (refresh token rotation + reuse detection on Supabase).
+- The Fastify API verifies the JWT (D-036) on every `/v1/*` route. Learner data is read and written **with the user's own JWT** through PostgREST, so owner-only RLS (`user_id = (select auth.uid())`) is enforced by Postgres; the secret key is used only for system operations (Storage).
+- Local data is keyed by user: IndexedDB `mandarin-ai:<userId>`; nothing personal is opened before sign-in; sign-out deletes that database.
 
 ## Performance architecture (D-032, D-033, D-034)
 

@@ -246,6 +246,32 @@ describe('cross-platform web endpoints', () => {
       payload: { operations: [op] },
     });
     expect(other.json().results[0].status).toBe('rejected');
+
+    // Pull: each user sees only their own operations; the cursor advances.
+    const pullA = await app.inject({ method: 'GET', url: '/v1/sync/pull?after=0', headers: a });
+    expect(pullA.statusCode).toBe(200);
+    expect(pullA.json().operations.map((o: { operationId: string }) => o.operationId)).toEqual([
+      op.operationId,
+    ]);
+    expect(pullA.json().nextAfter).toBe(pullA.json().operations[0].serverSeq);
+    const again = await app.inject({
+      method: 'GET',
+      url: `/v1/sync/pull?after=${pullA.json().nextAfter}`,
+      headers: a,
+    });
+    expect(again.json()).toMatchObject({ operations: [], hasMore: false });
+    const pullB = await app.inject({ method: 'GET', url: '/v1/sync/pull', headers: b });
+    expect(pullB.json().operations).toEqual([]);
+  });
+
+  it('sync pull requires a valid token and validates the query', async () => {
+    expect((await app.inject({ method: 'GET', url: '/v1/sync/pull' })).statusCode).toBe(401);
+    const a = await auth('55555555-2222-4333-8444-555555555555');
+    for (const q of ['after=-1', 'limit=0', 'limit=501', 'after=abc'])
+      expect(
+        (await app.inject({ method: 'GET', url: `/v1/sync/pull?${q}`, headers: a })).statusCode,
+        q,
+      ).toBe(400);
   });
 
   it('accepts real PDFs only, at a server-chosen private path', async () => {

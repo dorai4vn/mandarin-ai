@@ -158,3 +158,53 @@ describe('mock acknowledgements are never treated as persistent (preview safety)
     expect(outbox[0]).toMatchObject({ status: 'pending', lastError: 'server_not_persistent' });
   });
 });
+
+describe('bidirectional sync (M1 pull)', () => {
+  it('applies notes from another device once, advances the cursor and pages until done', async () => {
+    const store = await IndexedDbStore.open('t-pull');
+    const remote = (n: number) => ({
+      operationId: `01JD8Z6Q9K2V4N7P3R5T8W1Y${String(n).padStart(2, '0')}`,
+      deviceId: 'web-other-device',
+      entityType: 'spike_note',
+      opType: 'create' as const,
+      schemaVersion: 1,
+      logicalClock: n,
+      occurredAt: `2026-11-25T10:0${n}:00.000Z`,
+      payload: { id: `note-${n}`, text: `ghi chú ${n}` },
+      serverSeq: n,
+    });
+    const afters: number[] = [];
+    const pull = async (after: number) => {
+      afters.push(after);
+      const all = [remote(1), remote(2), remote(3)].filter((o) => o.serverSeq > after);
+      const page = all.slice(0, 2);
+      return {
+        source: 'live' as const,
+        operations: page,
+        nextAfter: page.at(-1)?.serverSeq ?? after,
+        hasMore: all.length > 2,
+      };
+    };
+    const engine = new SyncEngine(store, fakeServer().push, undefined, true, undefined, { pull });
+    const s = await engine.syncNow();
+    expect(s.pulled).toBe(3);
+    expect(afters).toEqual([0, 2]);
+    expect((await store.listNotes()).map((n) => n.text)).toEqual([
+      'ghi chú 3',
+      'ghi chú 2',
+      'ghi chú 1',
+    ]);
+    expect(await store.pullCursor()).toBe(3);
+    // Nothing new: one request from the cursor, no duplicates.
+    const again = await engine.syncNow();
+    expect(again.pulled).toBe(0);
+    expect(afters.at(-1)).toBe(3);
+    expect(await store.listNotes()).toHaveLength(3);
+    // Sign-out: the database is deleted.
+    await store.destroy();
+    const reopened = await IndexedDbStore.open('t-pull');
+    expect(await reopened.listNotes()).toEqual([]);
+    expect(await reopened.pullCursor()).toBe(0);
+    await reopened.destroy();
+  });
+});

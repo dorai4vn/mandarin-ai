@@ -9,6 +9,7 @@ const run = (
   duplicate: 0,
   rejected: 0,
   retried: 0,
+  pulled: 0,
   source: null,
   error: null,
   ...p,
@@ -55,6 +56,11 @@ describe('describeSyncResult (G1: "Đã đồng bộ" only when it is true)', ()
     const mock = describeSyncResult(run({ applied: 1, source: 'mock' }));
     expect(mock.message).toMatch(/MOCK/);
     expect(mock.tone).toBeUndefined();
+  });
+  it('changes received from another device are reported without claiming a push', () => {
+    expect(describeSyncResult(run({ pulled: 2, source: 'live' })).message).toBe(
+      'Đã nhận 2 thay đổi từ thiết bị khác.',
+    );
   });
   it('no run (offline / not ready)', () => {
     expect(describeSyncResult(null).message).toBe('Chưa thể đồng bộ lúc này.');

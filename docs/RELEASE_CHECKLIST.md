@@ -70,9 +70,9 @@ Phạm vi (D-028): web app chạy trên Chrome, Edge, Firefox, Safari bản hi�
 - [ ] Email chưa được cấp và mật khẩu sai → **cùng** thông báo "Email hoặc mật khẩu không đúng."; không tạo tài khoản.
 - [ ] Không có màn hình/đường dẫn "Đăng ký", không OTP/Magic Link trong app.
 - [ ] Users trên Dashboard chỉ gồm người được cấp; mỗi email một người; không tài khoản dùng chung; mật khẩu tạm gửi qua kênh riêng.
-- [ ] (M1+) Có tài khoản Auth nhưng membership không `active` → API 403 `not_a_member`, RLS 0 dòng; khóa membership có hiệu lực ≤ 60 s.
-- [ ] (M1+) Chưa đổi mật khẩu ban đầu → dữ liệu học bị chặn (API + RLS), chỉ `GET /v1/me` + đổi mật khẩu chạy.
-- [ ] (M1+) Đổi mật khẩu: xác minh mật khẩu hiện tại, ≥ 12 ký tự, thu hồi mọi phiên cũ; lỗi giữa chừng vẫn bị chặn (fail closed).
+- [ ] (M1+, D-042) Người dùng A không đọc/sửa được dữ liệu của B (RLS + API); chưa đăng nhập → API 401, app không mở dữ liệu cá nhân.
+- [ ] (M1+) Đăng xuất xóa dữ liệu cục bộ của tài khoản; đăng nhập tài khoản khác không thấy dữ liệu cũ.
+- [ ] (M1+) Thu hồi: xóa người dùng / đặt mật khẩu mới trên Dashboard → không làm mới phiên được nữa (access token cũ hết hạn ≤ 1 giờ).
 - [ ] Không có mật khẩu trong log API/route handler, `localStorage`, `sessionStorage`, IndexedDB, URL.
 - [ ] Khôi phục mật khẩu qua email: ghi rõ **tạm hoãn** (cần Custom SMTP) hoặc đã cấu hình SMTP + test.
 - [ ] Secret key chỉ ở Railway/máy admin.

@@ -169,7 +169,7 @@ Quy ước:
 - **Lựa chọn:** (a) Tối thiểu hóa: chỉ lưu offline dữ liệu cần để học; ghi âm không lưu IndexedDB trừ khi đang chờ gửi và người học đồng ý; (b) trường nhạy cảm (ghi chú cá nhân, câu trả lời tự do) mã hóa AES-GCM bằng khóa Web Crypto **non-extractable** lưu trong IndexedDB; (c) phiên đăng nhập do Supabase quản lý, refresh token không đưa vào `localStorage` khi có lựa chọn cookie HttpOnly qua `@supabase/ssr`; (d) đăng xuất/xóa tài khoản xóa sạch IndexedDB, Cache Storage và service worker cache của người dùng.
 - **Giới hạn phải nói rõ:** khóa nằm cùng thiết bị/trình duyệt nên (b) chỉ chống đọc file thô, **không** tương đương Keychain/SQLCipher; ai mở được trình duyệt đã đăng nhập vẫn xem được dữ liệu.
 
-- **Hướng phiên đăng nhập (chủ dự án duyệt, 2026-11-23):** cookie HttpOnly/Secure ở M1 — thiết kế chi tiết (CSRF, SameSite, xoay vòng phiên, refresh token, web/API khác domain) tại `docs/AUTH_SESSION_DESIGN.md`.
+- **Hướng phiên đăng nhập (chủ dự án duyệt, 2026-11-23) — ĐÃ BỊ THAY bởi D-042 (2026-11-25):** ~~cookie HttpOnly/Secure ở M1~~; M1 dùng cơ chế phiên chính thức của Supabase (`supabase-js`), xem `docs/AUTH_SESSION_DESIGN.md`. Điều kiện "không lưu refresh token trong IndexedDB" vẫn đạt; phiên nằm trong `localStorage` (rủi ro chấp nhận, D-042).
 - **Điều kiện duyệt (chủ dự án, 2026-11-23):**
   - Chỉ lưu offline **tối thiểu** dữ liệu cần để học.
   - **Không** lưu trong IndexedDB: API secret (bất kỳ loại nào), refresh token, bản ghi âm nhạy cảm.
@@ -293,7 +293,7 @@ Quy ước:
 ## Truy cập riêng tư (2026-11-24)
 
 ## D-037 — Ứng dụng riêng tư, chỉ người được mời; không đăng ký công khai
-- **Ngày:** 2026-11-24 · **Trạng thái:** **Đã duyệt** (chủ dự án). Nguyên tắc chỉ-mời + mặc định từ chối **còn hiệu lực**; phần phương thức đăng nhập (OTP 6 số, mật khẩu tùy chọn, khôi phục bằng mã) và status `invited` **được thay bởi D-038**
+- **Ngày:** 2026-11-24 · **Trạng thái:** **Đã duyệt** (chủ dự án). **Một phần bị thay bởi D-042 (2026-11-25):** bảng `app_members`, `is_active_member()`, kiểm tra membership ở API và script admin **bỏ**; nguyên tắc chỉ-mời (signup TẮT, admin tạo tài khoản) **còn hiệu lực**; phần phương thức đăng nhập (OTP 6 số, mật khẩu tùy chọn, khôi phục bằng mã) và status `invited` **được thay bởi D-038**
 - **Bối cảnh:** Mandarin AI chỉ phục vụ chủ ứng dụng và một nhóm bạn được mời.
 - **Lựa chọn:**
   - Đăng nhập bằng Supabase Auth; **không** có giao diện đăng ký; **tắt** "Allow new users to sign up", anonymous sign-in và mọi provider ngoài Email trên Supabase.
@@ -305,7 +305,7 @@ Quy ước:
 - **Hậu quả:** Hướng dẫn chi tiết + runbook admin: `docs/ACCESS_CONTROL.md`. M1 thêm `app_members`, `is_active_member()`, kiểm tra membership ở API, màn hình đăng nhập/quên mật khẩu (không có đăng ký), script admin (ban/khóa) và test âm. Trong M0-PWA: chủ dự án đã tắt signup + anonymous trên `mandarin-ai-dev`; **2026-11-24 (được duyệt):** spike `/lab/session` đổi sang `shouldCreateUser: false` + thông báo trung tính, `supabase/config.toml` `enable_signup = false`, thêm test (unit, E2E chặn request, test GoTrue local thật trong CI). Membership/admin panel vẫn thuộc M1.
 
 ## D-038 — Đăng nhập bằng email + mật khẩu do admin cấp; phê duyệt truy cập bằng `app_members`
-- **Ngày:** 2026-11-24 · **Trạng thái:** **Đã duyệt** (chủ dự án). Thay phần phương thức xác thực của **D-037** và **D-025**; D-037 vẫn giữ nguyên nguyên tắc chỉ-mời và mặc định từ chối.
+- **Ngày:** 2026-11-24 · **Trạng thái:** **Đã duyệt** (chủ dự án). **Một phần bị thay bởi D-042 (2026-11-25):** `app_members`, membership `pending/active/disabled`, bắt buộc đổi mật khẩu lần đầu, `POST /v1/me/password`, thu hồi token tự xây, cookie session, audit admin **bỏ**; đăng nhập email + mật khẩu do admin tạo trên Dashboard, không đăng ký/OTP/Magic Link, lỗi đăng nhập chung **còn hiệu lực**. Thay phần phương thức xác thực của **D-037** và **D-025**; D-037 vẫn giữ nguyên nguyên tắc chỉ-mời và mặc định từ chối.
 - **Bối cảnh:** Không cần OTP, Magic Link hay đăng ký công khai. Gửi email cho người dùng thật cần Custom SMTP (dịch vụ mặc định của Supabase giới hạn rất thấp); đăng nhập không nên phụ thuộc vào đó.
 - **Lựa chọn:**
   - **Xác thực danh tính ≠ phê duyệt truy cập.** Supabase Auth (email + mật khẩu → JWT) chỉ chứng minh danh tính; quyền dùng app là dòng `app_members` `status = 'active'` do admin đặt. Chỉ có tài khoản Auth **không đủ**.
@@ -350,3 +350,20 @@ Quy ước:
 - **Typography chính thức:** "Mandarin AI" = Nunito 800, letter-spacing −0.02em, line-height 1.1; "TỰ HỌC TIẾNG TRUNG" = Nunito 600, uppercase, letter-spacing 0.16em, line-height 1.3, ≈ 35–40 % cỡ dòng tên. Font giao diện giữ Inter (Việt/Anh/Pinyin) + Noto Sans SC (chữ Hán nội dung học). Nunito (OFL 1.1) chỉ dùng cho lockup.
 - **Giới hạn đã biết:** ảnh gốc ≈ 205 px → icon 512 px phải phóng to (hơi mềm) cho tới khi có file logo gốc độ phân giải cao; 16 px không đọc được chữ 草.
 - **Hậu quả:** `docs/design/brand/` (asset, ảnh QC, script). Favicon, icon PWA và logo trong ứng dụng thay ở **UI-7B, sau khi các PR nền tảng (UI-1, UI-7A) được merge**. Token `logo` (đỏ cũ) giữ nguyên tới UI-7B.
+
+## D-042 — Đơn giản hóa M1: tài khoản = Supabase Auth chuẩn (thay phần membership của D-037/D-038, phần phiên cookie của D-022)
+- **Ngày:** 2026-11-25 · **Trạng thái:** **Đã duyệt** (chủ dự án, "PRODUCT DECISION — SIMPLIFY M1")
+- **Bối cảnh:** Mandarin AI là ứng dụng học riêng tư cho một nhóm nhỏ người quen, không phải SaaS hay hệ thống doanh nghiệp. Thiết kế M1 trước đó (bảng `app_members`, vòng đời pending/active/disabled, bắt buộc đổi mật khẩu, endpoint đổi mật khẩu, thu hồi token, cache membership, audit, script admin, cookie session tự xây) tốn công mà không tăng giá trị học tập.
+- **Lựa chọn:**
+  - **Danh tính = quyền truy cập.** Mọi tài khoản Supabase Auth của dự án là người dùng hợp lệ. Cổng chặn là: **signup TẮT**, **anonymous TẮT**, chỉ provider Email; chủ dự án **tự tạo tài khoản** trên Supabase Dashboard (*Add user → Create new user*, Auto Confirm, mật khẩu ≥ 12 ký tự, gửi qua kênh riêng).
+  - **Quản lý tài khoản bằng chức năng có sẵn của Supabase** (Dashboard: tạo, đặt lại mật khẩu, xóa người dùng). Không bảng membership, không trạng thái riêng, không bắt buộc đổi mật khẩu, không admin dashboard, không script admin, không audit log tự xây, không cache membership, không cơ chế thu hồi token tự xây.
+  - **Phiên đăng nhập:** cơ chế chính thức của `@supabase/supabase-js` (lưu phiên trong `localStorage`, tự làm mới token, xoay vòng refresh token + phát hiện dùng lại ở phía Supabase). Thay hướng cookie HttpOnly của D-022(c) và `AUTH_SESSION_DESIGN.md` bản 2026-11-23.
+  - **Bảo vệ dữ liệu:** API (Fastify) xác thực JWT (D-036) cho mọi `/v1/*`; dữ liệu học ở Postgres có **RLS chủ sở hữu** (`user_id = auth.uid()`) và API đọc/ghi bằng **JWT của chính người dùng** (PostgREST), không dùng secret key cho dữ liệu học.
+  - **Dữ liệu cục bộ:** mỗi tài khoản một cơ sở IndexedDB riêng (`mandarin-ai:<userId>`); chưa đăng nhập thì không mở dữ liệu cá nhân; đăng xuất xóa IndexedDB của tài khoản đó; tài khoản khác không bao giờ mở cơ sở của người trước.
+  - **Có:** đăng nhập, đăng xuất, bảo vệ route có dữ liệu riêng, RLS, không secret ở frontend/repo/log.
+- **Rủi ro chấp nhận (ghi rõ):**
+  - Refresh token nằm trong `localStorage` → lộ nếu có XSS. Giảm thiểu: không script bên thứ ba, không `dangerouslySetInnerHTML` với dữ liệu người dùng, bundle guard không có secret; phiên có thể bị thu hồi bằng cách đặt lại mật khẩu/xóa người dùng trên Dashboard.
+  - Sau khi xóa/đặt lại mật khẩu một người dùng, access token đã cấp vẫn hợp lệ tới khi hết hạn (`jwt_expiry` = 1 giờ); refresh bị từ chối ngay. Chấp nhận với nhóm người quen.
+- **Bỏ (không làm ở M1 hay sau, trừ khi có nhu cầu thật):** `app_members`, `is_active_member()`, `admin_audit_log`, `GET /v1/me` + `POST /v1/me/password`, bắt buộc đổi mật khẩu lần đầu, cookie `__Host-` + route handler `/auth/*`, mã hóa trường bằng Web Crypto (D-022b, để sau nếu thật sự cần).
+- **Xử lý code dở dang:** PR #20 và #21 (membership slice 1) **đóng, không merge**; migration `app_members` chưa từng vào `main` nên không cần rollback. Chủ dự án kiểm tra trên Dashboard: nếu bảng `app_members`/`admin_audit_log` từng được áp tay lên dự án cloud thì để nguyên (vô hại, không policy nào dùng) và xóa khi tiện — không xóa dữ liệu cloud khi chưa xác minh.
+- **Hậu quả:** Viết lại `docs/ACCESS_CONTROL.md`, `docs/AUTH_SESSION_DESIGN.md`; cập nhật PRD, ARCHITECTURE, MILESTONES (M1), RELEASE_CHECKLIST, DEPLOY_PREVIEW, FEATURES. Tiêu chí nghiệm thu M1 mới: `docs/MILESTONES_CLAUDE_CODE.md` mục M1.

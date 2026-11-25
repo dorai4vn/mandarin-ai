@@ -39,3 +39,26 @@ export const SyncPushResponseSchema = z.object({
   results: z.array(SyncOperationResultSchema),
 });
 export type SyncPushResponse = z.infer<typeof SyncPushResponseSchema>;
+
+/** Pull (M1): operations stored on the server, in `serverSeq` order, for the caller only. */
+export const SYNC_PULL_MAX = 500;
+
+export const PulledSyncOperationSchema = SyncOperationSchema.extend({
+  /** Server order (monotonic per user); the client keeps the highest one as its cursor. */
+  serverSeq: z.number().int().positive(),
+});
+export type PulledSyncOperation = z.infer<typeof PulledSyncOperationSchema>;
+
+export const SyncPullQuerySchema = z.object({
+  after: z.coerce.number().int().nonnegative().default(0),
+  limit: z.coerce.number().int().min(1).max(SYNC_PULL_MAX).default(200),
+});
+
+export const SyncPullResponseSchema = z.object({
+  source: z.enum(['live', 'mock']),
+  operations: z.array(PulledSyncOperationSchema),
+  /** Cursor for the next call (the last `serverSeq` returned, or the request's `after`). */
+  nextAfter: z.number().int().nonnegative(),
+  hasMore: z.boolean(),
+});
+export type SyncPullResponse = z.infer<typeof SyncPullResponseSchema>;

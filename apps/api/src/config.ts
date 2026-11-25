@@ -18,6 +18,11 @@ const EnvSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(8787),
   SUPABASE_URL: optional.pipe(z.url().optional()),
   SUPABASE_JWT_SECRET: optional,
+  /**
+   * Public publishable key (`sb_publishable_…`) of the same project. With SUPABASE_URL it enables
+   * the live sync store: PostgREST calls made with the USER's token, so RLS applies (M1, D-042).
+   */
+  SUPABASE_PUBLISHABLE_KEY: optional,
   MISSING_PROVIDER_MODE: z.enum(['mock', 'disabled']).default('mock'),
   OPENAI_API_KEY: optional,
   OPENAI_REALTIME_MODEL: z.string().default('gpt-realtime'),

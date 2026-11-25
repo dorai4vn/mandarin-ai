@@ -1,4 +1,4 @@
-import type { SyncOperation } from '@mandarin/contracts';
+import type { PulledSyncOperation, SyncOperation } from '@mandarin/contracts';
 import type { OutboxEntry, Reconciliation } from '@mandarin/domain';
 import Dexie, { type Table } from 'dexie';
 
@@ -27,6 +27,36 @@ export interface LocalStore {
   applyReconciliation(rec: Reconciliation): Promise<void>;
   recordFailure(operationIds: string[], error: string): Promise<void>;
   clearAll(): Promise<void>;
+  /** Highest server_seq already pulled (bidirectional sync, M1). */
+  pullCursor(): Promise<number>;
+  /** Applies operations pulled from the server (idempotent) and advances the cursor atomically. */
+  applyPulled(ops: PulledSyncOperation[], cursor: number): Promise<void>;
+  /** Releases the database (account switch). */
+  close(): void;
+  /** Closes and permanently deletes this account's local data (sign-out, D-042). */
+  destroy(): Promise<void>;
+}
+
+/** Name of an account's local database: never shared between accounts (D-042). */
+export const localDbName = (userId: string) => `mandarin-ai:${userId}`;
+
+/** Deletes an account's local database even if it is not open in this tab (sign-out). */
+export async function deleteLocalDb(userId: string): Promise<void> {
+  if (typeof indexedDB === 'undefined' || indexedDB === null) return;
+  await Dexie.delete(localDbName(userId));
+}
+
+/** Notes carried by a pulled `spike_note` create (other entity types arrive in later milestones). */
+function pulledNotes(ops: PulledSyncOperation[]): SpikeNote[] {
+  return ops.flatMap((op) => {
+    const { id, text } = op.payload as { id?: unknown; text?: unknown };
+    return op.entityType === 'spike_note' &&
+      op.opType === 'create' &&
+      typeof id === 'string' &&
+      typeof text === 'string'
+      ? [{ id, text, createdAt: op.occurredAt }]
+      : [];
+  });
 }
 
 const newId = () =>
@@ -138,6 +168,27 @@ export class IndexedDbStore implements LocalStore {
       await this.db.outbox.clear();
     });
   }
+
+  async pullCursor() {
+    return ((await this.db.meta.get('pullCursor'))?.value as number | undefined) ?? 0;
+  }
+
+  async applyPulled(ops: PulledSyncOperation[], cursor: number) {
+    await this.db.transaction('rw', this.db.notes, this.db.meta, async () => {
+      // put: the same note (same id) arriving again — e.g. our own operation — is a no-op.
+      await this.db.notes.bulkPut(pulledNotes(ops));
+      await this.db.meta.put({ key: 'pullCursor', value: cursor });
+    });
+  }
+
+  close() {
+    this.db.close();
+  }
+
+  async destroy() {
+    this.db.close();
+    await Dexie.delete(this.db.name);
+  }
 }
 
 /** Fallback: works for the session only; the UI says offline storage is unavailable. */
@@ -186,6 +237,21 @@ export class MemoryStore implements LocalStore {
   async clearAll() {
     this.notes = [];
     this.outbox = [];
+  }
+  private cursor = 0;
+  async pullCursor() {
+    return this.cursor;
+  }
+  async applyPulled(ops: PulledSyncOperation[], cursor: number) {
+    const known = new Set(this.notes.map((n) => n.id));
+    for (const n of pulledNotes(ops)) if (!known.has(n.id)) this.notes.unshift(n);
+    this.notes.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    this.cursor = cursor;
+  }
+  close() {}
+  async destroy() {
+    await this.clearAll();
+    this.cursor = 0;
   }
 }
 
