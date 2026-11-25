@@ -7,7 +7,17 @@ import { expectNoHorizontalScroll } from './helpers';
  * XP, due counts or sample words presented as real; unbuilt features are "Sắp có" / "Ra mắt ở Mx"
  * and are not clickable; "Thư viện" stays a library (not lessons).
  */
-const ROUTES = ['/', '/practice', '/dictionary', '/library', '/profile'];
+const ROUTES = [
+  '/',
+  '/practice',
+  '/dictionary',
+  '/library',
+  '/profile',
+  '/lab/session',
+  '/lab/upload',
+  '/lab/handwriting',
+  '/lab/audio',
+];
 
 test('learning screens: no serious/critical axe violations, no horizontal scroll', async ({
   page,
@@ -15,12 +25,19 @@ test('learning screens: no serious/critical axe violations, no horizontal scroll
   for (const path of ROUTES) {
     await page.goto(path);
     await expect(page.locator('main h1')).toHaveCount(1);
+    // Hydrated and settled: controls enabled on hydration fade their colours in (transitions),
+    // and a contrast check taken mid-transition reads an in-between colour.
+    await page.waitForFunction(() =>
+      Object.keys(document.querySelector('main') ?? {}).some((k) => k.startsWith('__react')),
+    );
+    if (path === '/lab/session') await expect(page.getByTestId('login-email')).toBeEnabled();
+    await page.waitForFunction(() => document.getAnimations().length === 0);
     const r = await new AxeBuilder({ page })
       .include('main')
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
       .analyze();
     const bad = r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
-    expect(bad.map((v) => `${path} ${v.id}`)).toEqual([]);
+    expect(bad.map((v) => `${path} ${v.id} ${v.nodes.map((n) => n.html).join(' | ')}`)).toEqual([]);
     await expectNoHorizontalScroll(page);
   }
 });
@@ -147,4 +164,42 @@ test('upload (V2 §21): file row with status, rejection, offline disables the pi
   await context.setOffline(false);
   await expect(input).toBeEnabled();
   await expectNoHorizontalScroll(page);
+});
+
+test('handwriting (V2 §23): frame size per device, labelled toolbar, stroke count in the label', async ({
+  page,
+}) => {
+  const { SHAN, deviceClass, drawStrokes, signIn } = await import('./helpers');
+  await signIn(page);
+  await page.goto('/lab/handwriting');
+  const canvas = page.getByTestId('handwriting-canvas');
+  await expect(canvas).toHaveAttribute('aria-label', 'Khung viết chữ Hán — 0 nét');
+  const w = (await canvas.boundingBox())!.width;
+  const max = { phone: 360, tablet: 420, desktop: 480 }[deviceClass(page)];
+  expect(w).toBeLessThanOrEqual(max + 0.5);
+  const toolbar = page.getByRole('toolbar', { name: 'Công cụ viết' });
+  for (const name of ['Hoàn tác nét', 'Xóa', 'Nộp bài'])
+    await expect(toolbar.getByRole('button', { name, exact: true })).toBeVisible();
+  await expect(toolbar.getByRole('button', { name: 'Nộp bài' })).toBeDisabled();
+  await drawStrokes(page, SHAN, 'touch');
+  await expect(canvas).toHaveAttribute('aria-label', `Khung viết chữ Hán — ${SHAN.length} nét`);
+  await toolbar.getByRole('button', { name: 'Hoàn tác nét' }).click();
+  await expect(canvas).toHaveAttribute('aria-label', `Khung viết chữ Hán — ${SHAN.length - 1} nét`);
+  await expectNoHorizontalScroll(page);
+});
+
+test('audio (V2 §22): 64 px record button named by state, playback speed as a radio group', async ({
+  page,
+}) => {
+  await page.goto('/lab/audio');
+  const rec = page.getByTestId('rec-start');
+  await expect(rec).toHaveAccessibleName('Bắt đầu ghi');
+  const box = (await rec.boundingBox())!;
+  expect(Math.round(box.width)).toBe(64);
+  expect(Math.round(box.height)).toBe(64);
+  const speed = page.getByRole('group', { name: 'Tốc độ nghe lại' });
+  await expect(speed.getByRole('radio', { name: '1×' })).toBeChecked();
+  await speed.getByText('0.75×').click();
+  await expect(speed.getByRole('radio', { name: '0.75×' })).toBeChecked();
+  await expect(page.getByRole('button', { name: 'Nghe lại' })).toBeDisabled();
 });

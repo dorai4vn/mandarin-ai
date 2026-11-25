@@ -32,7 +32,7 @@ export default function RealtimeLab() {
         lead="Chỉ kiểm tra việc máy chủ cấp khóa tạm thời. Hội thoại giọng nói sẽ làm ở M6 (ưu tiên chế độ lượt lời)."
       />
       <Card>
-        <p className="text-sm text-ink-2">
+        <p className="text-sm text-fg-muted">
           WebRTC trên trình duyệt này: {webrtc ? 'có' : 'không (sẽ dùng chế độ lượt lời)'}
         </p>
         <Button className="mt-3" onClick={() => void request()} data-testid="realtime-request">

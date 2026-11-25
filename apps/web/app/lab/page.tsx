@@ -74,12 +74,12 @@ export default function LabOverview() {
                   >
                     <td className="py-2 pr-3">{c.label}</td>
                     <td
-                      className={`py-2 pr-3 font-semibold ${c.state === 'supported' ? 'text-jade' : c.kind === 'core' ? 'text-error-text' : 'text-amber'}`}
+                      className={`py-2 pr-3 font-semibold ${c.state === 'supported' ? 'text-success-text' : c.kind === 'core' ? 'text-error-text' : 'text-warning-text'}`}
                     >
                       {STATE_TEXT[c.state]}
                     </td>
                     <td className="py-2 pr-3">{c.kind === 'core' ? 'cốt lõi' : 'tùy chọn'}</td>
-                    <td className="py-2 text-ink-2">{c.note}</td>
+                    <td className="py-2 text-fg-muted">{c.note}</td>
                   </tr>
                 ))}
               </tbody>
@@ -93,19 +93,19 @@ export default function LabOverview() {
               data-testid="env-info"
               data-device-class={env.deviceClass}
             >
-              <dt className="text-ink-2">Viewport</dt>
+              <dt className="text-fg-muted">Viewport</dt>
               <dd>{env.viewport}</dd>
-              <dt className="text-ink-2">Lớp thiết bị</dt>
+              <dt className="text-fg-muted">Lớp thiết bị</dt>
               <dd>{env.deviceClass}</dd>
-              <dt className="text-ink-2">Con trỏ</dt>
+              <dt className="text-fg-muted">Con trỏ</dt>
               <dd>{env.pointer || '—'}</dd>
-              <dt className="text-ink-2">Chế độ</dt>
+              <dt className="text-fg-muted">Chế độ</dt>
               <dd>{env.displayMode}</dd>
-              <dt className="text-ink-2">Service worker</dt>
+              <dt className="text-fg-muted">Service worker</dt>
               <dd>{swStatus}</dd>
-              <dt className="text-ink-2">MediaRecorder</dt>
+              <dt className="text-fg-muted">MediaRecorder</dt>
               <dd>{env.mimes}</dd>
-              <dt className="text-ink-2">User agent</dt>
+              <dt className="text-fg-muted">User agent</dt>
               <dd className="break-all text-xs">{env.ua}</dd>
             </dl>
           )}

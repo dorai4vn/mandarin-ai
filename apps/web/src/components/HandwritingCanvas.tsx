@@ -121,7 +121,7 @@ export const HandwritingCanvas = forwardRef<
         aria-label={label}
         data-testid="handwriting-canvas"
         data-pointer-kind={lastKind}
-        className="aspect-square w-full max-w-[min(100%,32rem)] touch-none select-none rounded-2xl border-2 border-line bg-sunken text-fg [touch-action:none]"
+        className="aspect-square w-full max-w-[360px] touch-none select-none rounded-panel border border-line-strong bg-sunken text-[var(--stroke-ink)] [touch-action:none] md:max-w-[420px] lg:max-w-[480px]"
         onPointerDown={(e) => {
           if (activePointer.current !== null || (e.pointerType === 'mouse' && e.button !== 0))
             return;
@@ -164,7 +164,7 @@ export const HandwritingCanvas = forwardRef<
         }}
         onContextMenu={(e) => e.preventDefault()}
       />
-      <p className="mt-1 text-xs text-ink-2">
+      <p className="mt-2 text-xs text-fg-muted">
         Thiết bị nhập vừa dùng: {lastKind === 'unknown' ? '—' : lastKind}
       </p>
     </div>

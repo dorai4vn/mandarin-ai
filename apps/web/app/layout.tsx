@@ -63,7 +63,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-paper focus:p-2"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-control focus:bg-surface focus:p-2"
         >
           Bỏ qua tới nội dung
         </a>
