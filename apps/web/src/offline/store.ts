@@ -1,5 +1,15 @@
-import type { PulledSyncOperation, SyncOperation } from '@mandarin/contracts';
-import type { OutboxEntry, Reconciliation } from '@mandarin/domain';
+import {
+  VOCABULARY_ENTITY,
+  type ContentSnapshot,
+  type PulledSyncOperation,
+  type SyncOperation,
+} from '@mandarin/contracts';
+import {
+  applyVocabularyOp,
+  type OutboxEntry,
+  type Reconciliation,
+  type VocabularyItem,
+} from '@mandarin/domain';
 import Dexie, { type Table } from 'dexie';
 
 /** Demo entity for the M0 offline spike; real entities (attempts, notes) arrive in M1–M3. */
@@ -31,6 +41,20 @@ export interface LocalStore {
   pullCursor(): Promise<number>;
   /** Applies operations pulled from the server (idempotent) and advances the cursor atomically. */
   applyPulled(ops: PulledSyncOperation[], cursor: number): Promise<void>;
+  /** Personal vocabulary (projection of the account's operations, D-043), including tombstones. */
+  listVocabulary(): Promise<VocabularyItem[]>;
+  /**
+   * Records a vocabulary operation made on this device: projection + outbox row in ONE
+   * transaction (D-021). Returns the updated item.
+   */
+  recordVocabulary(
+    opType: SyncOperation['opType'],
+    payload: Record<string, unknown>,
+    now?: Date,
+  ): Promise<VocabularyItem | undefined>;
+  /** Cached shared content snapshot (offline reading, M2). */
+  getContent(): Promise<ContentSnapshot | null>;
+  putContent(snapshot: ContentSnapshot): Promise<void>;
   /** Releases the database (account switch). */
   close(): void;
   /** Closes and permanently deletes this account's local data (sign-out, D-042). */
@@ -64,6 +88,25 @@ const newId = () =>
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(16).slice(2)}-0000`;
 
+function vocabOp(
+  deviceId: string,
+  clock: number,
+  opType: SyncOperation['opType'],
+  payload: Record<string, unknown>,
+  now: Date,
+): SyncOperation {
+  return {
+    operationId: newId(),
+    deviceId,
+    entityType: VOCABULARY_ENTITY,
+    opType,
+    schemaVersion: 1,
+    logicalClock: clock,
+    occurredAt: now.toISOString(),
+    payload,
+  };
+}
+
 function makeOp(deviceId: string, clock: number, note: SpikeNote): SyncOperation {
   return {
     operationId: newId(),
@@ -81,6 +124,8 @@ class MandarinDb extends Dexie {
   notes!: Table<SpikeNote, string>;
   outbox!: Table<OutboxRow, string>;
   meta!: Table<{ key: string; value: string | number }, string>;
+  vocab!: Table<VocabularyItem, string>;
+  content!: Table<{ key: string; snapshot: ContentSnapshot }, string>;
   constructor(name: string) {
     super(name);
     this.version(1).stores({
@@ -88,6 +133,8 @@ class MandarinDb extends Dexie {
       outbox: 'operationId, logicalClock, status',
       meta: 'key',
     });
+    // M2: personal vocabulary projection + cached shared content.
+    this.version(2).stores({ vocab: 'id, updatedAt', content: 'key' });
   }
 }
 
@@ -174,11 +221,58 @@ export class IndexedDbStore implements LocalStore {
   }
 
   async applyPulled(ops: PulledSyncOperation[], cursor: number) {
-    await this.db.transaction('rw', this.db.notes, this.db.meta, async () => {
+    await this.db.transaction('rw', this.db.notes, this.db.vocab, this.db.meta, async () => {
       // put: the same note (same id) arriving again — e.g. our own operation — is a no-op.
       await this.db.notes.bulkPut(pulledNotes(ops));
+      for (const op of ops) {
+        if (op.entityType !== VOCABULARY_ENTITY) continue;
+        const id = (op.payload as { id?: unknown }).id;
+        if (typeof id !== 'string') continue;
+        const before = await this.db.vocab.get(id);
+        const after = applyVocabularyOp(before, op);
+        if (after && after !== before) await this.db.vocab.put(after);
+      }
       await this.db.meta.put({ key: 'pullCursor', value: cursor });
     });
+  }
+
+  listVocabulary() {
+    return this.db.vocab.toArray();
+  }
+
+  async recordVocabulary(
+    opType: SyncOperation['opType'],
+    payload: Record<string, unknown>,
+    now = new Date(),
+  ) {
+    let result: VocabularyItem | undefined;
+    await this.db.transaction('rw', this.db.vocab, this.db.outbox, this.db.meta, async () => {
+      const clock = (((await this.db.meta.get('clock'))?.value as number | undefined) ?? 0) + 1;
+      await this.db.meta.put({ key: 'clock', value: clock });
+      const op = vocabOp(this.deviceId, clock, opType, payload, now);
+      const id = String(payload.id);
+      const before = await this.db.vocab.get(id);
+      result = applyVocabularyOp(before, op);
+      if (!result || result === before) throw new Error('vocabulary operation had no effect');
+      await this.db.vocab.put(result);
+      await this.db.outbox.add({
+        op,
+        operationId: op.operationId,
+        logicalClock: clock,
+        status: 'pending',
+        attempts: 0,
+        lastError: null,
+      });
+    });
+    return result;
+  }
+
+  async getContent() {
+    return (await this.db.content.get('shared'))?.snapshot ?? null;
+  }
+
+  async putContent(snapshot: ContentSnapshot) {
+    await this.db.content.put({ key: 'shared', snapshot });
   }
 
   close() {
@@ -242,7 +336,40 @@ export class MemoryStore implements LocalStore {
   async pullCursor() {
     return this.cursor;
   }
+  private vocab = new Map<string, VocabularyItem>();
+  private content: ContentSnapshot | null = null;
+  async listVocabulary() {
+    return [...this.vocab.values()];
+  }
+  async recordVocabulary(
+    opType: SyncOperation['opType'],
+    payload: Record<string, unknown>,
+    now = new Date(),
+  ) {
+    this.clock += 1;
+    const op = vocabOp(this.deviceId, this.clock, opType, payload, now);
+    const id = String(payload.id);
+    const before = this.vocab.get(id);
+    const after = applyVocabularyOp(before, op);
+    if (!after || after === before) throw new Error('vocabulary operation had no effect');
+    this.vocab.set(id, after);
+    this.outbox.push({ op, status: 'pending', attempts: 0, lastError: null });
+    return after;
+  }
+  async getContent() {
+    return this.content;
+  }
+  async putContent(snapshot: ContentSnapshot) {
+    this.content = snapshot;
+  }
   async applyPulled(ops: PulledSyncOperation[], cursor: number) {
+    for (const op of ops) {
+      if (op.entityType !== VOCABULARY_ENTITY) continue;
+      const id = (op.payload as { id?: unknown }).id;
+      if (typeof id !== 'string') continue;
+      const after = applyVocabularyOp(this.vocab.get(id), op);
+      if (after) this.vocab.set(id, after);
+    }
     const known = new Set(this.notes.map((n) => n.id));
     for (const n of pulledNotes(ops)) if (!known.has(n.id)) this.notes.unshift(n);
     this.notes.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -252,6 +379,8 @@ export class MemoryStore implements LocalStore {
   async destroy() {
     await this.clearAll();
     this.cursor = 0;
+    this.vocab.clear();
+    this.content = null;
   }
 }
 

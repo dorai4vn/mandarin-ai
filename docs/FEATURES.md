@@ -6,8 +6,8 @@ Cập nhật lần cuối: 2026-11-24 — web app cross-platform (D-018, D-028).
 
 | PRD | Tính năng | Milestone | Trạng thái | Ghi chú |
 |---|---|---|---|---|
-| PRD-01 | Nhập từ vựng hằng ngày (shared lexicon + custom vocabulary, provenance) | M2 | Chưa bắt đầu | Thiết kế dữ liệu đã chốt (D-001, D-006) |
-| PRD-02 | Từ điển cá nhân, tìm kiếm Hanzi/Pinyin/tiếng Việt, tags/topics | M2 | Chưa bắt đầu | |
+| PRD-01 | Nhập từ vựng hằng ngày (shared lexicon + custom vocabulary, provenance) | M2 | **Đã làm (M2, D-043)** | Nhập tay (pinyin số → dấu), gợi ý lexeme dùng chung (không ghi đè), trùng → liên kết, nguồn gốc (ngày, cách thêm, bài); offline + đa thiết bị qua log đồng bộ |
+| PRD-02 | Từ điển cá nhân, tìm kiếm Hanzi/Pinyin/tiếng Việt, tags/topics | M2 | **Đã làm (M2)** | Tìm 山 bằng 山/shan1/shān/núi; ghi chú, tag; bài học chứa từ; list + detail trên desktop. Tag là chuỗi trên mục; lọc theo mức thuộc/đến hạn: M3 |
 | PRD-03 | Hanzi visual etymology có nguồn | M5 | Chưa bắt đầu | |
 | PRD-04 | Quiz & spaced repetition theo skill | M3 | Đang làm (contract) | M0: registry 6 QuizType + mapping skill (D-002, D-007) |
 | PRD-05 | Mini game gợi ý → viết tay (canvas Pointer Events + HandwritingRecognitionPort) | M5 | Đang làm (spike) | M0-PWA: canvas touch/mouse/pen + adapter server (D-029, chờ duyệt giấy phép) |
@@ -16,7 +16,7 @@ Cập nhật lần cuối: 2026-11-24 — web app cross-platform (D-018, D-028).
 | PRD-08 | Import ảnh/văn bản/PDF | M4 / M7 | Chưa bắt đầu | Test bằng PDF mẫu tự tạo |
 | PRD-09 | Gamification (XP engine) | M7 | Chưa bắt đầu | M3 chỉ phát learning events (D-003) |
 | PRD-10 | Nhắc nhở & lịch ôn | M7 | Chưa bắt đầu | Web Push nơi hỗ trợ + nhắc trong app mọi nơi (D-024, chờ duyệt) |
-| PRD-11 | Learning Library & import giáo trình | M2 / M4 | Chưa bắt đầu | Starter fixture (D-012) |
+| PRD-11 | Learning Library & import giáo trình | M2 / M4 | **M2 đã làm** (khóa khởi động); import PDF: M4 | Khóa → chương → bài, "thêm cả bài" liên kết từ đã có; nội dung dùng chung chỉ đọc (Postgres, RLS) |
 
 ## Trạng thái thực tế M0-PWA (cập nhật 2026-11-23)
 
@@ -40,7 +40,8 @@ Phân loại: **THẬT** = chạy bằng mã/hạ tầng thật · **MOCK** = ad
 | Quản trị tài khoản (tạo + mật khẩu tạm, khóa, cấp lại mật khẩu tạm) | Dashboard Supabase (thủ công) | Runbook `docs/ACCESS_CONTROL.md` mục 8; script admin + membership M1 |
 | Quên mật khẩu tự phục vụ qua email | **TẠM HOÃN** | Cần Custom SMTP (D-038); admin cấp mật khẩu tạm thay thế |
 | Nhắc học (in-app bắt buộc, Web Push tùy chọn) | CHƯA TRIỂN KHAI | M7 (D-024 đã duyệt) |
-| Từ điển, thư viện, quiz, SRS, PDF pipeline, AI tutor, XP | CHƯA TRIỂN KHAI | Chỉ có khung giao diện/placeholder; M2–M7 |
+| Từ điển, thư viện | **THẬT (M2)** | Khóa khởi động 66 từ (D-012), từ vựng cá nhân (D-043) |
+| Quiz, SRS, PDF pipeline, AI tutor, XP | CHƯA TRIỂN KHAI | M3–M7 |
 | Supabase: bảng `profiles` + RLS | THẬT (local/CI) | Chưa áp dụng lên dự án Supabase dev |
 
 ## Hạ tầng M0 (native — lịch sử, PR #1)

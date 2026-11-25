@@ -1,5 +1,6 @@
 import {
   ApiErrorSchema,
+  ContentSnapshotSchema,
   HandwritingRecognitionResultSchema,
   HealthResponseSchema,
   PdfUploadResultSchema,
@@ -74,6 +75,9 @@ export const api = {
       (v) => HandwritingRecognitionResultSchema.parse(v),
       json(req),
     ),
+  contentVersion: () =>
+    call('/v1/content/version', (v) => String((v as { version?: unknown }).version ?? '')),
+  content: () => call('/v1/content', (v) => ContentSnapshotSchema.parse(v)),
   syncPull: (after: number) =>
     call(`/v1/sync/pull?after=${after}&limit=200`, (v) => SyncPullResponseSchema.parse(v)),
   syncPush: (operations: SyncOperation[]) =>

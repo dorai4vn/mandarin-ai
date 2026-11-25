@@ -9,3 +9,5 @@ export * from './api.js';
 export * from './handwriting.js';
 export * from './sync.js';
 export * from './upload.js';
+export * from './content.js';
+export * from './vocabulary.js';

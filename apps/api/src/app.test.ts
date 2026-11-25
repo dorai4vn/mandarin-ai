@@ -47,6 +47,7 @@ describe('config', () => {
       handwriting: null,
       storage: null,
       sync: null,
+      content: null,
     });
   });
 
@@ -262,6 +263,22 @@ describe('cross-platform web endpoints', () => {
     expect(again.json()).toMatchObject({ operations: [], hasMore: false });
     const pullB = await app.inject({ method: 'GET', url: '/v1/sync/pull', headers: b });
     expect(pullB.json().operations).toEqual([]);
+  });
+
+  it('serves the shared content snapshot (MOCK fixture in dev) with a version, signed-in only', async () => {
+    expect((await app.inject({ method: 'GET', url: '/v1/content' })).statusCode).toBe(401);
+    const a = await auth('55555555-2222-4333-8444-555555555555');
+    const v = await app.inject({ method: 'GET', url: '/v1/content/version', headers: a });
+    expect(v.json()).toMatchObject({ source: 'mock' });
+    const snap = await app.inject({ method: 'GET', url: '/v1/content', headers: a });
+    expect(snap.statusCode).toBe(200);
+    const body = snap.json();
+    expect(body.version).toBe(v.json().version);
+    expect(body.lexemes.find((l: { simplified: string }) => l.simplified === '山')).toMatchObject({
+      pinyin: 'shān',
+      meaningVi: 'núi',
+    });
+    expect(body.courses[0].chapters[0].lessons[0].lexemeIds.length).toBeGreaterThan(0);
   });
 
   it('sync pull requires a valid token and validates the query', async () => {

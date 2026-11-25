@@ -1,8 +1,10 @@
 import type {
+  Course,
   HandwritingRecognitionRequestParsed,
   HandwritingRecognitionResult,
   InkRecognitionRequest,
   InkRecognitionResult,
+  Lexeme,
   PronunciationAssessmentRequest,
   PronunciationAssessmentResult,
   RealtimeSessionGrant,
@@ -14,6 +16,7 @@ import type {
   HandwritingRecognitionPort,
   ObjectStoragePort,
   PronunciationAssessmentPort,
+  ContentStore,
   SyncCaller,
   SyncOperationStore,
   SyncPushResult,
@@ -170,5 +173,26 @@ export class MemorySyncOperationStore implements SyncOperationStore {
 
   countFor(userId: string): number {
     return [...this.ops.values()].filter((o) => o.userId === userId).length;
+  }
+}
+
+/**
+ * Starter content served from the bundled fixture (development / E2E only, labelled MOCK). The
+ * same records are seeded into Postgres by migration for the live store.
+ */
+export class FixtureContentStore implements ContentStore {
+  readonly mode = 'mock' as const;
+  private readonly data: { version: string; lexemes: Lexeme[]; courses: Course[] };
+  constructor(lexemes: Lexeme[], courses: Course[]) {
+    const json = JSON.stringify({ lexemes, courses });
+    let h = 0;
+    for (let i = 0; i < json.length; i++) h = (Math.imul(31, h) + json.charCodeAt(i)) | 0;
+    this.data = { version: `fixture-${(h >>> 0).toString(16)}`, lexemes, courses };
+  }
+  async version() {
+    return this.data.version;
+  }
+  async snapshot() {
+    return this.data;
   }
 }

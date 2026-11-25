@@ -5,6 +5,8 @@ import type {
   InkRecognitionResult,
   PronunciationAssessmentRequest,
   PronunciationAssessmentResult,
+  Course,
+  Lexeme,
   PulledSyncOperation,
   RealtimeSessionGrant,
   SyncOperation,
@@ -72,6 +74,13 @@ export interface SyncOperationStore {
     after: number,
     limit: number,
   ): Promise<{ operations: PulledSyncOperation[]; hasMore: boolean }>;
+}
+
+/** Shared, read-only learning content (M2): lexicon + course tree, read as the caller (RLS). */
+export interface ContentStore {
+  readonly mode: 'live' | 'mock';
+  version(caller: SyncCaller): Promise<string>;
+  snapshot(caller: SyncCaller): Promise<{ version: string; lexemes: Lexeme[]; courses: Course[] }>;
 }
 
 /** Minimal fetch signature so adapters can be tested without network access. */

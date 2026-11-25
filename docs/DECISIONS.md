@@ -367,3 +367,21 @@ Quy ước:
 - **Bỏ (không làm ở M1 hay sau, trừ khi có nhu cầu thật):** `app_members`, `is_active_member()`, `admin_audit_log`, `GET /v1/me` + `POST /v1/me/password`, bắt buộc đổi mật khẩu lần đầu, cookie `__Host-` + route handler `/auth/*`, mã hóa trường bằng Web Crypto (D-022b, để sau nếu thật sự cần).
 - **Xử lý code dở dang:** PR #20 và #21 (membership slice 1) **đóng, không merge**; migration `app_members` chưa từng vào `main` nên không cần rollback. Chủ dự án kiểm tra trên Dashboard: nếu bảng `app_members`/`admin_audit_log` từng được áp tay lên dự án cloud thì để nguyên (vô hại, không policy nào dùng) và xóa khi tiện — không xóa dữ liệu cloud khi chưa xác minh.
 - **Hậu quả:** Viết lại `docs/ACCESS_CONTROL.md`, `docs/AUTH_SESSION_DESIGN.md`; cập nhật PRD, ARCHITECTURE, MILESTONES (M1), RELEASE_CHECKLIST, DEPLOY_PREVIEW, FEATURES. Tiêu chí nghiệm thu M1 mới: `docs/MILESTONES_CLAUDE_CODE.md` mục M1.
+
+## D-043 — M2 đơn giản: nội dung dùng chung ở Postgres (chỉ đọc), từ vựng cá nhân là log thao tác đồng bộ
+- **Ngày:** 2026-11-25 · **Trạng thái:** **Đã duyệt theo chỉ đạo Simple First** của chủ dự án (2026-11-25: "không xây lớp kiến trúc, cơ chế quản trị hoặc hạ tầng không cần thiết"); trình chủ dự án xem lại trong PR M2
+- **Bối cảnh:** ARCHITECTURE dự kiến cho M2 khoảng 15 bảng: `custom_lexemes`, `vocabulary_items`, `vocabulary_additions`, `topics`, `tags`, bảng nối, `course_versions`, `content_admins`… Với nhóm người dùng nhỏ và app offline-first, phần lớn số bảng này không mang thêm giá trị mà làm sync phức tạp hơn.
+- **Lựa chọn:**
+  - **Nội dung dùng chung** (D-001) ở Postgres: `lexemes`, `courses`, `chapters`, `lessons`, `lesson_lexemes`.
+    - Người học chỉ `SELECT`; không ai ghi qua API. Nội dung đổi bằng migration hoặc SQL Editor (chủ dự án), sau này qua pipeline import (`service_role`).
+    - Một từ dùng ở nhiều bài là **một** lexeme; các lần xuất hiện là các dòng `lesson_lexemes` riêng.
+    - App tải một **snapshot có phiên bản** (`/v1/content`, `/v1/content/version`), lưu vào IndexedDB để đọc offline, và chỉ tải lại khi phiên bản đổi.
+  - **Từ vựng cá nhân** là **projection của chính các thao tác đồng bộ** của tài khoản (`entityType: 'vocabulary_item'`, các thao tác create/update/event/delete) trên `sync_operations` của M1.
+    - Không cần bảng riêng: mỗi field theo last-writer-wins (thời điểm, thiết bị, đồng hồ), additions là tập hợp, xóa là tombstone.
+    - Cách ly giữa người dùng nhờ RLS M1 (đã kiểm). Offline, đa thiết bị và exactly-once có sẵn từ M1.
+    - Mục cá nhân hoặc trỏ tới một lexeme dùng chung (`lexemeId`), hoặc là từ tự nhập; nội dung dùng chung không bao giờ bị sửa (D-001).
+    - Nguồn gốc (D-006) gồm ngày học, cách thêm, bài và khóa, lưu trong `additions`.
+    - **Tag** là danh sách chuỗi trên mục (chưa cần bảng `tags`/`topics`).
+  - Tìm kiếm chạy **cục bộ** (Hán tự, pinyin có/không dấu/số, tiếng Việt không dấu) trên danh sách cá nhân và snapshot.
+- **Hoãn (thêm khi có nhu cầu thật):** `course_versions`, `content_admins`, bảng `tags`/`topics` riêng, khóa học riêng tư của người dùng (M4, PDF import), xem lại từ trùng ở phía server.
+- **Hệ quả:** Lịch sử học (M3) cũng có thể dùng mô hình log thao tác này. Nếu sau này cần truy vấn phía server (thống kê, nhiều người dùng), có thể dựng bảng projection từ `sync_operations` mà không đổi app.
