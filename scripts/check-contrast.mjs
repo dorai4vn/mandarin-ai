@@ -123,7 +123,9 @@ const PAIRS = [
   ['accent-text', 'surface-default', TEXT, 'coral text'],
   ['accent-text-strong', 'accent-subtle', TEXT, 'coral text on subtle'],
   ['accent-on', 'accent-base', TEXT, 'text on coral'],
-  ['logo-fg', 'logo-bg', TEXT, 'logo mark 学 (unchanged identity)'],
+  // UI-7B brand lockup (D-041 measured colours) on the sidebar / top bar surface
+  ['brand-name', 'surface-default', TEXT, 'lockup name "Mandarin AI"'],
+  ['brand-tagline', 'surface-default', TEXT, 'lockup tagline "TỰ HỌC TIẾNG TRUNG"'],
   ['border-focus', 'bg-page', UI, 'focus ring on page'],
   ['border-focus', 'surface-default', UI, 'focus ring in cards'],
   ['border-focus', 'bg-subtle', UI, 'focus ring on subtle'],

@@ -225,6 +225,15 @@ Chi tiết: `docs/design/UI5_REPORT.md`.
 
 Chi tiết: `docs/design/UI6_REPORT.md`.
 
+### UI-7B — Logo, favicon, icon PWA · nhánh `feat/ui-7b-brand`
+
+- **Logo:** biểu tượng raster đã duyệt (D-041), đổi Light/Dark theo theme.
+- **Lockup:** chữ thật Nunito.
+- **Icon:** favicon 16/32/48 và `.ico`; icon PWA any/maskable 192/512.
+- **Service worker:** `m0-pwa-3`.
+
+Chi tiết: `docs/design/UI7B_REPORT.md`.
+
 ### Follow-up phát hiện trong UI-1 (không sửa — ngoài phạm vi)
 
 | ID   | Vấn đề                                                                                                                                                                                                         | Đề xuất                                                 |

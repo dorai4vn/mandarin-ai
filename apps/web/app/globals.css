@@ -82,9 +82,9 @@
   --radius-panel: var(--shape-panel);
   --radius-sheet: var(--shape-sheet);
 
-  /* Logo mark — unchanged identity (not the brand primary) */
-  --color-logo: var(--logo-bg);
-  --color-logo-ink: var(--logo-fg);
+  /* Brand lockup text (UI-7B) */
+  --color-brand-name: var(--brand-name);
+  --color-brand-tagline: var(--brand-tagline);
 
   /*
    * TEMPORARY aliases for M0 class names (UI_MIGRATION_PLAN §2) so every screen moves to V2 in
@@ -103,6 +103,8 @@
   --font-sans:
     var(--font-inter), system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     sans-serif;
+  /* Nunito: brand lockup ONLY (D-041); UI text stays Inter */
+  --font-brand: var(--font-nunito), var(--font-sans);
   --font-hanzi:
     var(--font-noto-sc), 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC',
     'Source Han Sans SC', sans-serif;
@@ -282,4 +284,9 @@ textarea {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
+/* Brand mark (UI-7B): the approved raster image, light or dark per theme (token --brand-mark). */
+.brand-mark {
+  background: var(--brand-mark) center / contain no-repeat;
 }

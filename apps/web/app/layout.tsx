@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Noto_Sans_SC } from 'next/font/google';
+import { Inter, Noto_Sans_SC, Nunito } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { OfflineProvider } from '@/components/OfflineProvider';
@@ -21,6 +21,13 @@ const inter = Inter({
   display: 'swap',
   variable: '--font-inter',
 });
+/** Nunito 600/800 — brand lockup only (D-041, docs/design/brand/README.md). */
+const nunito = Nunito({
+  subsets: ['latin', 'vietnamese'],
+  weight: ['600', '800'],
+  display: 'swap',
+  variable: '--font-nunito',
+});
 const notoSansSC = Noto_Sans_SC({
   display: 'swap',
   preload: false,
@@ -33,7 +40,15 @@ export const metadata: Metadata = {
   description: 'Học tiếng Trung cho người Việt — trên máy tính, máy tính bảng và điện thoại.',
   applicationName: 'Mandarin AI',
   manifest: '/manifest.webmanifest',
-  icons: { icon: '/icons/icon-192.png', apple: '/icons/apple-touch-icon.png' },
+  // UI-7B (D-041): approved raster icons. app/favicon.ico (16/32/48) is served at /favicon.ico.
+  icons: {
+    icon: [
+      { url: '/icons/favicon-16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/icons/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/favicon-48.png', sizes: '48x48', type: 'image/png' },
+    ],
+    apple: { url: '/icons/apple-touch-icon.png', sizes: '180x180' },
+  },
   appleWebApp: { capable: true, title: 'Mandarin AI', statusBarStyle: 'default' },
 };
 
@@ -52,7 +67,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="vi"
-      className={`${inter.variable} ${notoSansSC.variable}`}
+      className={`${inter.variable} ${notoSansSC.variable} ${nunito.variable}`}
       // data-sidebar / data-theme are set by the inline script below before React hydrates.
       suppressHydrationWarning
     >
