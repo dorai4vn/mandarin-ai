@@ -3,6 +3,11 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { CloseIcon } from '../icons';
 
+/** Centered confirmation dialog (COMPONENT_SPEC_V2 §14, `dialog` variant). */
+export function Dialog(props: Omit<Parameters<typeof Sheet>[0], 'variant'>) {
+  return <Sheet {...props} variant="dialog" />;
+}
+
 /**
  * Bottom sheet on phones / centered dialog from 768 px (COMPONENT_SPEC_V2 §14), on the native
  * <dialog> with showModal(): focus trap, Escape, inert background and ::backdrop for free.
@@ -18,13 +23,22 @@ export function Sheet({
   title,
   description,
   children,
+  variant = 'sheet',
+  actions,
+  dismissible = true,
   'data-testid': testId,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   description?: ReactNode;
-  children: ReactNode;
+  children?: ReactNode;
+  /** `sheet`: bottom sheet on phones, dialog from 768 px. `dialog`: always centered. */
+  variant?: 'sheet' | 'dialog';
+  /** Footer actions (dialog): primary on the right on desktop, full-width stack on phones. */
+  actions?: ReactNode;
+  /** false: a backdrop click does not close (e.g. unsaved input). Esc and buttons still do. */
+  dismissible?: boolean;
   'data-testid'?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -45,9 +59,11 @@ export function Sheet({
       opener.current = document.activeElement;
       d.showModal();
       // First meaningful element: the first link/button inside the content, not the close button.
-      const first = d.querySelector<HTMLElement>(
-        '[data-sheet-body] a[href], [data-sheet-body] button',
-      );
+      const first =
+        d.querySelector<HTMLElement>('[data-autofocus]') ??
+        d.querySelector<HTMLElement>(
+          '[data-sheet-body] a[href], [data-sheet-body] button, [data-sheet-body] input, [data-sheet-body] textarea, [data-sheet-body] select, [data-sheet-actions] button',
+        );
       first?.focus();
       document.documentElement.style.overflow = 'hidden';
       history.pushState({ ...history.state, sheet: id }, '');
@@ -97,10 +113,14 @@ export function Sheet({
       }}
       onClick={(e) => {
         // A click on the dialog element itself (not its content) is a click on the backdrop.
-        if (e.target === ref.current) ref.current?.close();
+        if (e.target === ref.current && dismissible) ref.current?.close();
       }}
       data-testid={testId}
-      className="m-0 mt-auto max-h-[90dvh] w-full max-w-none overflow-y-auto rounded-t-sheet bg-surface p-0 text-fg shadow-lg backdrop:bg-[var(--overlay-scrim)] md:m-auto md:max-w-[480px] md:rounded-panel"
+      className={`max-h-[90dvh] overflow-y-auto bg-surface p-0 text-fg shadow-lg backdrop:bg-[var(--overlay-scrim)] ${
+        variant === 'sheet'
+          ? 'm-0 mt-auto w-full max-w-none rounded-t-sheet md:m-auto md:max-w-[480px] md:rounded-panel'
+          : 'm-auto w-[calc(100%-2rem)] max-w-[480px] rounded-panel'
+      }`}
     >
       <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 md:p-6">
         <div
@@ -125,7 +145,15 @@ export function Sheet({
             {description}
           </p>
         )}
-        <div data-sheet-body="">{children}</div>
+        {children && <div data-sheet-body="">{children}</div>}
+        {actions && (
+          <div
+            data-sheet-actions=""
+            className="mt-5 flex flex-col-reverse gap-3 md:flex-row md:justify-end"
+          >
+            {actions}
+          </div>
+        )}
       </div>
     </dialog>
   );

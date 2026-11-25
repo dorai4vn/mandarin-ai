@@ -1,6 +1,8 @@
 'use client';
 import { useState, type ReactNode } from 'react';
 import {
+  Dialog,
+  useToast,
   Badge,
   Button,
   ButtonLink,
@@ -63,6 +65,10 @@ export default function DesignGallery() {
   const [loadingDemo, setLoadingDemo] = useState(false);
   const showSkeleton = useShowAfter(loadingDemo);
   const [failed, setFailed] = useState(false);
+  const toast = useToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [draftOpen, setDraftOpen] = useState(false);
+  const [deleted, setDeleted] = useState(0);
 
   return (
     <>
@@ -561,6 +567,106 @@ export default function DesignGallery() {
               Xem trang lỗi mẫu
             </ButtonLink>
           </div>
+        </Section>
+
+        <Section id="feedback" title="Toast · Dialog">
+          <Card>
+            <div className="flex flex-col gap-5">
+              <Row label="Toast (không lấy focus, tự ẩn 4 s / 6 s nếu có hành động)">
+                <Button
+                  variant="secondary"
+                  data-testid="toast-neutral"
+                  onClick={() => toast({ message: 'Đã lưu ghi chú (ví dụ).' })}
+                >
+                  Toast thường
+                </Button>
+                <Button
+                  variant="secondary"
+                  data-testid="toast-success"
+                  onClick={() =>
+                    toast({
+                      message: 'Đã xóa 1 mục (ví dụ).',
+                      tone: 'success',
+                      action: { label: 'Hoàn tác', onClick: () => setDeleted((n) => n - 1) },
+                    })
+                  }
+                >
+                  Có “Hoàn tác”
+                </Button>
+                <Button
+                  variant="secondary"
+                  data-testid="toast-error"
+                  onClick={() => toast({ message: 'Không gửi được (ví dụ).', tone: 'error' })}
+                >
+                  Toast lỗi
+                </Button>
+              </Row>
+              <Row label="Dialog">
+                <Button
+                  variant="danger"
+                  data-testid="dialog-open"
+                  onClick={() => setConfirmOpen(true)}
+                >
+                  Xóa tài liệu…
+                </Button>
+                <Button
+                  variant="secondary"
+                  data-testid="dialog-draft-open"
+                  onClick={() => setDraftOpen(true)}
+                >
+                  Sửa ghi chú…
+                </Button>
+                <span className="text-sm text-fg-muted" data-testid="dialog-deleted">
+                  Đã xóa: {deleted}
+                </span>
+              </Row>
+            </div>
+          </Card>
+          <Dialog
+            open={confirmOpen}
+            onClose={() => setConfirmOpen(false)}
+            title="Xóa tài liệu?"
+            description="Tài liệu “Giáo trình HSK 1” (ví dụ) sẽ bị xóa khỏi thiết bị này. Không hoàn tác được."
+            data-testid="dialog-confirm"
+            actions={
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={() => setConfirmOpen(false)}
+                  data-testid="dialog-cancel"
+                >
+                  Hủy
+                </Button>
+                <Button
+                  variant="danger"
+                  data-testid="dialog-confirm-delete"
+                  onClick={() => {
+                    setDeleted((n) => n + 1);
+                    setConfirmOpen(false);
+                  }}
+                >
+                  Xóa tài liệu
+                </Button>
+              </>
+            }
+          />
+          <Dialog
+            open={draftOpen}
+            onClose={() => setDraftOpen(false)}
+            title="Sửa ghi chú"
+            dismissible={false}
+            data-testid="dialog-draft"
+            actions={
+              <>
+                <Button variant="secondary" onClick={() => setDraftOpen(false)}>
+                  Hủy
+                </Button>
+                <Button onClick={() => setDraftOpen(false)}>Lưu</Button>
+              </>
+            }
+          >
+            <Textarea label="Nội dung" defaultValue="Ví dụ: 山 = núi" />
+          </Dialog>
         </Section>
       </div>
     </>
