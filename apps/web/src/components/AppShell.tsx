@@ -37,24 +37,23 @@ type SidebarPref = 'auto' | 'expanded' | 'collapsed';
 const SIDEBAR_KEY = 'mandarin.sidebar';
 
 /**
- * `auto` = collapsed 1024–1279, expanded ≥ 1280 (CSS media query, so no flash before
- * hydration). An explicit choice is remembered in localStorage — a convenience only: storage
- * errors fall back to `auto`.
+ * `auto` = collapsed 1024–1279, expanded ≥ 1280 (CSS media query). An explicit choice is
+ * remembered in localStorage (a convenience: storage errors fall back to `auto`). The choice is
+ * applied as `data-sidebar` on <html> by an inline script in app/layout.tsx BEFORE first paint,
+ * so a remembered choice does not flash; the CSS in globals.css reads that attribute.
  */
 function useSidebarPref() {
   const [pref, setPref] = useState<SidebarPref>('auto');
   const [wide, setWide] = useState(false);
+  const [ready, setReady] = useState(false);
   useEffect(() => {
-    try {
-      const v = localStorage.getItem(SIDEBAR_KEY);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (v === 'expanded' || v === 'collapsed') setPref(v);
-    } catch {
-      /* storage unavailable: keep auto */
-    }
+    const v = document.documentElement.dataset.sidebar;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (v === 'expanded' || v === 'collapsed') setPref(v);
     const mq = matchMedia('(min-width: 1280px)');
     const on = () => setWide(mq.matches);
     on();
+    setReady(true);
     mq.addEventListener('change', on);
     return () => mq.removeEventListener('change', on);
   }, []);
@@ -62,13 +61,15 @@ function useSidebarPref() {
   const toggle = useCallback(() => {
     const next: SidebarPref = expanded ? 'collapsed' : 'expanded';
     setPref(next);
+    document.documentElement.dataset.sidebar = next;
     try {
       localStorage.setItem(SIDEBAR_KEY, next);
     } catch {
       /* ignore */
     }
   }, [expanded]);
-  return { pref, expanded, toggle };
+  // Before hydration aria-expanded is unknown: omit it rather than state something wrong.
+  return { expanded: ready ? expanded : undefined, toggle };
 }
 
 function Mark({ size = 36 }: { size?: number }) {
@@ -88,11 +89,11 @@ function SideItem({ item, path }: { item: NavItem; path: string }) {
   const { href, label, Icon } = item;
   const on = isActive(path, href);
   return (
-    <Tooltip content={label} side="right" bubbleClassName="nav-tip">
+    <Tooltip content={label} side="right" bubbleClassName="nav-tip" wrapperClassName="flex">
       <Link
         href={href}
         aria-current={on ? 'page' : undefined}
-        className={`flex h-11 items-center gap-3 rounded-control px-3 font-medium transition-colors duration-[var(--duration-fast)] ${on ? 'bg-primary-subtle text-primary-strong' : 'text-fg hover:bg-[var(--state-hover)]'}`}
+        className={`flex h-11 flex-1 items-center gap-3 rounded-control px-3 font-medium transition-colors duration-[var(--duration-fast)] ${on ? 'bg-primary-subtle text-primary-strong' : 'text-fg hover:bg-[var(--state-hover)]'}`}
       >
         <Icon width={24} height={24} className="shrink-0" />
         <span className="nav-label whitespace-nowrap">{label}</span>
@@ -110,7 +111,7 @@ function Sidebar({
 }: {
   variant: 'rail' | 'desktop';
   path: string;
-  expanded?: boolean;
+  expanded?: boolean | undefined;
   onToggle?: () => void;
 }) {
   const desktop = variant === 'desktop';
@@ -118,7 +119,7 @@ function Sidebar({
     <aside
       id={desktop ? 'sidebar' : undefined}
       data-testid={desktop ? 'nav-sidebar' : 'nav-rail'}
-      className={`${desktop ? 'sidebar-desktop hidden lg:flex' : 'sidebar-rail hidden md:flex lg:hidden'} sticky top-0 z-20 h-dvh flex-col gap-1 overflow-y-auto overflow-x-hidden border-r border-line bg-surface px-3 py-4`}
+      className={`${desktop ? 'sidebar-desktop hidden lg:flex' : 'sidebar-rail hidden md:flex lg:hidden'} sticky top-0 z-20 h-dvh flex-col gap-1 overflow-y-auto overflow-x-hidden border-r border-line bg-surface py-4 pl-[max(0.75rem,env(safe-area-inset-left))] pr-3`}
     >
       <Link
         href="/"
@@ -156,10 +157,8 @@ function Sidebar({
             className="flex h-11 items-center gap-3 rounded-control px-3 text-sm font-medium text-fg-muted hover:bg-[var(--state-hover)] hover:text-fg"
           >
             <PanelLeftIcon width={24} height={24} className="shrink-0" />
-            <span className="nav-label whitespace-nowrap">
-              {expanded ? 'Thu gọn thanh bên' : 'Mở rộng thanh bên'}
-            </span>
-            {!expanded && <span className="sr-only">Mở rộng thanh bên</span>}
+            <span className="nav-label toggle-collapse whitespace-nowrap">Thu gọn thanh bên</span>
+            <span className="nav-label toggle-expand whitespace-nowrap">Mở rộng thanh bên</span>
           </button>
         )}
       </div>
@@ -168,43 +167,63 @@ function Sidebar({
 }
 
 /** True while a text field has focus (virtual keyboard likely open on phones). */
-function useTyping() {
+/** A focused element that brings up the virtual keyboard. */
+const isTextField = (el: EventTarget | null) =>
+  el instanceof HTMLElement &&
+  (el.isContentEditable ||
+    el instanceof HTMLTextAreaElement ||
+    el instanceof HTMLSelectElement ||
+    (el instanceof HTMLInputElement &&
+      !['checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'range', 'color'].includes(
+        el.type,
+      )));
+
+function useTyping(path: string) {
   const [typing, setTyping] = useState(false);
   useEffect(() => {
-    const isText = (el: EventTarget | null) =>
-      el instanceof HTMLElement &&
-      (el.isContentEditable ||
-        el instanceof HTMLTextAreaElement ||
-        el instanceof HTMLSelectElement ||
-        (el instanceof HTMLInputElement &&
-          !['checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'range', 'color'].includes(
-            el.type,
-          )));
     // Show the bar again only after the keyboard had time to close: re-showing it at once on
     // focusout would put it under the finger mid-tap (e.g. a button just below a text field).
     let timer: ReturnType<typeof setTimeout> | undefined;
+    const recheck = () => setTyping(isTextField(document.activeElement));
+    // Only a text field turns "typing" on at once; turning it off is left to the focusout
+    // timer (and the checks below), so the bar never re-appears under a finger mid-tap.
     const onIn = (e: FocusEvent) => {
+      if (!isTextField(e.target)) return;
       clearTimeout(timer);
-      if (isText(e.target)) setTyping(true);
+      setTyping(true);
     };
     const onOut = () => {
       clearTimeout(timer);
-      timer = setTimeout(() => setTyping(isText(document.activeElement)), 250);
+      timer = setTimeout(recheck, 250);
+    };
+    // Keyboard closed without blurring (Android Back): the visual viewport grows back.
+    const vv = window.visualViewport;
+    const onViewport = () => {
+      if (vv && vv.height > window.innerHeight * 0.85) setTyping(false);
     };
     document.addEventListener('focusin', onIn);
     document.addEventListener('focusout', onOut);
+    vv?.addEventListener('resize', onViewport);
     return () => {
       clearTimeout(timer);
       document.removeEventListener('focusin', onIn);
       document.removeEventListener('focusout', onOut);
+      vv?.removeEventListener('resize', onViewport);
     };
   }, []);
+  // A focused field removed with the page (route change) fires no focusout in every browser.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setTyping(isTextField(document.activeElement));
+    }, 0);
+    return () => clearTimeout(t);
+  }, [path]);
   return typing;
 }
 
 function BottomNav({ path }: { path: string }) {
   const [more, setMore] = useState(false);
-  const typing = useTyping();
+  const typing = useTyping(path);
   const moreActive = SECONDARY.some((i) => isActive(path, i.href));
   const cell =
     'flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium [@media(max-height:499px)]:min-h-12';
@@ -259,6 +278,7 @@ function BottomNav({ path }: { path: string }) {
               <li key={href}>
                 <Link
                   href={href}
+                  replace
                   aria-current={on ? 'page' : undefined}
                   onClick={() => setMore(false)}
                   className={`flex min-h-12 items-center gap-3 rounded-control px-3 font-medium ${on ? 'bg-primary-subtle text-primary-strong' : 'text-fg hover:bg-[var(--state-hover)]'}`}
@@ -283,13 +303,10 @@ function BottomNav({ path }: { path: string }) {
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const path = usePathname() ?? '/';
-  const { pref, expanded, toggle } = useSidebarPref();
+  const { expanded, toggle } = useSidebarPref();
   return (
     <ToastProvider>
-      <div
-        className="app-shell min-h-dvh md:grid md:grid-cols-[72px_1fr] lg:grid-cols-[var(--sidebar-w)_1fr]"
-        data-sidebar={pref}
-      >
+      <div className="app-shell min-h-dvh md:grid md:grid-cols-[calc(72px+env(safe-area-inset-left))_1fr] lg:grid-cols-[calc(var(--sidebar-w)+env(safe-area-inset-left))_1fr]">
         <Sidebar variant="rail" path={path} />
         <Sidebar variant="desktop" path={path} expanded={expanded} onToggle={toggle} />
 
@@ -304,7 +321,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <OfflineBanner />
           <main
             id="main"
-            className="mx-auto w-full max-w-[1120px] flex-1 px-3 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-4 min-[360px]:px-4 md:px-6 md:pb-10 md:pt-8 lg:px-8 xl:px-10"
+            className="mx-auto w-full max-w-[1120px] flex-1 px-3 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-4 min-[360px]:px-4 md:pb-10 md:pl-6 md:pr-[max(1.5rem,env(safe-area-inset-right))] md:pt-8 lg:pl-8 lg:pr-[max(2rem,env(safe-area-inset-right))] xl:pl-10 xl:pr-[max(2.5rem,env(safe-area-inset-right))]"
           >
             <CompatibilityNotice />
             {children}

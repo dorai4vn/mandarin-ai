@@ -60,6 +60,17 @@ test('collapsed sidebar shows the sync status as a dot; text stays accessible', 
   const box = (await c.boundingBox())!;
   expect(box.width).toBeLessThanOrEqual(32);
   await expect(c).toHaveAccessibleName(/đồng bộ|Offline|thiết bị/i);
+  // The popover opens beside the rail and is not clipped by it.
+  await c.click();
+  const panel = page.locator(`[id="${(await c.getAttribute('aria-controls'))!}"]`);
+  await expect(panel).toBeVisible();
+  const p = (await panel.boundingBox())!;
+  expect(p.x).toBeGreaterThanOrEqual(box.x + box.width);
+  const hit = await panel.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return el.contains(document.elementFromPoint(r.right - 10, r.top + 10));
+  });
+  expect(hit).toBe(true);
 });
 
 test('offline banner appears when offline, can be collapsed, returns next time', async ({

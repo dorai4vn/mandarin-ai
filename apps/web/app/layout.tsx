@@ -47,8 +47,20 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="vi" className={`${inter.variable} ${notoSansSC.variable}`}>
+    <html
+      lang="vi"
+      className={`${inter.variable} ${notoSansSC.variable}`}
+      // data-sidebar is set by the inline script below before React hydrates.
+      suppressHydrationWarning
+    >
       <body className="antialiased">
+        {/* UI-3: apply the remembered sidebar choice before first paint (no layout flash). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var v=localStorage.getItem('mandarin.sidebar');if(v==='expanded'||v==='collapsed')document.documentElement.dataset.sidebar=v}catch(e){}",
+          }}
+        />
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-paper focus:p-2"
