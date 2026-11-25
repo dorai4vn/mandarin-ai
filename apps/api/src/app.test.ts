@@ -504,4 +504,54 @@ describe('deployment safety (APP_ENV, D-029, preview)', () => {
     expect(foreign.headers['access-control-allow-origin']).toBeUndefined();
     await a.close();
   });
+  // FU-7 follow-up: preflights bypass the IP guard (so they stay answerable), hence they get
+  // their own per-IP limiter registered before CORS. Flooding it must not break real requests.
+  it('limits a preflight flood separately; real requests and their readable 429 are unaffected', async () => {
+    const cfg = loadConfig({ ...base, NODE_ENV: 'test', IP_RATE_LIMIT_PER_MINUTE: '10' });
+    const a = buildApp({
+      config: cfg,
+      verifyToken: createTokenVerifier(cfg),
+      providers: createProviders(cfg),
+    });
+    const origin = 'http://localhost:3000';
+    const preflight = (o: string) =>
+      a.inject({
+        method: 'OPTIONS',
+        url: '/v1/uploads/pdf',
+        headers: { origin: o, 'access-control-request-method': 'POST' },
+      });
+    const codes: number[] = [];
+    for (let i = 0; i < 12; i++) codes.push((await preflight(origin)).statusCode);
+    expect(codes.slice(0, 10).every((c) => c === 204)).toBe(true);
+    expect(codes.slice(10)).toEqual([429, 429]);
+    // Unknown origins are limited too (and never granted CORS).
+    const foreign = await preflight('https://evil.example');
+    expect(foreign.statusCode).toBe(429);
+    expect(foreign.headers['access-control-allow-origin']).toBeUndefined();
+    // The flood did not consume the real-request budget: 10 real calls still pass...
+    for (let i = 0; i < 10; i++) {
+      const r = await a.inject({ method: 'GET', url: '/health', headers: { origin } });
+      expect(r.statusCode).toBe(200);
+    }
+    // ...and the 11th is a 429 the browser can read.
+    const limited = await a.inject({ method: 'GET', url: '/health', headers: { origin } });
+    expect(limited.statusCode).toBe(429);
+    expect(limited.headers['access-control-allow-origin']).toBe(origin);
+    expect(limited.json().error.code).toBe('rate_limited');
+    // Real traffic does not consume the preflight budget either (fresh app, 10 real calls).
+    const b = buildApp({
+      config: cfg,
+      verifyToken: createTokenVerifier(cfg),
+      providers: createProviders(cfg),
+    });
+    for (let i = 0; i < 11; i++) await b.inject({ method: 'GET', url: '/health' });
+    const pre = await b.inject({
+      method: 'OPTIONS',
+      url: '/v1/uploads/pdf',
+      headers: { origin, 'access-control-request-method': 'POST' },
+    });
+    expect(pre.statusCode).toBe(204);
+    await a.close();
+    await b.close();
+  });
 });
