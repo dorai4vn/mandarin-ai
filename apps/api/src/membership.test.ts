@@ -111,6 +111,17 @@ describe('membership gate', () => {
     expect(ok.statusCode).toBe(200);
   });
 
+  it('/v1/me does exactly one membership lookup per request', async () => {
+    const store = vi.fn<MembershipStore>(async () => m());
+    expect((await call(store, '/v1/me')).statusCode).toBe(200);
+    expect(store).toHaveBeenCalledTimes(1);
+  });
+
+  it('a token without iat (0) is revoked once a password change is recorded', async () => {
+    const res = await call(async () => m({ passwordChangedAt: 1 }), '/v1/me', 0);
+    expect(res.statusCode).toBe(401);
+  });
+
   it('fails closed (503, no data) when the membership lookup throws', async () => {
     const res = await call(async () => {
       throw new Error('db down');

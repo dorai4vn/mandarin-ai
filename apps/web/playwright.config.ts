@@ -94,7 +94,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'node ../api/dist/server.js',
+      command: 'node ../api/dist/e2e-server.js',
       port: API_PORT,
       reuseExistingServer: !process.env.CI,
       env: {

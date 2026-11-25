@@ -1,6 +1,6 @@
 -- pgTAP: invite-only membership + is_active_member() (M1, docs/ACCESS_CONTROL.md section 11).
 begin;
-select plan(15);
+select plan(19);
 
 insert into auth.users (id, email, aud, role) values
   ('aaaaaaaa-0000-4000-8000-000000000001', 'a@example.test', 'authenticated', 'authenticated'),
@@ -32,8 +32,14 @@ reset role;
 update public.app_members set password_change_required = false, password_changed_at = now()
   where user_id = 'aaaaaaaa-0000-4000-8000-000000000001';
 set local role authenticated;
+-- Token issued BEFORE the password change (old session) is revoked at the DB layer.
+select set_config('request.jwt.claims', format('{"sub":"aaaaaaaa-0000-4000-8000-000000000001","role":"authenticated","iat":%s}', floor(extract(epoch from now())) - 60), true);
+select is((select public.is_active_member()), false, 'token older than password change is rejected');
+select is((select count(*)::int from public.profiles), 0, 'old token reads 0 profile rows via PostgREST');
 select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-4000-8000-000000000001","role":"authenticated"}', true);
-select is((select public.is_active_member()), true, 'active + password changed is a member');
+select is((select public.is_active_member()), false, 'token without iat is rejected once password_changed_at is set');
+select set_config('request.jwt.claims', format('{"sub":"aaaaaaaa-0000-4000-8000-000000000001","role":"authenticated","iat":%s}', floor(extract(epoch from now())) + 1), true);
+select is((select public.is_active_member()), true, 'active + password changed + fresh token is a member');
 select is((select count(*)::int from public.profiles), 1, 'member sees only own profile (not B)');
 
 -- Disable: RLS blocks immediately.
@@ -41,7 +47,7 @@ reset role;
 update public.app_members set status = 'disabled', disabled_at = now(), disabled_reason = 'test'
   where user_id = 'aaaaaaaa-0000-4000-8000-000000000001';
 set local role authenticated;
-select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-4000-8000-000000000001","role":"authenticated"}', true);
+select set_config('request.jwt.claims', format('{"sub":"aaaaaaaa-0000-4000-8000-000000000001","role":"authenticated","iat":%s}', floor(extract(epoch from now())) + 1), true);
 select is((select count(*)::int from public.profiles), 0, 'disabled member gets 0 rows immediately');
 
 set local role anon;
@@ -53,5 +59,8 @@ select is((select count(*)::int from public.admin_audit_log where action = 'upda
 select is((select new_values ->> 'status' from public.admin_audit_log
   where action = 'update' order by id desc limit 1), 'disabled', 'audit records new status');
 
+-- Audit records the connecting role, not the SECURITY DEFINER function owner.
+select is((select actor_db_user from public.admin_audit_log order by id desc limit 1), session_user::text,
+  'audit actor is session_user');
 select * from finish();
 rollback;

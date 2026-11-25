@@ -17,12 +17,13 @@ import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest }
 import { authModes, type AuthUser, type TokenVerifier } from './auth.js';
 import type { AppConfig } from './config.js';
 import type { Providers } from './providers.js';
-import type { MembershipStore } from './membership.js';
+import type { Membership, MembershipStore } from './membership.js';
 import { FixedWindowLimiter } from './rate-limit.js';
 
 declare module 'fastify' {
   interface FastifyRequest {
     user?: AuthUser;
+    member?: Membership;
   }
 }
 
@@ -132,6 +133,7 @@ export function buildApp({ config, verifyToken, providers, membership }: AppDeps
     if (m.passwordChangeRequired && !isMe) {
       return reply.code(403).send(err('password_change_required', 'Change your password first'));
     }
+    req.member = m; // handlers reuse this: no second lookup (which could throw or disagree)
   };
 
   const limitCost = async (req: FastifyRequest, reply: FastifyReply) => {
@@ -165,11 +167,11 @@ export function buildApp({ config, verifyToken, providers, membership }: AppDeps
 
   // The only data route open to a signed-in non-active user: tells the web app which screen to show.
   app.get('/v1/me', { preHandler: requireUser }, async (req) => {
-    const m = await membership(req.user!.id);
+    const m = req.member!;
     return {
       userId: req.user!.id,
-      status: m!.status,
-      passwordChangeRequired: m!.passwordChangeRequired,
+      status: m.status,
+      passwordChangeRequired: m.passwordChangeRequired,
     };
   });
 
