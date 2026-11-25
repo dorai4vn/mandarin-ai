@@ -87,6 +87,12 @@ export default defineConfig({
         WEB_ORIGINS: `http://localhost:${WEB_PORT}`,
         HANDWRITING_DATA_PATH: '../../packages/adapters/data/mmah.json',
         RATE_LIMIT_PER_MINUTE: '1000',
+        // Every browser of every project and worker reaches the API from 127.0.0.1, so the per-IP
+        // guard (default 300/min, meant for one real client) is shared by the whole suite, which
+        // makes ~300 requests per minute (mostly the /health probe on each page load). Hitting it
+        // made tests fail at random (FU-7, issue #6). The guard itself is unit-tested in
+        // apps/api (app.test.ts); here it is raised to the schema maximum.
+        IP_RATE_LIMIT_PER_MINUTE: '10000',
         MISSING_PROVIDER_MODE: 'mock',
       },
     },

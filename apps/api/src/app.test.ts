@@ -427,4 +427,131 @@ describe('deployment safety (APP_ENV, D-029, preview)', () => {
     expect(codes[10]).toBe(429);
     await a.close();
   });
+
+  // FU-7 (issue #6): a 429 without CORS headers is unreadable for the browser — fetch() rejects
+  // and the web app shows "cannot reach the API" instead of "too many requests".
+  it('IP rate-limit responses carry CORS headers for allowed origins only', async () => {
+    const cfg = loadConfig({ ...base, NODE_ENV: 'test', IP_RATE_LIMIT_PER_MINUTE: '10' });
+    const a = buildApp({
+      config: cfg,
+      verifyToken: createTokenVerifier(cfg),
+      providers: createProviders(cfg),
+    });
+    for (let i = 0; i < 10; i++) await a.inject({ method: 'GET', url: '/health' });
+    const allowed = await a.inject({
+      method: 'GET',
+      url: '/health',
+      headers: { origin: 'http://localhost:3000' },
+    });
+    expect(allowed.statusCode).toBe(429);
+    expect(allowed.headers['access-control-allow-origin']).toBe('http://localhost:3000');
+    expect(String(allowed.headers.vary)).toMatch(/Origin/);
+    expect(allowed.json()).toEqual({
+      error: { code: 'rate_limited', message: 'Too many requests' },
+    });
+    const foreign = await a.inject({
+      method: 'GET',
+      url: '/health',
+      headers: { origin: 'https://evil.example' },
+    });
+    expect(foreign.statusCode).toBe(429);
+    expect(foreign.headers['access-control-allow-origin']).toBeUndefined();
+    await a.close();
+  });
+
+  // FU-7: POST/upload calls need a CORS preflight. A rate-limited preflight (non-2xx, no
+  // Allow-Methods/Headers) fails in the browser exactly like a network error, so preflights are
+  // answered by CORS before the IP guard; the actual request then gets a readable 429.
+  it('answers CORS preflights even when the IP limit is reached; the request gets a readable 429', async () => {
+    const cfg = loadConfig({ ...base, NODE_ENV: 'test', IP_RATE_LIMIT_PER_MINUTE: '10' });
+    const a = buildApp({
+      config: cfg,
+      verifyToken: createTokenVerifier(cfg),
+      providers: createProviders(cfg),
+    });
+    for (let i = 0; i < 10; i++) await a.inject({ method: 'GET', url: '/health' });
+    const origin = 'http://localhost:3000';
+    const pre = await a.inject({
+      method: 'OPTIONS',
+      url: '/v1/uploads/pdf',
+      headers: {
+        origin,
+        'access-control-request-method': 'POST',
+        'access-control-request-headers': 'authorization,content-type',
+      },
+    });
+    expect(pre.statusCode).toBe(204);
+    expect(pre.headers['access-control-allow-origin']).toBe(origin);
+    expect(String(pre.headers['access-control-allow-methods'])).toMatch(/POST/);
+    expect(String(pre.headers['access-control-allow-headers']).toLowerCase()).toMatch(
+      /authorization/,
+    );
+    const post = await a.inject({
+      method: 'POST',
+      url: '/v1/uploads/pdf',
+      headers: { origin, 'content-type': 'application/pdf' },
+      payload: Buffer.from('%PDF-1.4'),
+    });
+    expect(post.statusCode).toBe(429);
+    expect(post.headers['access-control-allow-origin']).toBe(origin);
+    expect(post.json().error.code).toBe('rate_limited');
+    // A disallowed origin still gets no CORS grant on the preflight.
+    const foreign = await a.inject({
+      method: 'OPTIONS',
+      url: '/v1/uploads/pdf',
+      headers: { origin: 'https://evil.example', 'access-control-request-method': 'POST' },
+    });
+    expect(foreign.headers['access-control-allow-origin']).toBeUndefined();
+    await a.close();
+  });
+  // FU-7 follow-up: preflights bypass the IP guard (so they stay answerable), hence they get
+  // their own per-IP limiter registered before CORS. Flooding it must not break real requests.
+  it('limits a preflight flood separately; real requests and their readable 429 are unaffected', async () => {
+    const cfg = loadConfig({ ...base, NODE_ENV: 'test', IP_RATE_LIMIT_PER_MINUTE: '10' });
+    const a = buildApp({
+      config: cfg,
+      verifyToken: createTokenVerifier(cfg),
+      providers: createProviders(cfg),
+    });
+    const origin = 'http://localhost:3000';
+    const preflight = (o: string) =>
+      a.inject({
+        method: 'OPTIONS',
+        url: '/v1/uploads/pdf',
+        headers: { origin: o, 'access-control-request-method': 'POST' },
+      });
+    const codes: number[] = [];
+    for (let i = 0; i < 12; i++) codes.push((await preflight(origin)).statusCode);
+    expect(codes.slice(0, 10).every((c) => c === 204)).toBe(true);
+    expect(codes.slice(10)).toEqual([429, 429]);
+    // Unknown origins are limited too (and never granted CORS).
+    const foreign = await preflight('https://evil.example');
+    expect(foreign.statusCode).toBe(429);
+    expect(foreign.headers['access-control-allow-origin']).toBeUndefined();
+    // The flood did not consume the real-request budget: 10 real calls still pass...
+    for (let i = 0; i < 10; i++) {
+      const r = await a.inject({ method: 'GET', url: '/health', headers: { origin } });
+      expect(r.statusCode).toBe(200);
+    }
+    // ...and the 11th is a 429 the browser can read.
+    const limited = await a.inject({ method: 'GET', url: '/health', headers: { origin } });
+    expect(limited.statusCode).toBe(429);
+    expect(limited.headers['access-control-allow-origin']).toBe(origin);
+    expect(limited.json().error.code).toBe('rate_limited');
+    // Real traffic does not consume the preflight budget either (fresh app, 10 real calls).
+    const b = buildApp({
+      config: cfg,
+      verifyToken: createTokenVerifier(cfg),
+      providers: createProviders(cfg),
+    });
+    for (let i = 0; i < 11; i++) await b.inject({ method: 'GET', url: '/health' });
+    const pre = await b.inject({
+      method: 'OPTIONS',
+      url: '/v1/uploads/pdf',
+      headers: { origin, 'access-control-request-method': 'POST' },
+    });
+    expect(pre.statusCode).toBe(204);
+    await a.close();
+    await b.close();
+  });
 });
