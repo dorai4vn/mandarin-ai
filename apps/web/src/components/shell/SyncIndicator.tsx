@@ -167,7 +167,7 @@ export function SyncIndicator({
         hidden={!open}
         data-testid="sync-popover"
         style={fixed && fixedAt ? { left: fixedAt.left, bottom: fixedAt.bottom } : undefined}
-        className={`z-40 w-64 max-w-[calc(100vw-1rem)] rounded-card border border-line bg-surface p-4 text-sm shadow-lg ${fixed ? 'fixed' : 'absolute right-0 top-full mt-2'}`}
+        className={`z-40 w-64 max-w-[calc(100vw-1rem)] rounded-card border border-line bg-raised p-4 text-sm shadow-lg ${fixed ? 'fixed' : 'absolute right-0 top-full mt-2'}`}
       >
         <p className="mb-2 font-semibold text-fg">{text}</p>
         {description && <p className="mb-2 text-fg-muted">{description}</p>}

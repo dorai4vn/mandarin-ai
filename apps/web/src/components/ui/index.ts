@@ -14,6 +14,7 @@ export { PageHeader } from './PageHeader';
 // Client components ('use client'): can still be rendered from Server Components as boundaries.
 export { Button, IconButton } from './Button';
 export { Input, PasswordInput, SearchInput, Textarea } from './Field';
+export { Segmented } from './Segmented';
 export { Tabs } from './Tabs';
 export type { TabItem } from './Tabs';
 export { Tooltip } from './Tooltip';

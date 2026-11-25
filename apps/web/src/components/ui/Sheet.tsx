@@ -144,7 +144,7 @@ export function Sheet({
         if (e.target === ref.current && dismissible) ref.current?.close();
       }}
       data-testid={testId}
-      className={`max-h-[90dvh] overflow-y-auto bg-surface p-0 text-fg shadow-lg backdrop:bg-[var(--overlay-scrim)] ${
+      className={`max-h-[90dvh] overflow-y-auto bg-raised p-0 text-fg shadow-lg backdrop:bg-[var(--overlay-scrim)] ${
         variant === 'sheet'
           ? 'm-0 mt-auto w-full max-w-none rounded-t-sheet md:m-auto md:max-w-[480px] md:rounded-panel'
           : 'm-auto w-[calc(100%-2rem)] max-w-[480px] rounded-panel'

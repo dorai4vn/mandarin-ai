@@ -81,6 +81,17 @@ export const HandwritingCanvas = forwardRef<
     return () => ro.disconnect();
   }, [resize]);
 
+  // Theme change (UI-6): the grid and ink colours are read from CSS at draw time, so redraw.
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    mq.addEventListener('change', draw);
+    window.addEventListener('mandarin:themechange', draw);
+    return () => {
+      mq.removeEventListener('change', draw);
+      window.removeEventListener('mandarin:themechange', draw);
+    };
+  }, [draw]);
+
   const point = (e: PointerEvent | React.PointerEvent) => {
     const rect = canvasRef.current!.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top, t: e.timeStamp };

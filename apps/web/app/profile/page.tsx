@@ -1,5 +1,6 @@
 import { CardLink, Card, PageHeader } from '@/components/ui/index';
 import { InstallCard } from './install-card';
+import { ThemeCard } from './theme-card';
 
 export const metadata = { title: 'Hồ sơ' };
 
@@ -24,6 +25,7 @@ export default function Profile() {
             className="mt-4"
           />
         </Card>
+        <ThemeCard />
         <InstallCard />
         <CardLink
           href="/lab"

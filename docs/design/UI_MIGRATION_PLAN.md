@@ -218,13 +218,20 @@ Chi tiết: `docs/design/UI4_REPORT.md`.
 
 Chi tiết: `docs/design/UI5_REPORT.md`.
 
+### UI-6 — Dark mode · nhánh `feat/ui-6-dark`
+
+- **Token Dark** đã kích hoạt (theo hệ thống / Sáng / Tối trong Hồ sơ & cài đặt), không nháy màu.
+- **CI** kiểm AA cho 80 cặp ở cả hai theme; axe ở chế độ tối trên 12 trang.
+
+Chi tiết: `docs/design/UI6_REPORT.md`.
+
 ### Follow-up phát hiện trong UI-1 (không sửa — ngoài phạm vi)
 
 | ID   | Vấn đề                                                                                                                                                                                                         | Đề xuất                                                 |
 | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | FU-1 | **Đã sửa ở UI-3.** Tràn ngang ở 320 px **có từ M0** (đo trên `main`): `/lab` 23 px (bảng khả năng), `/lab/offline` 73 px (khối trạng thái; V2 giảm còn 59 px); `/lab/session` 93 px khi chưa cấu hình Supabase | Sửa trong UI-3/UI-5 (`min-w-0`, xuống dòng chuỗi dài)   |
 | FU-2 | `public/offline.html` đã đổi màu V2 nhưng thiết bị đã cài giữ bản cũ trong cache của service worker tới lần đổi phiên bản SW; câu "Dữ liệu học chưa gửi sẽ tự đồng bộ khi có mạng" chưa đúng khi sync đang tắt | PR có phạm vi SW riêng (bump `VERSION`) + sửa nội dung  |
-| FU-3 | M0 có dark mode theo hệ thống; UI-1 chỉ Light → người dùng đặt hệ điều hành ở chế độ tối thấy giao diện sáng (đã chấp nhận, D-039 quyết định 5)                                                                | UI-6 Dark mode                                          |
+| FU-3 | M0 có dark mode theo hệ thống; UI-1 chỉ Light → người dùng đặt hệ điều hành ở chế độ tối thấy giao diện sáng (đã chấp nhận, D-039 quyết định 5)                                                                | **Đã làm ở UI-6**                                       |
 | FU-4 | Alias token M0 còn trong code                                                                                                                                                                                  | Đã thay hết trong trang (UI-5); xóa định nghĩa ở UI-8   |
 | FU-5 | Chữ Hán trong nội dung người dùng nhập (ghi chú offline) và placeholder `Ví dụ: 山 = núi` không gắn `lang` theo đoạn                                                                                           | Tách đoạn tự động khi làm Input/HanziText ở UI-2+       |
 | FU-6 | Thang radius V2 (12/16/20/24) chưa áp vào thang Tailwind (giữ để không đổi hình logo/thành phần)                                                                                                               | **Đã xong ở UI-2** (`rounded-control/card/panel/sheet`) |

@@ -130,7 +130,7 @@ export function Tabs({
         {indicator && (
           <span
             aria-hidden
-            className={`pointer-events-none absolute left-0 transition-[translate] duration-[var(--duration-base)] ease-[var(--ease-standard)] ${seg ? 'top-1 bottom-1 rounded-[8px] bg-surface shadow-xs' : 'bottom-0 h-0.5 bg-primary-base'}`}
+            className={`pointer-events-none absolute left-0 transition-[translate] duration-[var(--duration-base)] ease-[var(--ease-standard)] ${seg ? 'top-1 bottom-1 rounded-[8px] bg-raised shadow-xs' : 'bottom-0 h-0.5 bg-primary-base'}`}
             style={{ width: indicator.w, translate: `${indicator.x}px 0` }}
           />
         )}
@@ -152,7 +152,7 @@ export function Tabs({
               onClick={() => select(t.id)}
               className={`relative z-[1] shrink-0 whitespace-nowrap font-semibold focus-visible:outline-offset-[-3px]! transition-colors duration-[var(--duration-fast)] ${
                 seg
-                  ? `h-9 min-w-11 rounded-[8px] px-3 text-sm before:absolute before:-inset-y-1 before:inset-x-0 before:content-[''] ${on ? `text-fg ${indicator ? '' : 'bg-surface shadow-xs'}` : 'text-fg-muted hover:text-fg'}`
+                  ? `h-9 min-w-11 rounded-[8px] px-3 text-sm before:absolute before:-inset-y-1 before:inset-x-0 before:content-[''] ${on ? `text-fg ${indicator ? '' : 'bg-raised shadow-xs'}` : 'text-fg-muted hover:text-fg'}`
                   : `h-11 min-w-11 px-4 text-base ${on ? `text-primary-text ${indicator ? '' : 'shadow-[inset_0_-2px_0_var(--primary-base)]'}` : 'text-fg-muted hover:text-fg'}`
               }`}
             >

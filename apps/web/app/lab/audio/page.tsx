@@ -3,7 +3,7 @@ import type { PronunciationAssessmentResult } from '@mandarin/contracts';
 import { useEffect, useRef, useState } from 'react';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Mono } from '@/components/ui';
-import { Button, Card, PageHeader } from '@/components/ui/index';
+import { Button, Card, PageHeader, Segmented } from '@/components/ui/index';
 import { MicIcon, PlayIcon, StopIcon } from '@/components/icons';
 import { api, describeApiError } from '@/lib/api-client';
 import { labelForResult } from '@/lib/status';
@@ -17,7 +17,7 @@ import { parseWavHeader, toBase64 } from '@/platform/wav';
 import { HanziText, Pinyin } from '@/components/Hanzi';
 
 const REFERENCE = '你好';
-const RATES = [0.5, 0.75, 1] as const;
+const RATES = [0.5, 0.75, 1];
 const fmt = (ms: number) => {
   const s = Math.floor(ms / 1000);
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -34,7 +34,7 @@ export default function AudioLab() {
   const [result, setResult] = useState<Recording | null>(null);
   const [assessment, setAssessment] = useState<PronunciationAssessmentResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [rate, setRate] = useState<number>(1);
+  const [rate, setRate] = useState(1);
   // Real elapsed time while recording (no simulated level meter: M0 has no analyser output).
   const [elapsed, setElapsed] = useState(0);
   const startedAt = useRef(0);
@@ -205,30 +205,12 @@ export default function AudioLab() {
                 >
                   Nghe lại
                 </Button>
-                <fieldset className="flex items-center gap-2">
-                  <legend className="sr-only">Tốc độ nghe lại</legend>
-                  <span aria-hidden className="text-sm text-fg-muted">
-                    Tốc độ
-                  </span>
-                  <div className="inline-flex rounded-control bg-subtle p-1">
-                    {RATES.map((r) => (
-                      <label
-                        key={r}
-                        className="cursor-pointer rounded-[10px] px-3 py-1.5 text-sm font-medium text-fg-muted has-[:checked]:bg-surface has-[:checked]:text-fg has-[:checked]:shadow-sm has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--border-focus)]"
-                      >
-                        <input
-                          type="radio"
-                          name="playback-rate"
-                          value={r}
-                          checked={rate === r}
-                          onChange={() => setRate(r)}
-                          className="sr-only"
-                        />
-                        {r}×
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
+                <Segmented
+                  legend="Tốc độ nghe lại"
+                  options={RATES.map((r) => ({ value: r, label: `${r}×` }))}
+                  value={rate}
+                  onChange={setRate}
+                />
               </div>
               <audio ref={audioEl} className="hidden" />
               {result && header && (

@@ -1,8 +1,10 @@
 /*
- * Mandarin AI — Design System V2 tokens, LIGHT MODE (D-039, docs/design/TOKENS_V2.md).
- * Source of truth for runtime colours. Every value below was checked against WCAG 2.2 AA
- * (scripts/check-contrast.mjs parses this file in CI). Dark mode is a separate phase (UI-6):
- * the dark values are specified in TOKENS_V2.md but intentionally NOT active yet.
+ * Mandarin AI — Design System V2 tokens (D-039, docs/design/TOKENS_V2.md): LIGHT (default) and
+ * DARK (UI-6). Source of truth for runtime colours. Every pair the UI uses is checked against
+ * WCAG 2.2 AA in both themes (scripts/check-contrast.mjs parses this file in CI).
+ * Theme: follows the system unless the user picked one (`data-theme` on <html>, set before first
+ * paint by the inline script in app/layout.tsx). The DARK values appear twice (explicit choice and
+ * system preference); scripts/check-contrast.mjs fails if the two blocks ever differ.
  * Components use the semantic names through Tailwind (`bg-surface`, `text-fg-muted`, …), never
  * raw hex codes.
  */
@@ -13,6 +15,7 @@
   --bg-page: #f7f9fd;
   --bg-subtle: #eef2fa;
   --surface-default: #ffffff;
+  --surface-raised: #ffffff; /* dialog, popover, toast (+ shadow in light) */
   --surface-sunken: #f1f4fa;
   --surface-inverse: #18243a;
 
@@ -126,4 +129,206 @@
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* DARK — explicit choice */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Backgrounds & surfaces */
+  --bg-page: #0e1422;
+  --bg-subtle: #121a2a;
+  --surface-default: #161e2e;
+  --surface-raised: #1e2839;
+  --surface-sunken: #0b1120;
+  --surface-inverse: #e8edf7;
+
+  /* Text */
+  --fg-default: #e8edf7;
+  --fg-muted: #a9b4c7;
+  --fg-subtle: #8d99ad;
+  --fg-disabled: #5a6577;
+  --fg-inverse: #0e1422;
+  --fg-link: #7b95ff;
+
+  /* Borders & focus */
+  --border-default: #2a3548;
+  --border-strong: #5e6c84;
+  --border-focus: #8aa2ff;
+
+  /* Primary */
+  --primary-base: #6887ff;
+  --primary-solid: #7b95ff;
+  --primary-hover: #94aaff;
+  --primary-active: #6887ff;
+  --primary-subtle: #1c2650;
+  --primary-text: #7b95ff;
+  --primary-text-strong: #b8c4ff;
+  --primary-on: #0e1422;
+
+  /* Secondary — lavender */
+  --secondary-base: #a78bfa;
+  --secondary-solid: #bba6ff;
+  --secondary-hover: #cbbbff;
+  --secondary-subtle: #2a2250;
+  --secondary-text: #bba6ff;
+  --secondary-on: #0e1422;
+
+  /* Accent — coral */
+  --accent-base: #ff806b;
+  --accent-subtle: #3a2220;
+  --accent-text: #ff9a88;
+  --accent-text-strong: #ff9a88;
+  --accent-on: #0e1422;
+
+  /* Status */
+  --success-base: #2fc9a1;
+  --success-solid: #4fd9b3;
+  --success-subtle: #10302a;
+  --success-text: #4fd9b3;
+  --success-text-strong: #4fd9b3;
+  --success-on: #0e1422;
+
+  --warning-base: #f5b451;
+  --warning-subtle: #33270f;
+  --warning-text: #f5b451;
+  --warning-on: #0e1422;
+
+  --error-base: #f07075;
+  --error-solid: #ff8a8a;
+  --error-hover: #ffa3a3;
+  --error-subtle: #3a1c20;
+  --error-text: #ff8a8a;
+  --error-text-strong: #ff8a8a;
+  --error-on: #0e1422;
+
+  /* Interaction overlays */
+  --state-hover: rgb(232 237 247 / 0.06);
+  --state-pressed: rgb(232 237 247 / 0.1);
+  --state-disabled-bg: #1a2232;
+  --overlay-scrim: rgb(0 0 0 / 0.6);
+
+  /*
+   * Study cards — dark tiles from the reference (TOKENS_V2 §2.7). Icons lightened so each is
+   * ≥ 3:1 on its tile (the light icons fall to 2.9–3.2:1 there); checked in CI.
+   */
+  --study-blue-bg: #153857;
+  --study-blue-icon: #5aa2ff;
+  --study-lavender-bg: #2c2a50;
+  --study-lavender-icon: #a78bfa;
+  --study-mint-bg: #0f403d;
+  --study-mint-icon: #2fc9a1;
+
+  /* Handwriting canvas */
+  --stroke-ink: #e8edf7;
+  --stroke-guide: #33405a;
+  --stroke-hint: #8aa2ff;
+
+  /* Shadows keep their shape; layering comes from lighter surfaces + borders */
+  --elevation-xs: 0 1px 2px rgb(0 0 0 / 0.4);
+  --elevation-sm: 0 1px 3px rgb(0 0 0 / 0.4), 0 1px 2px rgb(0 0 0 / 0.3);
+  --elevation-md: 0 4px 12px rgb(0 0 0 / 0.4);
+  --elevation-lg: 0 12px 32px rgb(0 0 0 / 0.4);
+}
+
+/* DARK — system preference, unless the user picked Light (same values as above) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    /* Backgrounds & surfaces */
+    --bg-page: #0e1422;
+    --bg-subtle: #121a2a;
+    --surface-default: #161e2e;
+    --surface-raised: #1e2839;
+    --surface-sunken: #0b1120;
+    --surface-inverse: #e8edf7;
+
+    /* Text */
+    --fg-default: #e8edf7;
+    --fg-muted: #a9b4c7;
+    --fg-subtle: #8d99ad;
+    --fg-disabled: #5a6577;
+    --fg-inverse: #0e1422;
+    --fg-link: #7b95ff;
+
+    /* Borders & focus */
+    --border-default: #2a3548;
+    --border-strong: #5e6c84;
+    --border-focus: #8aa2ff;
+
+    /* Primary */
+    --primary-base: #6887ff;
+    --primary-solid: #7b95ff;
+    --primary-hover: #94aaff;
+    --primary-active: #6887ff;
+    --primary-subtle: #1c2650;
+    --primary-text: #7b95ff;
+    --primary-text-strong: #b8c4ff;
+    --primary-on: #0e1422;
+
+    /* Secondary — lavender */
+    --secondary-base: #a78bfa;
+    --secondary-solid: #bba6ff;
+    --secondary-hover: #cbbbff;
+    --secondary-subtle: #2a2250;
+    --secondary-text: #bba6ff;
+    --secondary-on: #0e1422;
+
+    /* Accent — coral */
+    --accent-base: #ff806b;
+    --accent-subtle: #3a2220;
+    --accent-text: #ff9a88;
+    --accent-text-strong: #ff9a88;
+    --accent-on: #0e1422;
+
+    /* Status */
+    --success-base: #2fc9a1;
+    --success-solid: #4fd9b3;
+    --success-subtle: #10302a;
+    --success-text: #4fd9b3;
+    --success-text-strong: #4fd9b3;
+    --success-on: #0e1422;
+
+    --warning-base: #f5b451;
+    --warning-subtle: #33270f;
+    --warning-text: #f5b451;
+    --warning-on: #0e1422;
+
+    --error-base: #f07075;
+    --error-solid: #ff8a8a;
+    --error-hover: #ffa3a3;
+    --error-subtle: #3a1c20;
+    --error-text: #ff8a8a;
+    --error-text-strong: #ff8a8a;
+    --error-on: #0e1422;
+
+    /* Interaction overlays */
+    --state-hover: rgb(232 237 247 / 0.06);
+    --state-pressed: rgb(232 237 247 / 0.1);
+    --state-disabled-bg: #1a2232;
+    --overlay-scrim: rgb(0 0 0 / 0.6);
+
+    /*
+     * Study cards — dark tiles from the reference (TOKENS_V2 §2.7). Icons lightened so each is
+     * ≥ 3:1 on its tile (the light icons fall to 2.9–3.2:1 there); checked in CI.
+     */
+    --study-blue-bg: #153857;
+    --study-blue-icon: #5aa2ff;
+    --study-lavender-bg: #2c2a50;
+    --study-lavender-icon: #a78bfa;
+    --study-mint-bg: #0f403d;
+    --study-mint-icon: #2fc9a1;
+
+    /* Handwriting canvas */
+    --stroke-ink: #e8edf7;
+    --stroke-guide: #33405a;
+    --stroke-hint: #8aa2ff;
+
+    /* Shadows keep their shape; layering comes from lighter surfaces + borders */
+    --elevation-xs: 0 1px 2px rgb(0 0 0 / 0.4);
+    --elevation-sm: 0 1px 3px rgb(0 0 0 / 0.4), 0 1px 2px rgb(0 0 0 / 0.3);
+    --elevation-md: 0 4px 12px rgb(0 0 0 / 0.4);
+    --elevation-lg: 0 12px 32px rgb(0 0 0 / 0.4);
+  }
 }

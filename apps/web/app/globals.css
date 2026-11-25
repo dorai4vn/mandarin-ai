@@ -10,6 +10,7 @@
   --color-page: var(--bg-page);
   --color-subtle: var(--bg-subtle);
   --color-surface: var(--surface-default);
+  --color-raised: var(--surface-raised);
   --color-sunken: var(--surface-sunken);
   --color-inverse: var(--surface-inverse);
 
