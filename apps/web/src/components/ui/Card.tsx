@@ -193,7 +193,7 @@ export function StudyCard({
     );
   }
   return (
-    <div {...rest} className={cls} aria-disabled={comingSoon || undefined}>
+    <div {...rest} className={cls} data-state={comingSoon ? 'coming-soon' : undefined}>
       {body}
     </div>
   );

@@ -1,6 +1,6 @@
 # Component specification V2
 
-Trạng thái: **ĐÃ DUYỆT 2026-11-24** (D-039). UI-2 đã triển khai Button, IconButton, Input, Password Input, Search, Card, Badge (+ Study Card) trong `apps/web/src/components/ui/`. Token: `TOKENS_V2.md`. Breakpoint: `RESPONSIVE_V2.md`.
+Trạng thái: **ĐÃ DUYỆT 2026-11-24** (D-039). UI-2 đã triển khai Button, IconButton, Input, Password Input, Search, Card, Badge (+ Study Card) trong `apps/web/src/components/ui/`. UI-2B (`docs/design/UI2B_REPORT.md`) thêm Tabs, Tooltip, Progress Bar/Ring, Skeleton, Empty State, Error State, PageHeader V2. Token: `TOKENS_V2.md`. Breakpoint: `RESPONSIVE_V2.md`.
 
 ## 0. Quy ước chung (áp dụng cho mọi component)
 
