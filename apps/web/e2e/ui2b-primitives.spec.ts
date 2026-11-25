@@ -337,8 +337,9 @@ test('PageHeader V2: exactly one h1 per route, text.h1 size by breakpoint', asyn
     await page.goto(path);
     const h1 = page.locator('main h1');
     await expect(h1, path).toHaveCount(1);
-    const size = await h1.evaluate((el) => getComputedStyle(el).fontSize);
-    expect(size, path).toBe(wide ? '30px' : '26px');
+    // Auto-retrying: a client page may re-render its h1 right after load (a one-shot
+    // getComputedStyle on a detached node returned "" in WebKit).
+    await expect(h1, path).toHaveCSS('font-size', wide ? '30px' : '26px');
   }
 });
 
