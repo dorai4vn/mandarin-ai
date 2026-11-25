@@ -155,6 +155,77 @@ textarea {
   font-family: var(--font-sans);
 }
 
+/*
+ * UI-3 shell. Sidebar width and labels follow data-sidebar on <html> (set before first paint by an
+ * inline script in app/layout.tsx from the remembered choice; absent = auto):
+ * auto = collapsed (72 px) 1024–1279, expanded (248 px) from 1280; or the user's explicit choice.
+ */
+.app-shell {
+  --sidebar-w: 72px;
+}
+:root[data-sidebar='expanded'] .app-shell {
+  --sidebar-w: 248px;
+}
+@media (min-width: 1280px) {
+  :root:not([data-sidebar]) .app-shell {
+    --sidebar-w: 248px;
+  }
+}
+/* Collapsed: labels stay in the accessibility tree (screen-reader only). */
+.sidebar-rail .nav-label,
+.sidebar-desktop .nav-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+.sidebar-rail .nav-sync,
+.sidebar-desktop .nav-sync,
+.sidebar-desktop .toggle-collapse {
+  display: none;
+}
+:root[data-sidebar='expanded'] .sidebar-desktop .nav-label {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+}
+:root[data-sidebar='expanded'] .sidebar-desktop .nav-sync,
+:root[data-sidebar='expanded'] .sidebar-desktop .toggle-collapse {
+  display: block;
+}
+:root[data-sidebar='expanded'] .sidebar-desktop .nav-sync-compact,
+:root[data-sidebar='expanded'] .sidebar-desktop .nav-tip,
+:root[data-sidebar='expanded'] .sidebar-desktop .toggle-expand {
+  display: none !important;
+}
+@media (min-width: 1280px) {
+  :root:not([data-sidebar]) .sidebar-desktop .nav-label {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+  }
+  :root:not([data-sidebar]) .sidebar-desktop .nav-sync,
+  :root:not([data-sidebar]) .sidebar-desktop .toggle-collapse {
+    display: block;
+  }
+  :root:not([data-sidebar]) .sidebar-desktop .nav-sync-compact,
+  :root:not([data-sidebar]) .sidebar-desktop .nav-tip,
+  :root:not([data-sidebar]) .sidebar-desktop .toggle-expand {
+    display: none !important;
+  }
+}
+
 /* UI-2B: indeterminate progress stripe and skeleton shimmer — transform only (D-032). */
 @keyframes progress-slide {
   from {

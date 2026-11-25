@@ -22,7 +22,8 @@ export async function signIn(page: Page, sub?: string) {
 export type DeviceClass = 'phone' | 'tablet' | 'desktop';
 export function deviceClass(page: Page): DeviceClass {
   const w = page.viewportSize()?.width ?? 1440;
-  return w < 768 ? 'phone' : w < 1280 ? 'tablet' : 'desktop';
+  // D-039 / RESPONSIVE_V2 (UI-3): phone < 768, tablet 768–1023, desktop ≥ 1024.
+  return w < 768 ? 'phone' : w < 1024 ? 'tablet' : 'desktop';
 }
 
 export async function expectNoHorizontalScroll(page: Page) {
