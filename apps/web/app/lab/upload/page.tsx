@@ -125,7 +125,7 @@ export default function UploadLab() {
           onDrop={onDrop}
           data-testid="dropzone"
           aria-disabled={disabled || undefined}
-          className={`flex min-h-48 flex-col items-center justify-center gap-3 rounded-card border-2 border-dashed p-6 text-center has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--focus-ring)] ${disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'} ${zone}`}
+          className={`flex min-h-48 flex-col items-center justify-center gap-3 rounded-card border-2 border-dashed p-6 text-center has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--border-focus)] ${disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'} ${zone}`}
         >
           <UploadIcon width={32} height={32} className="text-primary-base" />
           <span className="text-base text-fg">

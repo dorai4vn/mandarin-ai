@@ -214,7 +214,7 @@ export default function AudioLab() {
                     {RATES.map((r) => (
                       <label
                         key={r}
-                        className="cursor-pointer rounded-[10px] px-3 py-1.5 text-sm font-medium text-fg-muted has-[:checked]:bg-surface has-[:checked]:text-fg has-[:checked]:shadow-sm has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus-ring)]"
+                        className="cursor-pointer rounded-[10px] px-3 py-1.5 text-sm font-medium text-fg-muted has-[:checked]:bg-surface has-[:checked]:text-fg has-[:checked]:shadow-sm has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--border-focus)]"
                       >
                         <input
                           type="radio"

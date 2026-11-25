@@ -30,6 +30,7 @@ jobs:
         run: |
           pnpm check:secrets
           pnpm check:contrast
+          pnpm check:css-vars
           pnpm check:deps
           pnpm check:expo
       - name: Fetch handwriting data (pinned sha256, D-029)
