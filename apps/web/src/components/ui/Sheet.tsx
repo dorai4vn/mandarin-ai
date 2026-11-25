@@ -33,6 +33,7 @@ export function Sheet({
   const pushed = useRef(false);
   // Set when a link inside the sheet was activated: the navigation owns history then.
   const navigating = useRef(false);
+  const prevOverflow = useRef('');
   const close = useRef(onClose);
   useEffect(() => {
     close.current = onClose;
@@ -49,6 +50,7 @@ export function Sheet({
         '[data-sheet-body] a[href], [data-sheet-body] button',
       );
       first?.focus();
+      prevOverflow.current = document.documentElement.style.overflow;
       document.documentElement.style.overflow = 'hidden';
       history.pushState({ ...history.state, sheet: id }, '');
       pushed.current = true;
@@ -56,6 +58,15 @@ export function Sheet({
       d.close();
     }
   }, [open, id]);
+
+  // Unmounted while open: restore scrolling and drop the history entry.
+  useEffect(
+    () => () => {
+      if (ref.current?.open) document.documentElement.style.overflow = prevOverflow.current;
+      if (pushed.current && history.state?.sheet === id) history.back();
+    },
+    [id],
+  );
 
   useEffect(() => {
     const onPop = () => {
@@ -70,7 +81,7 @@ export function Sheet({
 
   // Called whenever the dialog closes (Escape, close button, backdrop, navigation).
   const onDialogClose = () => {
-    document.documentElement.style.overflow = '';
+    document.documentElement.style.overflow = prevOverflow.current;
     if (pushed.current) {
       pushed.current = false;
       // Drop the history entry the sheet added — unless a link inside the sheet is navigating
@@ -93,7 +104,12 @@ export function Sheet({
         ref.current?.close();
       }}
       onClickCapture={(e) => {
-        if ((e.target as Element).closest?.('a[href]')) navigating.current = true;
+        // A plain left click on a link to ANOTHER page: that navigation owns history (links in a
+        // sheet should use `replace`, so it replaces the sheet's own entry). Modified clicks
+        // (new tab) and same-page links close the sheet normally.
+        const a = (e.target as Element).closest?.('a[href]') as HTMLAnchorElement | null;
+        const plain = e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
+        if (a && plain && a.pathname !== location.pathname) navigating.current = true;
       }}
       onClick={(e) => {
         // A click on the dialog element itself (not its content) is a click on the backdrop.

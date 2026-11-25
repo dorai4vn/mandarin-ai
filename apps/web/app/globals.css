@@ -156,18 +156,18 @@ textarea {
 }
 
 /*
- * UI-3 shell. Sidebar width and labels follow data-sidebar on .app-shell:
+ * UI-3 shell. Sidebar width and labels follow data-sidebar on <html> (set before first paint by an
+ * inline script in app/layout.tsx from the remembered choice; absent = auto):
  * auto = collapsed (72 px) 1024–1279, expanded (248 px) from 1280; or the user's explicit choice.
- * Pure CSS so the server HTML is already right (no flash before hydration).
  */
 .app-shell {
   --sidebar-w: 72px;
 }
-.app-shell[data-sidebar='expanded'] {
+:root[data-sidebar='expanded'] .app-shell {
   --sidebar-w: 248px;
 }
 @media (min-width: 1280px) {
-  .app-shell[data-sidebar='auto'] {
+  :root:not([data-sidebar]) .app-shell {
     --sidebar-w: 248px;
   }
 }
@@ -185,10 +185,11 @@ textarea {
   border-width: 0;
 }
 .sidebar-rail .nav-sync,
-.sidebar-desktop .nav-sync {
+.sidebar-desktop .nav-sync,
+.sidebar-desktop .toggle-collapse {
   display: none;
 }
-.app-shell[data-sidebar='expanded'] .sidebar-desktop .nav-label {
+:root[data-sidebar='expanded'] .sidebar-desktop .nav-label {
   position: static;
   width: auto;
   height: auto;
@@ -196,15 +197,17 @@ textarea {
   overflow: visible;
   clip: auto;
 }
-.app-shell[data-sidebar='expanded'] .sidebar-desktop .nav-sync {
+:root[data-sidebar='expanded'] .sidebar-desktop .nav-sync,
+:root[data-sidebar='expanded'] .sidebar-desktop .toggle-collapse {
   display: block;
 }
-.app-shell[data-sidebar='expanded'] .sidebar-desktop .nav-sync-compact,
-.app-shell[data-sidebar='expanded'] .sidebar-desktop .nav-tip {
+:root[data-sidebar='expanded'] .sidebar-desktop .nav-sync-compact,
+:root[data-sidebar='expanded'] .sidebar-desktop .nav-tip,
+:root[data-sidebar='expanded'] .sidebar-desktop .toggle-expand {
   display: none !important;
 }
 @media (min-width: 1280px) {
-  .app-shell[data-sidebar='auto'] .sidebar-desktop .nav-label {
+  :root:not([data-sidebar]) .sidebar-desktop .nav-label {
     position: static;
     width: auto;
     height: auto;
@@ -212,11 +215,13 @@ textarea {
     overflow: visible;
     clip: auto;
   }
-  .app-shell[data-sidebar='auto'] .sidebar-desktop .nav-sync {
+  :root:not([data-sidebar]) .sidebar-desktop .nav-sync,
+  :root:not([data-sidebar]) .sidebar-desktop .toggle-collapse {
     display: block;
   }
-  .app-shell[data-sidebar='auto'] .sidebar-desktop .nav-sync-compact,
-  .app-shell[data-sidebar='auto'] .sidebar-desktop .nav-tip {
+  :root:not([data-sidebar]) .sidebar-desktop .nav-sync-compact,
+  :root:not([data-sidebar]) .sidebar-desktop .nav-tip,
+  :root:not([data-sidebar]) .sidebar-desktop .toggle-expand {
     display: none !important;
   }
 }

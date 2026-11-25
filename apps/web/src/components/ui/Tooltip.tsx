@@ -31,6 +31,7 @@ export function Tooltip({
   children,
   side = 'top',
   bubbleClassName = '',
+  wrapperClassName = 'inline-flex',
 }: {
   content: ReactNode;
   children: ReactElement<TriggerProps>;
@@ -38,6 +39,8 @@ export function Tooltip({
   side?: 'top' | 'bottom' | 'right';
   /** Extra classes on the bubble (e.g. hide it when the trigger already shows its label). */
   bubbleClassName?: string;
+  /** Display of the wrapper (default inline-flex; `flex` for full-width rows). */
+  wrapperClassName?: string;
 }) {
   const id = useId();
   const [hovered, setHovered] = useState(false);
@@ -118,7 +121,7 @@ export function Tooltip({
 
   return (
     <span
-      className="relative inline-flex"
+      className={`relative ${wrapperClassName}`}
       onPointerEnter={(e) => {
         if (e.pointerType !== 'mouse') return;
         arm();
@@ -157,10 +160,10 @@ export function Tooltip({
             ? { translate: '0 -50%', left: fixedAt?.left ?? 0, top: fixedAt?.top ?? 0 }
             : { translate: `calc(-50% + ${shift}px) 0` }
         }
-        className={`${bubbleClassName} absolute z-30 w-max max-w-[min(240px,calc(100vw-16px))] ${
+        className={`${bubbleClassName} z-30 w-max max-w-[min(240px,calc(100vw-16px))] ${
           placement === 'right'
             ? 'fixed pl-2'
-            : `left-1/2 ${placement === 'top' ? 'bottom-full pb-2' : 'top-full pt-2'}`
+            : `absolute left-1/2 ${placement === 'top' ? 'bottom-full pb-2' : 'top-full pt-2'}`
         }`}
       >
         <span className="block rounded-control bg-inverse px-2.5 py-1.5 text-center text-sm font-medium leading-5 text-fg-inverse shadow-md">
