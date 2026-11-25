@@ -73,6 +73,8 @@ Package dependency direction (no cycles, enforced by lint/CI): `contracts` <- `d
 
 ## Database domain model (initial)
 
+> **D-043 (M2, 2026-11-25):** implemented subset — shared `lexemes`, `courses`, `chapters`, `lessons`, `lesson_lexemes` (read-only for learners, `content_version` view); personal vocabulary is the projection of the learner's own `sync_operations` (`entityType: vocabulary_item`) rather than the user-owned tables below, which stay a possible later projection.
+
 This is the target model. M0 ships only the migration template and the `profiles` baseline with RLS tests; the remaining tables are created by reviewed migrations in M1 (identity/sync), M2 (lexicon, vocabulary, tags/topics, course/library), M3 (quiz/review) and later milestones.
 
 ### Identity & content

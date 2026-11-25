@@ -62,6 +62,8 @@ Device smoke on real phones/desktops is reported as **not verified** until the o
 
 ## M2 — Dictionary, course/library content model
 
+> 2026-11-25: implemented the simple way (**D-043**): shared content in Postgres (read-only), personal vocabulary as the account's own sync operations projected on the device; separate `tags`/`topics`/`course_versions`/`content_admins` tables deferred. Report: `docs/M2_REPORT.md`.
+
 **Deliverables:** shared lexicon (admin/pipeline-write only) + user-owned custom vocabulary with RLS (D-001), personal `vocabulary_items`, manual vocab entry, search Chinese/Pinyin/Vietnamese, personal notes, `tags`/`topics` tables with real FKs, vocabulary addition provenance (D-006), lesson vocabulary relations, starter fixture course (D-012), course/chapter/lesson schema, imported content provenance model, responsive dictionary/library screens.
 
 **Exit:** Canonical shared lexeme doesn't duplicate across lessons; a normal user cannot modify shared lexicon or another user's custom vocabulary (negative RLS tests); study history is user-scoped; dictionary supports offline read of downloaded entries where IndexedDB is available; desktop layout shows list + detail side by side.

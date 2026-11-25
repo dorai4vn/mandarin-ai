@@ -65,22 +65,23 @@ test('home: no fake metrics; study tiles are "Sắp có" and not links; sync car
   await expect(page.getByTestId('store-kind')).not.toHaveText('');
 });
 
-test('dictionary: no sample words; coming-soon with milestones', async ({ page }) => {
+test('dictionary and courses are personal: sign-in required, no fake content', async ({ page }) => {
   await page.goto('/dictionary');
-  const main = page.locator('main');
-  for (const sample of ['shān', 'shuǐ', 'rén']) await expect(main).not.toContainText(sample);
-  await expect(page.getByTestId('dictionary-empty')).toContainText('Ra mắt ở M2');
-  await expect(main.locator('input')).toHaveCount(0); // no non-functional search box
+  await expect(page.getByTestId('require-auth')).toBeVisible();
+  await expect(page.locator('main')).not.toContainText('shān');
 });
 
 test('library: tabs Giáo trình / Tài liệu của tôi, both honest', async ({ page }) => {
+  const { signIn } = await import('./helpers');
+  await signIn(page);
   await page.goto('/library');
   await page.waitForFunction(() =>
     Object.keys(document.querySelector('main') ?? {}).some((k) => k.startsWith('__react')),
   );
   const tabs = page.getByTestId('library-tabs').getByRole('tab');
   await expect(tabs).toHaveText(['Giáo trình', 'Tài liệu của tôi']);
-  await expect(page.getByRole('tabpanel')).toContainText('Ra mắt ở M2');
+  // M2: the starter course is real content (shared, read-only).
+  await expect(page.getByTestId('course-list')).toContainText('Khởi động tiếng Trung');
   await tabs.nth(1).click();
   await expect(page.getByRole('tabpanel')).toContainText('Ra mắt ở M4');
   await expect(

@@ -166,6 +166,8 @@ jobs:
         run: node scripts/test-auth-invite-only.mjs
       - name: Build the API and its adapters
         run: pnpm turbo run build --filter "@mandarin/api..."
+      - name: Starter content migration matches packages/domain (D-012)
+        run: node scripts/gen-starter-seed.mjs --check
       - name: Data isolation + exactly-once sync (two real accounts, real API, PostgREST — M1/D-042)
         run: node scripts/test-data-isolation.mjs
       - name: PDF limit 50 MB on real Supabase Storage (D-040)

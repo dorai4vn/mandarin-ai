@@ -84,8 +84,9 @@ test('sign-in page: e-mail + password, then back to the requested page; unsafe "
   await page.getByTestId('login-submit').click();
   await expect(page).toHaveURL(/\/lab\/offline$/);
   await expect(page.getByTestId('require-auth')).toHaveCount(0);
-  await expect(page.getByTestId('note-input')).toBeVisible();
-  expect(await dbNames(page)).toContain(DB(SUB));
+  // The field is enabled once the account's database is open (opening is asynchronous).
+  await expect(page.getByTestId('note-input')).toBeEnabled();
+  await expect.poll(() => dbNames(page)).toContain(DB(SUB));
   // The session survives a reload (official supabase-js persistence).
   await page.reload();
   await expect(page.getByTestId('note-input')).toBeVisible();

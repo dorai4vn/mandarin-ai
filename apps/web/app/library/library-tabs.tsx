@@ -1,5 +1,7 @@
 'use client';
+import { RequireAuth } from '@/components/auth/RequireAuth';
 import { ButtonLink, EmptyState, Tabs } from '@/components/ui';
+import { CourseList } from '@/learning/CourseList';
 
 export function LibraryTabs() {
   return (
@@ -12,13 +14,9 @@ export function LibraryTabs() {
           id: 'courses',
           label: 'Giáo trình',
           content: (
-            <EmptyState
-              variant="coming-soon"
-              hanzi="书"
-              title="Chưa có giáo trình"
-              description="Khóa học khởi động có nguồn rõ ràng, chia chương và bài."
-              milestone="M2"
-            />
+            <RequireAuth>
+              <CourseList />
+            </RequireAuth>
           ),
         },
         {

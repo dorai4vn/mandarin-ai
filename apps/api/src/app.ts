@@ -6,6 +6,7 @@ import {
   checkPdfSize,
   PronunciationAssessmentRequestSchema,
   SyncPullQuerySchema,
+  type ContentSnapshot,
   SyncPushRequestSchema,
   looksLikePdf,
   type ApiError,
@@ -239,6 +240,35 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
           nextAfter: operations.at(-1)?.serverSeq ?? after,
           hasMore,
         };
+      } catch (e) {
+        return syncFailure(reply, e);
+      }
+    },
+  );
+
+  // M2: shared, read-only content (lexicon + courses), read with the user's token (RLS).
+  app.get('/v1/content/version', { preHandler: requireUser }, async (req, reply) => {
+    if (!providers.content)
+      return reply.code(503).send(err('provider_unavailable', 'Content is not configured'));
+    try {
+      return {
+        source: providers.content.mode,
+        version: await providers.content.version(syncCaller(req)),
+      };
+    } catch (e) {
+      return syncFailure(reply, e);
+    }
+  });
+
+  app.get(
+    '/v1/content',
+    { preHandler: requireUser },
+    async (req, reply): Promise<ContentSnapshot | void> => {
+      if (!providers.content)
+        return reply.code(503).send(err('provider_unavailable', 'Content is not configured'));
+      try {
+        const snap = await providers.content.snapshot(syncCaller(req));
+        return { source: providers.content.mode, ...snap };
       } catch (e) {
         return syncFailure(reply, e);
       }

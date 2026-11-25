@@ -17,6 +17,7 @@
     "@fastify/cors": "11.4.3",
     "@mandarin/adapters": "workspace:*",
     "@mandarin/contracts": "workspace:*",
+    "@mandarin/domain": "workspace:*",
     "fastify": "5.12.8",
     "jose": "6.2.18",
     "zod": "4.6.7"

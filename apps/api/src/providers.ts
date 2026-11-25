@@ -1,5 +1,7 @@
+import { STARTER_COURSE, STARTER_LEXEMES } from '@mandarin/domain';
 import {
   MemoryObjectStorage,
+  FixtureContentStore,
   MemorySyncOperationStore,
   MockConversation,
   MockHandwritingRecognizer,
@@ -8,6 +10,7 @@ import {
   type HandwritingRecognitionPort,
   type ObjectStoragePort,
   type PronunciationAssessmentPort,
+  type ContentStore,
   type SyncOperationStore,
 } from '@mandarin/adapters';
 import {
@@ -15,6 +18,7 @@ import {
   HanziLookupRecognizer,
   OpenAIRealtimeSessions,
   SupabaseObjectStorage,
+  SupabaseContentStore,
   SupabaseSyncStore,
 } from '@mandarin/adapters/server';
 import type { AppConfig } from './config.js';
@@ -26,6 +30,8 @@ export interface Providers {
   storage: ObjectStoragePort | null;
   /** M1: Postgres `sync_operations` via PostgREST as the user (live); memory mock in dev only. */
   sync: SyncOperationStore | null;
+  /** M2: shared content from Postgres (live); bundled starter fixture in dev only (MOCK). */
+  content: ContentStore | null;
 }
 
 /** Chooses live adapters when credentials exist; otherwise labelled mocks (dev) or null (503). */
@@ -78,6 +84,15 @@ export function createProviders(config: AppConfig): Providers {
           })
         : allowStatefulMock
           ? new MemorySyncOperationStore()
+          : null,
+    content:
+      config.SUPABASE_URL && config.SUPABASE_PUBLISHABLE_KEY
+        ? new SupabaseContentStore({
+            url: config.SUPABASE_URL,
+            publishableKey: config.SUPABASE_PUBLISHABLE_KEY,
+          })
+        : allowMock
+          ? new FixtureContentStore(STARTER_LEXEMES, [STARTER_COURSE])
           : null,
   };
 }

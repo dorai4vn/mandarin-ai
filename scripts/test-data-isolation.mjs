@@ -274,6 +274,39 @@ try {
     profileAsB.status === 200 && profileAsB.json?.length === 0,
   );
 
+  // ── M2: shared content is readable by learners and read-only ────────────────────────────────
+  const content = await request(`${API}/v1/content`, {
+    headers: { authorization: `Bearer ${A.token}` },
+  });
+  check(
+    'API: live content snapshot from Postgres (seeded starter course)',
+    content.json?.source === 'live' &&
+      content.json?.lexemes?.some((l) => l.simplified === '山' && l.meaningVi === 'núi') &&
+      content.json?.courses?.[0]?.chapters?.length > 0,
+  );
+  const ver = await request(`${API}/v1/content/version`, {
+    headers: { authorization: `Bearer ${A.token}` },
+  });
+  check('API: content version matches the snapshot', ver.json?.version === content.json?.version);
+  const editLexicon = await request(`${rest}/lexemes?id=eq.lx-shan`, {
+    method: 'PATCH',
+    headers: userHeaders(B.token),
+    body: { meaning_vi: 'hacked' },
+  });
+  check(
+    'REST: a learner cannot edit the shared lexicon',
+    editLexicon.status === 401 || editLexicon.status === 403,
+    `HTTP ${editLexicon.status}`,
+  );
+  const anonLexicon = await request(`${rest}/lexemes?select=id`, { headers: anonHeaders() });
+  check(
+    'REST: anonymous caller cannot read shared content',
+    anonLexicon.status === 401 ||
+      anonLexicon.status === 403 ||
+      (anonLexicon.status === 200 && anonLexicon.json?.length === 0),
+    `HTTP ${anonLexicon.status}`,
+  );
+
   // A's data is still intact after B's attempts.
   const finalA = await pull(A);
   check(

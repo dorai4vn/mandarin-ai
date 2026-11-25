@@ -2,3 +2,6 @@ export * from './quiz/registry.js';
 export * from './quiz/builtin.js';
 export * from './handwriting/strokes.js';
 export * from './sync/outbox.js';
+export * from './dictionary/search.js';
+export * from './vocabulary/projection.js';
+export * from './content/starter.js';

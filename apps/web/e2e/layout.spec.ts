@@ -31,11 +31,16 @@ test.describe('responsive layout (D-030)', () => {
       els.map((e) => Math.round(e.getBoundingClientRect().y)),
     );
     expect(new Set(ys).size).toBe(1);
+    // M2 dictionary: list and detail side by side on desktop (D-030).
+    const { signIn } = await import('./helpers');
+    await signIn(page);
     await page.goto('/dictionary');
-    // List-and-detail style two-column layout on desktop (UI-5 dictionary).
-    const a = await page.getByTestId('dictionary-empty').boundingBox();
-    const b = await page.getByRole('heading', { name: 'Sắp có', exact: true }).boundingBox();
-    expect(Math.abs((a?.y ?? 0) - ((b?.y ?? 0) - 16))).toBeLessThan(40);
+    await page.getByTestId('dictionary-search').fill('shan');
+    await page.getByTestId('dictionary-row').first().click();
+    const list = await page.getByTestId('dictionary-results').boundingBox();
+    const detail = await page.getByTestId('word-detail').boundingBox();
+    expect(Math.abs((list?.y ?? 0) - (detail?.y ?? 1))).toBeLessThan(40);
+    expect((detail?.x ?? 0) >= (list?.x ?? 0) + (list?.width ?? 0)).toBe(true);
   });
 
   test('navigation works by keyboard on desktop', async ({ page, browserName }) => {
