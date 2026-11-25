@@ -7,7 +7,7 @@ Cập nhật lần cuối: 2026-11-24 — web app cross-platform (D-018, D-028).
 | PRD | Tính năng | Milestone | Trạng thái | Ghi chú |
 |---|---|---|---|---|
 | PRD-01 | Nhập từ vựng hằng ngày (shared lexicon + custom vocabulary, provenance) | M2 | **Đã làm (M2, D-043)** | Nhập tay (pinyin số → dấu), gợi ý lexeme dùng chung (không ghi đè), trùng → liên kết, nguồn gốc (ngày, cách thêm, bài); offline + đa thiết bị qua log đồng bộ |
-| PRD-02 | Từ điển cá nhân, tìm kiếm Hanzi/Pinyin/tiếng Việt, tags/topics | M2 | **Đã làm (M2)** | Tìm 山 bằng 山/shan1/shān/núi; ghi chú, tag; bài học chứa từ; list + detail trên desktop. Tag là chuỗi trên mục; lọc theo mức thuộc/đến hạn: M3 |
+| PRD-02 | Từ điển cá nhân (tên mục: "Từ điển cá nhân"), tìm kiếm Hanzi/Pinyin/tiếng Việt, tags/topics | M2 | **Đã làm (M2)** | Tìm 山 bằng 山/shan1/shān/núi; ghi chú, tag; bài học chứa từ; list + detail trên desktop. Tag là chuỗi trên mục; lọc theo mức thuộc/đến hạn: M3 |
 | PRD-03 | Hanzi visual etymology có nguồn | M5 | Chưa bắt đầu | |
 | PRD-04 | Quiz & spaced repetition theo skill | M3 | Đang làm (contract) | M0: registry 6 QuizType + mapping skill (D-002, D-007) |
 | PRD-05 | Mini game gợi ý → viết tay (canvas Pointer Events + HandwritingRecognitionPort) | M5 | Đang làm (spike) | M0-PWA: canvas touch/mouse/pen + adapter server (D-029, chờ duyệt giấy phép) |

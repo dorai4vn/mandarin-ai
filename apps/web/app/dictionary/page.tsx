@@ -2,15 +2,15 @@ import { RequireAuth } from '@/components/auth/RequireAuth';
 import { PageHeader } from '@/components/ui';
 import { DictionaryScreen } from '@/learning/DictionaryScreen';
 
-export const metadata = { title: 'Từ điển' };
+export const metadata = { title: 'Từ điển cá nhân' };
 
-/** Dictionary (M2, PRD-01/02): your words + the shared lexicon, searchable offline. */
+/** Personal dictionary (M2, PRD-01/02): the learner's saved words + suggestions from the shared lexicon. */
 export default function Dictionary() {
   return (
     <>
       <PageHeader
-        title="Từ điển"
-        lead="Tìm bằng chữ Hán, pinyin (có hoặc không dấu) hoặc tiếng Việt. Từ của bạn dùng được cả khi offline."
+        title="Từ điển cá nhân"
+        lead="Kho từ vựng tiếng Trung của riêng bạn: những từ bạn đã lưu, kèm ghi chú, tag và nguồn gốc. Ôn tập, luyện viết và theo dõi tiến độ từ danh sách này sẽ có trong các bản sau."
       />
       <RequireAuth>
         <DictionaryScreen />

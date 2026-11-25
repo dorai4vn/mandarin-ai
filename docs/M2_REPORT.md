@@ -3,9 +3,12 @@
 Ngày: 2026-11-25 · Phạm vi: `docs/MILESTONES_CLAUDE_CODE.md` mục M2, làm theo hướng đơn giản (D-043).
 
 ## Người học làm được gì
-- **Từ điển** (`/dictionary`):
+- **Từ điển cá nhân** (`/dictionary`, đổi tên theo yêu cầu UX của chủ dự án; route giữ nguyên):
+  - Mô tả trang: kho từ vựng tiếng Trung của riêng người học (từ đã lưu, ghi chú, tag, nguồn gốc). Ôn tập, luyện viết, theo dõi tiến độ là **tính năng tương lai** (M3+), trang ghi rõ điều này.
+  - Ô tìm kiếm tìm trong **từ đã lưu và kho từ chung**; kết quả chia hai nhóm "Đã lưu" và "Gợi ý từ kho chung" (nhãn "Đã lưu"/"Gợi ý" trên từng dòng; gợi ý có viền nét đứt).
+  - Tên menu "Từ điển cá nhân" hiện đầy đủ ở mọi khổ màn hình (thanh điều hướng dưới xuống hai dòng trên điện thoại hẹp, không cắt chữ — kiểm bằng E2E).
   - Tìm bằng chữ Hán (giản thể/phồn thể), pinyin (có dấu, số thanh hoặc không dấu) hoặc tiếng Việt (không cần dấu).
-  - Kết quả gộp **từ của tôi** và **từ điển dùng chung**; một từ đã thêm chỉ hiện một lần.
+  - Một từ đã lưu chỉ hiện một lần (trong nhóm "Đã lưu"), không lặp lại ở nhóm gợi ý.
   - Xem chi tiết: chữ Hán, phồn thể, pinyin, nghĩa, ví dụ kèm bản dịch, các bài có từ này.
   - **Thêm vào từ của tôi**; ghi chú, tag; nguồn gốc "Đã thêm" (ngày, cách thêm, bài); xóa có xác nhận.
   - Desktop: danh sách và chi tiết cạnh nhau. Điện thoại: danh sách → chi tiết, có nút quay lại.

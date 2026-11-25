@@ -9,7 +9,7 @@ Ký hiệu cột "Cần": `—` = không cần tài khoản/khóa · `SB` = cầ
 |---|---|---|---|---|
 | A1 | Mở URL Preview (đăng nhập Vercel nếu được hỏi) | Trang chủ, **sidebar bên trái** có 6 mục | — | |
 | A2 | Thu hẹp cửa sổ dần từ rộng → hẹp | ≥1280: sidebar; 768–1279: thanh rail biểu tượng; <768: thanh tab dưới. Không có thanh cuộn ngang | — | |
-| A3 | Dùng phím Tab/Enter để đi tới "Từ điển" | Có viền focus rõ ràng; Enter mở trang | — | |
+| A3 | Dùng phím Tab/Enter để đi tới "Từ điển cá nhân" | Có viền focus rõ ràng; Enter mở trang | — | |
 | A4 | Phòng thử → Khả năng trình duyệt | Không có cảnh báo đỏ; bảng hiện "Kết nối bảo mật: Có" | — | |
 | A5 | Phòng thử → Viết chữ Hán: vẽ bằng chuột | Nét vẽ mượt; "Thiết bị nhập vừa dùng: mouse"; trang không cuộn | — | |
 | A6 | Bấm "Nộp bài" khi chưa đăng nhập | Thông báo "Bạn chưa đăng nhập" (không treo, không lỗi trắng) | — | |
