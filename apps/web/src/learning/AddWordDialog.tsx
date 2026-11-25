@@ -1,7 +1,7 @@
 'use client';
 import type { Lexeme } from '@mandarin/contracts';
 import { numberedToMarked } from '@mandarin/domain';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Dialog, Input, Textarea } from '@/components/ui';
 import { HanziText, Pinyin } from '@/components/Hanzi';
 import { useLearning, type AddResult } from './LearningProvider';
@@ -29,6 +29,11 @@ export function AddWordDialog({
   const [lexemeId, setLexemeId] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof typeof EMPTY, string>>>({});
   const [busy, setBusy] = useState(false);
+  // Each time the dialog opens, start from the Hanzi typed in the search box (if any).
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (open) setF({ ...EMPTY, simplified: initialHanzi });
+  }, [open, initialHanzi]);
 
   const suggestions: Lexeme[] = f.simplified.trim()
     ? [...lexemes.values()].filter((l) => l.simplified === f.simplified.trim()).slice(0, 3)

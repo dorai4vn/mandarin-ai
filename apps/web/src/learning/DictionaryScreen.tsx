@@ -17,7 +17,7 @@ import {
 } from '@/components/ui';
 import { AddWordDialog } from './AddWordDialog';
 import { useLearning } from './LearningProvider';
-import { searchDictionary, type DictionaryEntry } from './search';
+import { indexLexemes, indexVocabulary, searchDictionary, type DictionaryEntry } from './search';
 
 const METHOD: Record<string, string> = {
   manual: 'Tự thêm',
@@ -33,9 +33,11 @@ export function DictionaryScreen() {
   const [selected, setSelected] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
 
+  const lexemeIndex = useMemo(() => indexLexemes(lexemes), [lexemes]);
+  const vocabIndex = useMemo(() => indexVocabulary(vocabulary), [vocabulary]);
   const results = useMemo(
-    () => searchDictionary(query, vocabulary, lexemes),
-    [query, vocabulary, lexemes],
+    () => searchDictionary(query, vocabIndex, lexemeIndex, lexemes),
+    [query, vocabIndex, lexemeIndex, lexemes],
   );
   const current =
     results.find((r) => r.key === selected) ??
@@ -72,7 +74,9 @@ export function DictionaryScreen() {
           className={current ? 'hidden lg:block' : ''}
         >
           <h2 className="mb-2 text-sm font-semibold text-fg-muted">
-            {query ? `Kết quả (${results.length})` : `Từ của tôi (${vocabulary.length})`}
+            {query
+              ? `Kết quả (${results.length}${results.length === 50 ? '+' : ''})`
+              : `Từ của tôi (${vocabulary.length})`}
           </h2>
           {results.length === 0 ? (
             query ? (

@@ -36,6 +36,7 @@ Ngày: 2026-11-25 · Phạm vi: `docs/MILESTONES_CLAUDE_CODE.md` mục M2, làm 
   - `vocabulary/projection.ts`: last-writer-wins theo field, additions dạng tập hợp, tombstone, tìm trùng.
   - `content/starter.ts`.
 - **Web:**
+  - Tìm kiếm dùng index tính sẵn (`searchKeys` một lần cho mỗi mục; mỗi lần gõ chỉ chuẩn hóa truy vấn), tối đa 50 kết quả.
   - `LearningProvider` (snapshot có phiên bản và cache IndexedDB; ghi từ vựng qua outbox).
   - IndexedDB schema v2 (`vocab`, `content`).
   - `DictionaryScreen`, `AddWordDialog`, `CourseList`, `LessonScreen`.
@@ -64,7 +65,7 @@ Ngày: 2026-11-25 · Phạm vi: `docs/MILESTONES_CLAUDE_CODE.md` mục M2, làm 
 | Lịch sử học theo từng người dùng | Đạt (nguồn gốc thêm từ nằm trong log của chính tài khoản) |
 | Đọc offline mục đã tải (nơi có IndexedDB) | Đạt (E2E: API bị chặn vẫn tìm được) |
 | Desktop: danh sách + chi tiết cạnh nhau | Đạt (E2E `layout.spec`) |
-| Hiệu năng: tạo bộ dữ liệu D-L, P2 p95 < 200 ms | **Chưa đo.** Dữ liệu hiện tại nhỏ (66 lexeme), tìm kiếm chạy trên bộ nhớ. Đo với D-L khi lexicon lớn lên (M4 import) |
+| Hiệu năng: tạo bộ dữ liệu D-L, P2 p95 < 200 ms | **Đạt.** `e2e/perf-dictionary.spec.ts` sinh D-L (12 000 lexeme, tất định), Chromium `mobile-mid` (CPU chậm 4×): p50 khoảng 45 ms, **p95 khoảng 90–118 ms** (chạy 4 lần). Lần đo đầu được 445 ms; đạt sau khi tính sẵn khóa tìm kiếm mỗi snapshot và giới hạn 50 kết quả. Test chặn trong CI |
 
 ## Việc chủ dự án cần làm
 Áp hai migration M2 theo thứ tự lên dự án Supabase (SQL Editor):

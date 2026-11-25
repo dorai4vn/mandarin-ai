@@ -1,5 +1,11 @@
 import type { Lexeme } from '@mandarin/contracts';
-import { matchScore, type VocabularyItem } from '@mandarin/domain';
+import {
+  prepareQuery,
+  scoreKeys,
+  searchKeys,
+  type SearchKeys,
+  type VocabularyItem,
+} from '@mandarin/domain';
 
 /** One row of the dictionary: a personal entry, a shared lexeme, or both (linked). */
 export interface DictionaryEntry {
@@ -12,6 +18,13 @@ export interface DictionaryEntry {
   lexeme: Lexeme | null;
   score: number;
 }
+
+/** Search keys computed once per list (D-032 P2: nothing is normalised per keystroke per entry). */
+export type Indexed<T> = { value: T; keys: SearchKeys }[];
+export const indexLexemes = (lexemes: Map<string, Lexeme>): Indexed<Lexeme> =>
+  [...lexemes.values()].map((value) => ({ value, keys: searchKeys(value) }));
+export const indexVocabulary = (items: VocabularyItem[]): Indexed<VocabularyItem> =>
+  items.map((value) => ({ value, keys: searchKeys(value) }));
 
 const fromItem = (mine: VocabularyItem, lexeme: Lexeme | null, score = 0): DictionaryEntry => ({
   key: `v:${mine.id}`,
@@ -30,39 +43,37 @@ const fromItem = (mine: VocabularyItem, lexeme: Lexeme | null, score = 0): Dicti
  */
 export function searchDictionary(
   query: string,
-  vocabulary: VocabularyItem[],
-  lexemes: Map<string, Lexeme>,
-  limit = 100,
+  vocabulary: Indexed<VocabularyItem>,
+  lexemes: Indexed<Lexeme>,
+  byId: Map<string, Lexeme>,
+  limit = 50,
 ): DictionaryEntry[] {
-  const q = query.trim();
-  if (!q)
-    return vocabulary.map((v) =>
-      fromItem(v, v.lexemeId ? (lexemes.get(v.lexemeId) ?? null) : null),
-    );
-  const linked = new Set(vocabulary.map((v) => v.lexemeId).filter(Boolean));
+  const q = prepareQuery(query);
+  const lexemeOf = (v: VocabularyItem) => (v.lexemeId ? (byId.get(v.lexemeId) ?? null) : null);
+  if (!q.raw) return vocabulary.map(({ value }) => fromItem(value, lexemeOf(value)));
+  const linked = new Set<string>();
   const out: DictionaryEntry[] = [];
-  for (const v of vocabulary) {
-    const score = matchScore(v, q);
+  for (const { value, keys } of vocabulary) {
+    if (value.lexemeId) linked.add(value.lexemeId);
+    const score = scoreKeys(keys, q);
     // Personal entries rank slightly above shared ones with the same relevance.
-    if (score > 0)
-      out.push(fromItem(v, v.lexemeId ? (lexemes.get(v.lexemeId) ?? null) : null, score + 1));
+    if (score > 0) out.push(fromItem(value, lexemeOf(value), score + 1));
   }
-  for (const l of lexemes.values()) {
-    if (linked.has(l.id)) continue;
-    const score = matchScore(l, q);
+  for (const { value, keys } of lexemes) {
+    if (linked.has(value.id)) continue;
+    const score = scoreKeys(keys, q);
     if (score > 0)
       out.push({
-        key: `l:${l.id}`,
-        simplified: l.simplified,
-        traditional: l.traditional,
-        pinyin: l.pinyin,
-        meaningVi: l.meaningVi,
+        key: `l:${value.id}`,
+        simplified: value.simplified,
+        traditional: value.traditional,
+        pinyin: value.pinyin,
+        meaningVi: value.meaningVi,
         mine: null,
-        lexeme: l,
+        lexeme: value,
         score,
       });
   }
-  return out
-    .sort((a, b) => b.score - a.score || a.simplified.length - b.simplified.length)
-    .slice(0, limit);
+  out.sort((a, b) => b.score - a.score || a.simplified.length - b.simplified.length);
+  return out.slice(0, limit);
 }

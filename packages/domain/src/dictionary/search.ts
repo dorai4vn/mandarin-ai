@@ -82,35 +82,64 @@ export interface SearchableEntry {
   meaningVi: string;
 }
 
+/** Search keys of one entry, computed once (D-032: no normalisation per keystroke per entry). */
+export interface SearchKeys {
+  forms: string[];
+  pinyin: string;
+  vi: string;
+  viWords: string[];
+  viParts: string[];
+}
+
+export function searchKeys(entry: SearchableEntry): SearchKeys {
+  const vi = vietnameseKey(entry.meaningVi);
+  return {
+    forms: [entry.simplified, entry.traditional ?? ''].filter(Boolean),
+    pinyin: pinyinKey(entry.pinyin),
+    vi,
+    viWords: vi.split(/[\s,;/()]+/).filter(Boolean),
+    viParts: vi.split(/[,;/]/).map((p) => p.trim()),
+  };
+}
+
+export interface PreparedQuery {
+  raw: string;
+  hanzi: boolean;
+  pinyin: string;
+  vi: string;
+}
+
+export function prepareQuery(query: string): PreparedQuery {
+  const raw = query.trim();
+  return { raw, hanzi: hasHanzi(raw), pinyin: pinyinKey(raw), vi: vietnameseKey(raw) };
+}
+
 /**
- * Relevance of an entry for a query (0 = no match). Hanzi matches outrank pinyin, pinyin outranks
- * Vietnamese; exact > prefix > contained.
+ * Relevance of pre-computed keys for a prepared query (0 = no match). Hanzi matches outrank
+ * pinyin, pinyin outranks Vietnamese; exact > prefix > contained.
  */
-export function matchScore(entry: SearchableEntry, query: string): number {
-  const q = query.trim();
-  if (!q) return 0;
-  if (hasHanzi(q)) {
-    const forms = [entry.simplified, entry.traditional ?? ''].filter(Boolean);
-    if (forms.some((f) => f === q)) return 100;
-    if (forms.some((f) => f.startsWith(q))) return 90;
-    if (forms.some((f) => f.includes(q))) return 80;
+export function scoreKeys(k: SearchKeys, q: PreparedQuery): number {
+  if (!q.raw) return 0;
+  if (q.hanzi) {
+    if (k.forms.some((f) => f === q.raw)) return 100;
+    if (k.forms.some((f) => f.startsWith(q.raw))) return 90;
+    if (k.forms.some((f) => f.includes(q.raw))) return 80;
     return 0;
   }
   let score = 0;
-  const pq = pinyinKey(q);
-  const pk = pinyinKey(entry.pinyin);
-  if (pq) {
-    if (pk === pq) score = 70;
-    else if (pk.startsWith(pq)) score = 60;
+  if (q.pinyin) {
+    if (k.pinyin === q.pinyin) score = 70;
+    else if (k.pinyin.startsWith(q.pinyin)) score = 60;
   }
-  const vq = vietnameseKey(q);
-  if (vq) {
-    const vk = vietnameseKey(entry.meaningVi);
-    const words = vk.split(/[\s,;/()]+/).filter(Boolean);
-    if (vk === vq) score = Math.max(score, 65);
-    else if (words.includes(vq) || vk.split(/[,;/]/).some((p) => p.trim() === vq))
-      score = Math.max(score, 55);
-    else if (vq.length >= 2 && vk.includes(vq)) score = Math.max(score, 40);
+  if (q.vi) {
+    if (k.vi === q.vi) score = Math.max(score, 65);
+    else if (k.viWords.includes(q.vi) || k.viParts.includes(q.vi)) score = Math.max(score, 55);
+    else if (q.vi.length >= 2 && k.vi.includes(q.vi)) score = Math.max(score, 40);
   }
   return score;
+}
+
+/** Convenience for one entry (tests, small lists). */
+export function matchScore(entry: SearchableEntry, query: string): number {
+  return scoreKeys(searchKeys(entry), prepareQuery(query));
 }

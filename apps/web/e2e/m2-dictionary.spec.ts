@@ -85,6 +85,13 @@ test('manual entry: numbered pinyin, suggests the shared lexeme, duplicates link
   if (await back.isVisible()) await back.click();
   await expect(rows(page)).toHaveCount(2);
 
+  // Searching for a missing Hanzi pre-fills the add dialog with it.
+  await page.getByTestId('dictionary-search').fill('龙');
+  await page.getByTestId('add-word-open').click();
+  await expect(dialog.getByTestId('add-word-hanzi')).toHaveValue('龙');
+  await dialog.getByRole('button', { name: 'Hủy' }).click();
+  await page.getByTestId('dictionary-search').fill('');
+
   // Validation: required fields.
   await page.getByTestId('add-word-open').click();
   await dialog.getByTestId('add-word-save').click();
