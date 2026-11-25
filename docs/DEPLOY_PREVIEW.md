@@ -191,6 +191,6 @@ Tạm dừng Preview khi không dùng: Railway → service → **Settings → Pa
 - API chỉ chấp nhận **access token người dùng** của dự án Supabase đã cấu hình: chữ ký hợp lệ (khóa công khai JWKS hoặc Legacy JWT secret nếu được đặt), `iss = <Project URL>/auth/v1`, `aud = authenticated`, `role = authenticated`, chưa hết hạn, không phải phiên ẩn danh.
 - Publishable key, secret key, token `service_role`, token tự ký với thuật toán khác hoặc `alg: none` → **401**.
 - Khóa JWKS được cache 10 phút; khi Supabase xoay khóa (token có `kid` mới) API tự tải lại (tối đa 1 lần / 30 giây).
-- Access token vẫn hợp lệ tới khi hết hạn (mặc định 1 giờ) kể cả sau khi đăng xuất — giới hạn của JWT; M1 chặn sớm hơn bằng membership (≤ 60 s) và `password_changed_at` (`docs/ACCESS_CONTROL.md` mục 5).
-- M0: API chấp nhận **mọi** user đã đăng nhập của dự án (chưa có `app_members`) → chỉ tạo tài khoản cho người được phép.
+- Access token vẫn hợp lệ tới khi hết hạn (mặc định 1 giờ) kể cả sau khi đăng xuất — giới hạn của JWT, được chấp nhận (D-042); refresh token bị từ chối ngay sau khi đăng xuất/xóa người dùng.
+- API chấp nhận **mọi** user đã đăng nhập của dự án (D-042: không có lớp membership) → chỉ tạo tài khoản cho người được phép; dữ liệu học được cô lập bằng RLS.
 - Secret key chỉ được API gửi tới Supabase Storage trong header `apikey`; không ghi vào log, không có trong JavaScript của trình duyệt (đã kiểm bằng build có giá trị mồi).

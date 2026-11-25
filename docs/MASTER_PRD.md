@@ -15,13 +15,13 @@ Mandarin AI is a cross-platform Chinese learning web application for Vietnamese-
 - Support useful offline study and reliable syncing when internet returns.
 - Allow additional learning modules and content sources without rewriting the core application.
 
-### Access model (D-037, D-038)
-- Only e-mails approved by the owner can use the app. No self-service sign-up, no anonymous sign-in, no social/phone providers, no e-mail codes or magic links.
-- **Identity is not access.** A Supabase Auth account (e-mail + password) proves who the user is; using the app additionally requires an administrator-approved, `active` membership. An Auth account alone is never enough.
-- Administrators create accounts with an e-mail and an initial password (≥ 12 characters) in the Supabase Dashboard and hand the password over through a separate channel; they approve, revoke and delete access (no admin panel at first).
-- Users sign in with e-mail + password and **must change the initial password on first sign-in** before any personal data is available; they can change their password later. Sign-in errors never reveal whether an e-mail has an account.
-- Self-service password recovery by e-mail is deferred until a custom SMTP service is configured; until then an administrator issues a new temporary password.
-- One person = one account; no shared accounts. Each account's study data is private (database row-level security **and** backend checks).
+### Access model (D-037, D-038, D-042)
+- Private app for the owner and a small group of acquaintances. No self-service sign-up, no anonymous sign-in, no social/phone providers, no e-mail codes or magic links.
+- **Standard Supabase Auth (D-042):** the owner creates each account (e-mail + password ≥ 12 characters) manually in the Supabase Dashboard and hands the password over through a separate channel. Every account of the project may use the app; there is no separate membership/approval layer, no forced password change and no admin panel. Revocation = reset the password or delete the user in the Dashboard.
+- Users sign in with e-mail + password and can sign out; the session is kept by the official Supabase client. Sign-in errors never reveal whether an e-mail has an account.
+- Self-service password recovery by e-mail is deferred until a custom SMTP service is configured; until then the owner sets a new password in the Dashboard.
+- One person = one account; no shared accounts. Each account's study data is private (row-level security on every learner table **and** an authenticated API that uses the user's own token).
+- Signing out or switching accounts never exposes the previous account's offline data (one local database per account, deleted on sign-out).
 
 ### Non-goals for initial release
 - Public registration, marketing landing page or self-service sign-up.
@@ -130,7 +130,7 @@ Mandarin AI is a cross-platform Chinese learning web application for Vietnamese-
 ## 3. Core flows
 
 ### Onboarding
-Administrator creates the account with an initial password and approves the membership -> hands the password over privately -> user opens the HTTPS URL in any supported browser -> (optional) install / Add to Home Screen -> **sign in** with e-mail + password (D-038) — there is no sign-up screen -> **change the initial password** (required before any personal data) -> choose beginner/intermediate, simplified/traditional preference (initial content primarily simplified), study goal -> download starter learning data -> Home.
+The owner creates the account with an initial password in the Supabase Dashboard -> hands the password over privately -> user opens the HTTPS URL in any supported browser -> (optional) install / Add to Home Screen -> **sign in** with e-mail + password (D-038) — there is no sign-up screen -> choose beginner/intermediate, simplified/traditional preference (initial content primarily simplified), study goal -> download starter learning data -> Home.
 
 Starter data is a small fixture with clear origin and usage rights, loaded as ordinary course/lexicon records; HSK 3.0 content is never hard-coded (D-012).
 
@@ -163,9 +163,9 @@ Primary navigation: Home / Library / Dictionary / Practice / Profile — bottom 
 - Next.js web app; every core feature works in a normal browser tab without installation. PWA manifest, service worker/offline shell, install and Web Push are progressive enhancements with graceful fallback: if IndexedDB, Cache Storage or service workers are unavailable the online app keeps working.
 - Capability detection with clear permission prompts and compatibility messages for microphone, audio playback, file upload, storage and notifications in each browser.
 - Release gate: automated tests on Chromium, Firefox and WebKit at mobile, tablet and desktop viewports, plus manual verification on real iPhone Safari and at least one real desktop browser.
-- Offline data in IndexedDB is kept to the minimum needed for study (D-022, approved with conditions): **no API secrets, no refresh tokens and no sensitive audio recordings** in IndexedDB. Web Crypto field encryption may be used for sensitive fields but must **not** be presented as equivalent to native Keychain/SQLCipher. Sessions handled by Supabase Auth (cookie-based session planned for M1); logout clears local data; protect private PDF/audio.
+- Offline data in IndexedDB is kept to the minimum needed for study (D-022, approved with conditions): **no API secrets, no refresh tokens and no sensitive audio recordings** in IndexedDB. Web Crypto field encryption may be used for sensitive fields but must **not** be presented as equivalent to native Keychain/SQLCipher. Sessions handled by the official Supabase client (D-042); logout deletes the account's local database; protect private PDF/audio.
 - No long-lived provider secrets in client. AI APIs via authenticated backend; time-limited voice session credentials where supported.
-- Supabase Row Level Security and automated negative authorization tests; no cross-user vocabulary/progress leaks; only active, approved members who have changed their initial password can access any data (D-037, D-038).
+- Supabase Row Level Security and automated negative authorization tests; no cross-user vocabulary/progress leaks; only signed-in users of the project can access their own data (D-037, D-042).
 - Data deletion/export, private document visibility, input sanitization, file-size/type validation, abuse/expense limits.
 - Background jobs handle expensive PDF ingestion; observability, retry policy, idempotency and cost tracking.
 - Reproducible cloud builds and migrations, CI tests and rollback plan.
