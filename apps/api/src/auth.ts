@@ -10,6 +10,8 @@ import type { AppConfig } from './config.js';
 
 export interface AuthUser {
   id: string;
+  /** Token issue time, epoch seconds (0 if absent). */
+  iat: number;
 }
 
 export type TokenVerifier = (token: string) => Promise<AuthUser>;
@@ -93,6 +95,6 @@ export function createTokenVerifier(
     if (typeof payload.sub !== 'string' || !UUID.test(payload.sub)) {
       throw new Error('Token subject is not a user id');
     }
-    return { id: payload.sub };
+    return { id: payload.sub, iat: typeof payload.iat === 'number' ? payload.iat : 0 };
   };
 }

@@ -17,6 +17,7 @@ import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest }
 import { authModes, type AuthUser, type TokenVerifier } from './auth.js';
 import type { AppConfig } from './config.js';
 import type { Providers } from './providers.js';
+import type { MembershipStore } from './membership.js';
 import { FixedWindowLimiter } from './rate-limit.js';
 
 declare module 'fastify' {
@@ -29,11 +30,13 @@ export interface AppDeps {
   config: AppConfig;
   verifyToken: TokenVerifier;
   providers: Providers;
+  /** Required: every /v1 route except GET /v1/me is behind the membership gate. */
+  membership: MembershipStore;
 }
 
 const err = (code: string, message: string): ApiError => ({ error: { code, message } });
 
-export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyInstance {
+export function buildApp({ config, verifyToken, providers, membership }: AppDeps): FastifyInstance {
   const app = Fastify({
     trustProxy: config.TRUST_PROXY === 'true',
     logger: config.NODE_ENV === 'test' ? false : { redact: ['req.headers.authorization'] },
@@ -106,6 +109,29 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
     if (!generalLimiter.take(req.user.id)) {
       return reply.code(429).send(err('rate_limited', 'Too many requests'));
     }
+    // Membership gate, in the order of docs/ACCESS_CONTROL.md section 5 (fail closed).
+    let m;
+    try {
+      m = await membership(req.user.id);
+    } catch {
+      req.log.error('membership lookup failed');
+      return reply.code(503).send(err('membership_unavailable', 'Try again later'));
+    }
+    // /v1/me (+ the future /v1/me/password) must answer pending/disabled/must-change users so the
+    // web app can pick the right screen; they expose only the caller's own status.
+    const isMe = /^\/v1\/me(\/|\?|$)/.test(req.url);
+    if (!m) {
+      return reply.code(403).send(err('not_a_member', 'Access has not been granted'));
+    }
+    if (!isMe && m.status !== 'active') {
+      return reply.code(403).send(err('not_a_member', 'Access has not been granted'));
+    }
+    if (m.passwordChangedAt !== null && req.user.iat < m.passwordChangedAt) {
+      return reply.code(401).send(err('session_revoked', 'Sign in again'));
+    }
+    if (m.passwordChangeRequired && !isMe) {
+      return reply.code(403).send(err('password_change_required', 'Change your password first'));
+    }
   };
 
   const limitCost = async (req: FastifyRequest, reply: FastifyReply) => {
@@ -136,6 +162,16 @@ export function buildApp({ config, verifyToken, providers }: AppDeps): FastifyIn
       sync: providers.sync?.mode ?? 'disabled',
     },
   }));
+
+  // The only data route open to a signed-in non-active user: tells the web app which screen to show.
+  app.get('/v1/me', { preHandler: requireUser }, async (req) => {
+    const m = await membership(req.user!.id);
+    return {
+      userId: req.user!.id,
+      status: m!.status,
+      passwordChangeRequired: m!.passwordChangeRequired,
+    };
+  });
 
   app.post(
     '/v1/voice/realtime-session',

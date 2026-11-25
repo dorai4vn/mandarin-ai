@@ -60,7 +60,7 @@ describe('Supabase JWT verification (asymmetric signing keys / JWKS)', () => {
     createTokenVerifier(cfg(), { jwks: createLocalJWKSet({ keys: [es.jwk] }) });
 
   it('accepts an ES256 user token signed by a key from the JWKS', async () => {
-    await expect(verifier()(await es256())).resolves.toEqual({ id: USER });
+    await expect(verifier()(await es256())).resolves.toMatchObject({ id: USER });
     expect(authModes(cfg())).toEqual(['jwks']);
   });
 
@@ -81,7 +81,9 @@ describe('Supabase JWT verification (asymmetric signing keys / JWKS)', () => {
 
   it('rejects Supabase anonymous sessions (role=authenticated, is_anonymous=true)', async () => {
     await expect(verifier()(await es256({ is_anonymous: true }))).rejects.toThrow(/Anonymous/);
-    await expect(verifier()(await es256({ is_anonymous: false }))).resolves.toEqual({ id: USER });
+    await expect(verifier()(await es256({ is_anonymous: false }))).resolves.toMatchObject({
+      id: USER,
+    });
   });
 
   it('rejects a service_role token and a wrong audience', async () => {
@@ -134,8 +136,8 @@ describe('key rotation: legacy HS256 secret + asymmetric keys at the same time',
     });
     expect(authModes(cfg)).toEqual(['jwks', 'hs256']);
     const v = createTokenVerifier(cfg, { jwks: createLocalJWKSet({ keys: [es.jwk] }) });
-    await expect(v(await es256())).resolves.toEqual({ id: USER });
-    await expect(v(await hs256())).resolves.toEqual({ id: USER });
+    await expect(v(await es256())).resolves.toMatchObject({ id: USER });
+    await expect(v(await hs256())).resolves.toMatchObject({ id: USER });
   });
 });
 
@@ -162,8 +164,8 @@ describe('remote JWKS endpoint (<SUPABASE_URL>/auth/v1/.well-known/jwks.json)', 
     const cfg = loadConfig({ NODE_ENV: 'test', SUPABASE_URL: base });
     const v = createTokenVerifier(cfg);
     const token = await es256({}, { iss: supabaseIssuer(base) });
-    await expect(v(token)).resolves.toEqual({ id: USER });
-    await expect(v(token)).resolves.toEqual({ id: USER }); // served from cache
+    await expect(v(token)).resolves.toMatchObject({ id: USER });
+    await expect(v(token)).resolves.toMatchObject({ id: USER }); // served from cache
     expect(hits.filter((h) => h === '/auth/v1/.well-known/jwks.json')).toHaveLength(1);
   });
 });

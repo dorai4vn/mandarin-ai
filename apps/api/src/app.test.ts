@@ -6,6 +6,11 @@ import { loadConfig } from './config.js';
 import { createProviders } from './providers.js';
 import { FixedWindowLimiter } from './rate-limit.js';
 
+const activeMember = async () => ({
+  status: 'active' as const,
+  passwordChangeRequired: false,
+  passwordChangedAt: null,
+});
 const SECRET = 'test-secret-at-least-32-characters-long!!';
 const USER = '11111111-2222-4333-8444-555555555555';
 
@@ -19,6 +24,7 @@ const app = buildApp({
   config,
   verifyToken: createTokenVerifier(config),
   providers: createProviders(config),
+  membership: activeMember,
 });
 afterAll(() => app.close());
 
@@ -138,6 +144,7 @@ describe('API', () => {
       config: cfg,
       verifyToken: createTokenVerifier(cfg),
       providers: createProviders(cfg),
+      membership: activeMember,
     });
     const res = await disabled.inject({
       method: 'POST',
@@ -389,6 +396,7 @@ describe('deployment safety (APP_ENV, D-029, preview)', () => {
       config: cfg,
       verifyToken: createTokenVerifier(cfg),
       providers: createProviders(cfg),
+      membership: activeMember,
     });
     const ok = await a.inject({
       method: 'OPTIONS',
@@ -419,6 +427,7 @@ describe('deployment safety (APP_ENV, D-029, preview)', () => {
       config: cfg,
       verifyToken: createTokenVerifier(cfg),
       providers: createProviders(cfg),
+      membership: activeMember,
     });
     const codes: number[] = [];
     for (let i = 0; i < 11; i++)
@@ -436,6 +445,7 @@ describe('deployment safety (APP_ENV, D-029, preview)', () => {
       config: cfg,
       verifyToken: createTokenVerifier(cfg),
       providers: createProviders(cfg),
+      membership: activeMember,
     });
     for (let i = 0; i < 10; i++) await a.inject({ method: 'GET', url: '/health' });
     const allowed = await a.inject({
@@ -468,6 +478,7 @@ describe('deployment safety (APP_ENV, D-029, preview)', () => {
       config: cfg,
       verifyToken: createTokenVerifier(cfg),
       providers: createProviders(cfg),
+      membership: activeMember,
     });
     for (let i = 0; i < 10; i++) await a.inject({ method: 'GET', url: '/health' });
     const origin = 'http://localhost:3000';
@@ -512,6 +523,7 @@ describe('deployment safety (APP_ENV, D-029, preview)', () => {
       config: cfg,
       verifyToken: createTokenVerifier(cfg),
       providers: createProviders(cfg),
+      membership: activeMember,
     });
     const origin = 'http://localhost:3000';
     const preflight = (o: string) =>
@@ -543,6 +555,7 @@ describe('deployment safety (APP_ENV, D-029, preview)', () => {
       config: cfg,
       verifyToken: createTokenVerifier(cfg),
       providers: createProviders(cfg),
+      membership: activeMember,
     });
     for (let i = 0; i < 11; i++) await b.inject({ method: 'GET', url: '/health' });
     const pre = await b.inject({
