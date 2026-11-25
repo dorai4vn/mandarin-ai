@@ -1,16 +1,48 @@
 #!/usr/bin/env node
 /**
- * WCAG 2.2 contrast gate for the Design System V2 LIGHT tokens (D-039, TOKENS_V2 §3).
+ * WCAG 2.2 contrast gate for the Design System V2 tokens, LIGHT and DARK (D-039, TOKENS_V2 §3).
  * Reads the real values from apps/web/src/design/tokens.css, so a token change that drops a pair
- * below AA fails CI. Pairs = every foreground/background combination the UI actually uses.
+ * below AA fails CI. Pairs = every foreground/background combination the UI actually uses; each is
+ * checked in both themes. Also fails if the two DARK blocks (explicit choice / system preference)
+ * differ.
  *   4.5 : normal text   ·   3 : large text, UI components, focus indicator (WCAG 1.4.3 / 1.4.11)
  */
 import { readFileSync } from 'node:fs';
 
 const css = readFileSync(new URL('../apps/web/src/design/tokens.css', import.meta.url), 'utf8');
-const tokens = Object.fromEntries(
-  [...css.matchAll(/--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})\b/g)].map((m) => [m[1], m[2]]),
+/** Body of the first rule whose selector matches `selector` (balanced braces). */
+function block(source, selector) {
+  const at = source.indexOf(selector);
+  if (at < 0) throw new Error(`check-contrast: no block for ${selector}`);
+  const open = source.indexOf('{', at);
+  let depth = 0;
+  for (let i = open; i < source.length; i++) {
+    if (source[i] === '{') depth += 1;
+    else if (source[i] === '}' && --depth === 0) return source.slice(open + 1, i);
+  }
+  throw new Error(`check-contrast: unbalanced block for ${selector}`);
+}
+const vars = (body) =>
+  Object.fromEntries(
+    [...body.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)].map((m) => [
+      m[1],
+      m[2].trim().toLowerCase(),
+    ]),
+  );
+const hexOnly = (o) =>
+  Object.fromEntries(Object.entries(o).filter(([, v]) => /^#[0-9a-f]{6}$/.test(v)));
+
+const light = vars(block(css, ':root {'));
+const darkExplicit = vars(block(css, ":root[data-theme='dark'] {"));
+const darkSystem = vars(block(block(css, '@media (prefers-color-scheme: dark) {'), '{'));
+const drift = [...new Set([...Object.keys(darkExplicit), ...Object.keys(darkSystem)])].filter(
+  (k) => darkExplicit[k] !== darkSystem[k],
 );
+if (drift.length > 0) {
+  console.error(`check-contrast: DARK blocks differ for ${drift.map((k) => `--${k}`).join(', ')}`);
+  process.exit(1);
+}
+const THEMES = { light: hexOnly(light), dark: hexOnly({ ...light, ...darkExplicit }) };
 
 const lum = (hex) => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
@@ -24,11 +56,11 @@ const ratio = (a, b) => {
 
 const TEXT = 4.5;
 const UI = 3;
-/** [foreground token, background token, minimum, where it is used] */
+/** [foreground token, background token, minimum, where it is used, only in theme?] */
 const PAIRS = [
   // UI-2B
   ['fg-inverse', 'surface-inverse', TEXT, 'tooltip text'],
-  ['fg-default', 'surface-default', TEXT, 'selected segmented tab'],
+  ['fg-default', 'surface-raised', TEXT, 'selected segmented tab / choice'],
   ['fg-muted', 'bg-subtle', TEXT, 'unselected segmented tab'],
   ['primary-base', 'surface-default', UI, 'underline tab indicator'],
   ['primary-base', 'bg-subtle', UI, 'progress fill on track'],
@@ -103,28 +135,42 @@ const PAIRS = [
   ['error-base', 'surface-default', UI, 'sync error dot'],
   ['success-solid', 'surface-default', UI, 'synced dot, VERIFIED border'],
   ['stroke-ink', 'surface-sunken', UI, 'handwriting strokes'],
+  // UI-4/UI-6: raised surfaces (dialog, popover) and their text
+  ['fg-default', 'surface-raised', TEXT, 'dialog / popover text'],
+  ['fg-muted', 'surface-raised', TEXT, 'dialog description, popover labels'],
+  ['border-focus', 'surface-raised', UI, 'focus ring in dialogs'],
+  ['error-text', 'surface-raised', TEXT, 'popover error count'],
+  // UI-5: upload, study tiles in dark
+  ['error-base', 'surface-sunken', UI, 'rejected drop zone border'],
+  ['border-strong', 'surface-sunken', UI, 'drop zone / canvas frame border'],
+  // Decorative icons: light keeps the reference blue/mint (see tokens.css); dark ones are checked.
+  ['study-blue-icon', 'study-blue-bg', UI, 'study card icon (blue)', 'dark'],
+  ['study-mint-icon', 'study-mint-bg', UI, 'study card icon (mint)', 'dark'],
 ];
 
 let failures = 0;
 const rows = [];
-for (const [fg, bg, min, use] of PAIRS) {
-  const a = tokens[fg];
-  const b = tokens[bg];
-  if (!a || !b) {
-    rows.push(`MISSING  --${fg} / --${bg}`);
-    failures += 1;
-    continue;
+for (const [theme, tokens] of Object.entries(THEMES)) {
+  for (const [fg, bg, min, use, only] of PAIRS) {
+    if (only && only !== theme) continue;
+    const a = tokens[fg];
+    const b = tokens[bg];
+    if (!a || !b) {
+      rows.push(`MISSING  ${theme}  --${fg} / --${bg}`);
+      failures += 1;
+      continue;
+    }
+    const r = ratio(a, b);
+    const ok = r >= min;
+    if (!ok) failures += 1;
+    rows.push(
+      `${ok ? 'PASS' : 'FAIL'}  ${theme.padEnd(5)} ${r.toFixed(2).padStart(5)} ≥ ${min}  --${fg} ${a} on --${bg} ${b}  (${use})`,
+    );
   }
-  const r = ratio(a, b);
-  const ok = r >= min;
-  if (!ok) failures += 1;
-  rows.push(
-    `${ok ? 'PASS' : 'FAIL'}  ${r.toFixed(2).padStart(5)} ≥ ${min}  --${fg} ${a} on --${bg} ${b}  (${use})`,
-  );
 }
 console.log(rows.join('\n'));
 if (failures > 0) {
   console.error(`check-contrast: ${failures} pair(s) below WCAG AA`);
   process.exit(1);
 }
-console.log(`check-contrast: OK (${PAIRS.length} pairs, WCAG 2.2 AA)`);
+console.log(`check-contrast: OK (${PAIRS.length} pairs × light + dark, WCAG 2.2 AA)`);

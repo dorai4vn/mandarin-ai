@@ -367,7 +367,7 @@ test('tabs: indicator re-measures on size change; server HTML has a static selec
   const html = await res!.text();
   // Before hydration/measurement the selected segmented tab is already visibly selected.
   expect(html).toMatch(
-    /<button[^>]*role="tab"[^>]*aria-selected="true"[^>]*class="[^"]*bg-surface shadow-xs/,
+    /<button[^>]*role="tab"[^>]*aria-selected="true"[^>]*class="[^"]*bg-raised shadow-xs/,
   );
   await page.waitForFunction(() =>
     Object.keys(document.querySelector('main') ?? {}).some((k) => k.startsWith('__react')),

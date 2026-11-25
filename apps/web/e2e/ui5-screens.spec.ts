@@ -31,7 +31,9 @@ test('learning screens: no serious/critical axe violations, no horizontal scroll
       Object.keys(document.querySelector('main') ?? {}).some((k) => k.startsWith('__react')),
     );
     if (path === '/lab/session') await expect(page.getByTestId('login-email')).toBeEnabled();
-    await page.waitForFunction(() => document.getAnimations().length === 0);
+    await page.waitForFunction(() =>
+      document.getAnimations().every((a) => !(a instanceof CSSTransition)),
+    );
     const r = await new AxeBuilder({ page })
       .include('main')
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])

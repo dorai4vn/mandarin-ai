@@ -41,8 +41,11 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  // V2 light page background (dark mode is a separate phase, D-039 decision 4).
-  themeColor: '#f7f9fd',
+  // bg.page per theme (UI-6). An explicit in-app choice updates these at runtime (ThemePicker).
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f7f9fd' },
+    { media: '(prefers-color-scheme: dark)', color: '#0e1422' },
+  ],
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -50,15 +53,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html
       lang="vi"
       className={`${inter.variable} ${notoSansSC.variable}`}
-      // data-sidebar is set by the inline script below before React hydrates.
+      // data-sidebar / data-theme are set by the inline script below before React hydrates.
       suppressHydrationWarning
     >
       <body className="antialiased">
-        {/* UI-3: apply the remembered sidebar choice before first paint (no layout flash). */}
+        {/* UI-3/UI-6: apply the remembered sidebar and theme choices before first paint (no flash). */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{var v=localStorage.getItem('mandarin.sidebar');if(v==='expanded'||v==='collapsed')document.documentElement.dataset.sidebar=v}catch(e){}",
+              "try{var d=document.documentElement,v=localStorage.getItem('mandarin.sidebar');if(v==='expanded'||v==='collapsed')d.dataset.sidebar=v;var t=localStorage.getItem('mandarin.theme');if(t==='light'||t==='dark'){d.dataset.theme=t;document.querySelectorAll('meta[name=theme-color]').forEach(function(m){m.content=t==='dark'?'#0e1422':'#f7f9fd'})}}catch(e){}",
           }}
         />
         <a
