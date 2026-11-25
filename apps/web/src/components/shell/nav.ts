@@ -23,7 +23,7 @@ export interface NavItem {
 export const PRIMARY: NavItem[] = [
   { href: '/', label: 'Trang chủ', Icon: HomeIcon },
   { href: '/practice', label: 'Luyện tập', Icon: PracticeIcon },
-  { href: '/dictionary', label: 'Từ điển', Icon: DictionaryIcon },
+  { href: '/dictionary', label: 'Từ điển cá nhân', Icon: DictionaryIcon },
   { href: '/library', label: 'Thư viện', Icon: LibraryIcon },
 ];
 

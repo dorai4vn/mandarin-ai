@@ -51,8 +51,8 @@ export function DictionaryScreen() {
     <>
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <SearchInput
-          label="Tìm từ"
-          placeholder="Hán tự, pinyin hoặc tiếng Việt"
+          label="Tìm trong từ điển cá nhân"
+          placeholder="Tìm từ đã lưu: Hán tự, pinyin hoặc tiếng Việt"
           value={query}
           onValueChange={setQuery}
           className="min-w-0 flex-1"
@@ -64,19 +64,19 @@ export function DictionaryScreen() {
       </div>
       {contentStatus === 'unavailable' && !content && (
         <p className="mb-4 text-sm text-fg-muted" role="note" data-testid="content-unavailable">
-          Chưa tải được từ điển dùng chung (cần mạng lần đầu). Từ của bạn vẫn dùng được.
+          Chưa tải được kho từ chung dùng để gợi ý (cần mạng lần đầu). Từ đã lưu của bạn vẫn dùng được.
         </p>
       )}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <section
-          aria-label={query ? 'Kết quả tìm kiếm' : 'Từ của tôi'}
+          aria-label={query ? 'Kết quả tìm kiếm' : 'Từ đã lưu'}
           className={current ? 'hidden lg:block' : ''}
         >
           <h2 className="mb-2 text-sm font-semibold text-fg-muted">
             {query
               ? `Kết quả (${results.length}${results.length === 50 ? '+' : ''})`
-              : `Từ của tôi (${vocabulary.length})`}
+              : `Từ đã lưu (${vocabulary.length})`}
           </h2>
           {results.length === 0 ? (
             query ? (
@@ -97,8 +97,8 @@ export function DictionaryScreen() {
                 <EmptyState
                   hanzi="字"
                   headingLevel="h2"
-                  title="Chưa có từ nào"
-                  description="Thêm từ bạn gặp hôm nay, hoặc thêm cả bài từ giáo trình."
+                  title="Chưa có từ nào trong từ điển cá nhân"
+                  description="Bấm “Thêm từ” để lưu từ bạn vừa học, hoặc thêm cả bài từ giáo trình."
                   primaryAction={<Button onClick={() => setAdding(true)}>Thêm từ</Button>}
                   secondaryAction={
                     <ButtonLink href="/library" variant="secondary">
@@ -124,7 +124,11 @@ export function DictionaryScreen() {
                       <Pinyin className="block text-sm text-fg-muted">{r.pinyin}</Pinyin>
                       <span className="block truncate">{r.meaningVi}</span>
                     </span>
-                    {r.mine && <Badge variant="primary">Của tôi</Badge>}
+                    {r.mine ? (
+                      <Badge variant="primary">Đã lưu</Badge>
+                    ) : (
+                      <Badge>Gợi ý từ kho chung</Badge>
+                    )}
                   </button>
                 </li>
               ))}
@@ -200,7 +204,7 @@ function WordDetail({
           <p className="mt-1 text-lg">{entry.meaningVi}</p>
         </div>
         {mine ? (
-          <Badge variant="primary">Trong từ của tôi</Badge>
+          <Badge variant="primary">Đã lưu trong từ điển cá nhân</Badge>
         ) : (
           <Button
             onClick={() =>
@@ -217,13 +221,13 @@ function WordDetail({
                   tags: [],
                 },
               }).then((r) => {
-                toast({ message: 'Đã thêm vào từ của tôi.', tone: 'success' });
+                toast({ message: 'Đã lưu vào từ điển cá nhân.', tone: 'success' });
                 onSelect(`v:${r.item.id}`);
               })
             }
             data-testid="word-add"
           >
-            Thêm vào từ của tôi
+            Lưu vào từ điển cá nhân
           </Button>
         )}
       </div>
@@ -270,8 +274,8 @@ function WordDetail({
       <Dialog
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
-        title="Xóa khỏi từ của tôi?"
-        description="Ghi chú và tag của từ này sẽ bị xóa trên mọi thiết bị của bạn. Từ điển dùng chung không bị ảnh hưởng."
+        title="Xóa khỏi từ điển cá nhân?"
+        description="Ghi chú và tag của từ này sẽ bị xóa trên mọi thiết bị của bạn. Kho từ chung không bị ảnh hưởng."
         data-testid="word-delete-confirm"
         actions={
           <>
@@ -284,7 +288,7 @@ function WordDetail({
               onClick={() => {
                 setConfirmDelete(false);
                 void deleteWord(mine!.id).then(() => {
-                  toast({ message: 'Đã xóa khỏi từ của tôi.' });
+                  toast({ message: 'Đã xóa khỏi từ điển cá nhân.' });
                   onBack();
                 });
               }}
@@ -370,7 +374,7 @@ function PersonalSection({
           Lưu
         </Button>
         <Button size="sm" variant="secondary" onClick={onDelete} data-testid="word-delete">
-          Xóa khỏi từ của tôi
+          Xóa khỏi từ điển cá nhân
         </Button>
       </div>
       <h3 className="mb-1 mt-4 text-sm font-semibold text-fg-muted">Đã thêm</h3>

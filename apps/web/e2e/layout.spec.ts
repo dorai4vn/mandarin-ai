@@ -53,7 +53,7 @@ test.describe('responsive layout (D-030)', () => {
     for (let i = 0; i < 12; i++) {
       await page.keyboard.press('Tab');
       if (
-        (await page.evaluate(() => document.activeElement?.textContent ?? '')).includes('Từ điển')
+        (await page.evaluate(() => document.activeElement?.textContent ?? '')).includes('Từ điển cá nhân')
       )
         break;
     }

@@ -31,7 +31,7 @@ test('search finds 山 via 山, shan1, shān and núi; add it, write notes and t
   await expect(detail).toContainText('Ngọn núi này rất cao.');
   await expect(detail.getByTestId('word-lessons')).toContainText('Thiên nhiên');
   await detail.getByTestId('word-add').click();
-  await expect(detail).toContainText('Trong từ của tôi');
+  await expect(detail).toContainText('Đã lưu trong từ điển cá nhân');
   await detail.getByTestId('word-notes').fill('Giống ba đỉnh núi');
   await detail.getByTestId('word-tags').fill('HSK1, thiên nhiên');
   await detail.getByTestId('word-save').click();
@@ -40,7 +40,7 @@ test('search finds 山 via 山, shan1, shān and núi; add it, write notes and t
   await page.reload();
   await search.fill('');
   await expect(rows(page)).toHaveCount(1);
-  await expect(rows(page).first()).toContainText('Của tôi');
+  await expect(rows(page).first()).toContainText('Đã lưu');
   await rows(page).first().click();
   await expect(page.getByTestId('word-notes')).toHaveValue('Giống ba đỉnh núi');
   await expect(page.getByTestId('word-personal')).toContainText('HSK1');
@@ -121,7 +121,7 @@ test('lessons: add a whole lesson; a word shared by two lessons stays one entry'
   await page.goto('/dictionary');
   await page.getByTestId('dictionary-search').fill('天');
   await expect(
-    rows(page).filter({ hasText: 'Của tôi' }).filter({ hasText: 'ngày; trời' }),
+    rows(page).filter({ hasText: 'Đã lưu' }).filter({ hasText: 'ngày; trời' }),
   ).toHaveCount(1);
   await rows(page).filter({ hasText: 'ngày; trời' }).first().click();
   const additions = page.getByTestId('word-additions');
@@ -154,14 +154,14 @@ test('words added on one device appear on the other device of the same account',
   await p1.getByTestId('dictionary-search').fill('茶');
   await p1.getByTestId('dictionary-row').first().click();
   await p1.getByTestId('word-add').click();
-  await expect(p1.getByTestId('word-detail')).toContainText('Trong từ của tôi');
+  await expect(p1.getByTestId('word-detail')).toContainText('Đã lưu trong từ điển cá nhân');
   await expect(p1.getByTestId('sync-chip').filter({ visible: true }).first()).toContainText(
     'Đã đồng bộ',
   );
 
   const p2 = await d2.newPage();
   await open(p2, '/dictionary', user);
-  await expect(rows(p2).filter({ hasText: 'Của tôi' })).toHaveCount(1);
+  await expect(rows(p2).filter({ hasText: 'Đã lưu' })).toHaveCount(1);
   await expect(rows(p2).first()).toContainText('茶');
   for (const c of [d1, d2]) await c.close();
 });

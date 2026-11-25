@@ -3,7 +3,9 @@
 Ngày: 2026-11-25 · Phạm vi: `docs/MILESTONES_CLAUDE_CODE.md` mục M2, làm theo hướng đơn giản (D-043).
 
 ## Người học làm được gì
-- **Từ điển** (`/dictionary`):
+- **Từ điển cá nhân** (`/dictionary`, đổi tên theo yêu cầu UX của chủ dự án; route giữ nguyên):
+  - Mô tả trang: "Kho từ vựng tiếng Trung của riêng bạn. Lưu những từ đã học để ôn tập, luyện viết và theo dõi tiến độ học tập." Ôn tập, luyện viết, theo dõi tiến độ là **tính năng tương lai** (M3+), trang ghi rõ điều này.
+  - Ô tìm kiếm ghi rõ tìm trong từ đã lưu; gợi ý từ kho chung có nhãn "Gợi ý từ kho chung", từ đã lưu có nhãn "Đã lưu".
   - Tìm bằng chữ Hán (giản thể/phồn thể), pinyin (có dấu, số thanh hoặc không dấu) hoặc tiếng Việt (không cần dấu).
   - Kết quả gộp **từ của tôi** và **từ điển dùng chung**; một từ đã thêm chỉ hiện một lần.
   - Xem chi tiết: chữ Hán, phồn thể, pinyin, nghĩa, ví dụ kèm bản dịch, các bài có từ này.
