@@ -1,11 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
-import { deviceClass, expectNoHorizontalScroll } from './helpers';
+import { deviceClass, expectNoHorizontalScroll, signIn } from './helpers';
 
 /**
  * UI-4 feedback (COMPONENT_SPEC_V2 §14, §15, §19, §20): Sync Indicator popover, Offline banner,
  * Toast (live region, no focus steal, auto-hide, pause, max 3), Dialog (focus, Esc, scrim).
  */
+/** Signed in (D-042): sync exists only for an account. Signed-out behaviour: ui7-auth spec. */
 async function hydrated(page: Page, path = '/') {
+  await signIn(page);
   await page.goto(path);
   await page.waitForFunction(() =>
     Object.keys(document.querySelector('main') ?? {}).some((k) => k.startsWith('__react')),

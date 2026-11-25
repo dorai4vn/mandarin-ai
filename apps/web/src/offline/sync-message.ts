@@ -37,6 +37,8 @@ export function describeSyncResult(r: SyncResult | null): SyncMessage {
   if (r.error) return { message: 'Đồng bộ chưa xong — sẽ tự thử lại.', tone: 'warning' };
   if (after.pending > 0) return { message: `Còn ${after.pending} thao tác chờ đồng bộ.` };
   const sent = r.applied + r.duplicate;
+  if (sent === 0 && r.pulled > 0)
+    return { message: `Đã nhận ${r.pulled} thay đổi từ thiết bị khác.` };
   if (sent === 0) return { message: 'Không có thay đổi nào cần đồng bộ.' };
   // A mock acknowledgement is not "saved on the server".
   if (r.source !== 'live') return { message: `Đã gửi ${sent} thao tác (máy chủ thử nghiệm MOCK).` };

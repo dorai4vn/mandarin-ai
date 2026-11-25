@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { expectNoHorizontalScroll } from './helpers';
+import { expectNoHorizontalScroll, signIn } from './helpers';
 
 /**
  * Visual regression guard at 320 / 390 / 768 / 1024 / 1440 px (D-039 QC): the navigation variant
@@ -25,6 +25,7 @@ test.beforeEach(() => {
 for (const [width, height] of WIDTHS) {
   test(`layout unchanged and no horizontal scroll at ${width}px`, async ({ page }, info) => {
     await page.setViewportSize({ width, height });
+    await signIn(page); // /lab/offline shows its content (personal data) only when signed in
     for (const path of PAGES) {
       await page.goto(path);
       await expect(page.locator('main')).toBeVisible();

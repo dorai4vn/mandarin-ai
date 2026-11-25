@@ -82,6 +82,7 @@ test('sync disabled: data stays on the device, calm message, no push and no cons
 });
 
 test('home page explains that cloud sync is not enabled', async ({ page }) => {
+  await signIn(page);
   await controlSync(page, 'disabled');
   await page.goto('/');
   await expect(page.getByTestId('sync-disabled-note')).toHaveText(MESSAGE);

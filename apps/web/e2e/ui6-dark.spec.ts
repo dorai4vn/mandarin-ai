@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { expectNoHorizontalScroll } from './helpers';
+import { expectNoHorizontalScroll, signIn } from './helpers';
 
 /**
  * UI-6 Dark mode (TOKENS_V2 §2, §7): follows the system by default; Sáng / Tối / Theo hệ thống in
@@ -86,6 +86,7 @@ test('picker works when storage is unavailable (falls back to this page only)', 
 
 test('dark: no serious/critical axe violations on the main screens', async ({ page }) => {
   test.slow();
+  await signIn(page); // personal-data screens render their real content
   await page.emulateMedia({ colorScheme: 'dark' });
   for (const path of [
     '/',

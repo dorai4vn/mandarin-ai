@@ -5,6 +5,7 @@ import {
   PdfUploadResultSchema,
   PronunciationAssessmentResultSchema,
   RealtimeSessionGrantSchema,
+  SyncPullResponseSchema,
   SyncPushResponseSchema,
   type HandwritingRecognitionRequest,
   type PronunciationAssessmentRequest,
@@ -73,6 +74,8 @@ export const api = {
       (v) => HandwritingRecognitionResultSchema.parse(v),
       json(req),
     ),
+  syncPull: (after: number) =>
+    call(`/v1/sync/pull?after=${after}&limit=200`, (v) => SyncPullResponseSchema.parse(v)),
   syncPush: (operations: SyncOperation[]) =>
     call('/v1/sync/push', (v) => SyncPushResponseSchema.parse(v), json({ operations })),
   uploadPdf: (file: Blob) =>

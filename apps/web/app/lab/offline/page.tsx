@@ -2,10 +2,25 @@
 import type { OutboxEntry } from '@mandarin/domain';
 import { useCallback, useEffect, useState } from 'react';
 import { SYNC_DISABLED_MESSAGE, useOffline } from '@/components/OfflineProvider';
+import { RequireAuth } from '@/components/auth/RequireAuth';
 import { Button, Card, Input, Mono, PageHeader } from '@/components/ui';
 import type { SpikeNote } from '@/offline/store';
 
-export default function OfflineLab() {
+export default function OfflineLabPage() {
+  return (
+    <>
+      <PageHeader
+        title="Offline & đồng bộ"
+        lead="Ghi chú thử nghiệm được lưu trên máy ngay, rồi gửi lên máy chủ đúng một lần khi có mạng; thiết bị khác của cùng tài khoản nhận lại khi đồng bộ."
+      />
+      <RequireAuth>
+        <OfflineLab />
+      </RequireAuth>
+    </>
+  );
+}
+
+function OfflineLab() {
   const { store, online, pending, lastSync, syncAvailability, refresh, syncNow } = useOffline();
   const [text, setText] = useState('');
   const [notes, setNotes] = useState<SpikeNote[]>([]);
@@ -19,10 +34,10 @@ export default function OfflineLab() {
   }, [store]);
 
   useEffect(() => {
-    // Reload local data whenever the store or pending count changes.
+    // Reload local data whenever the store, the pending count or a sync (pull) changes.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void reload();
-  }, [reload, pending]);
+  }, [reload, pending, lastSync]);
 
   const add = async () => {
     if (!store || !text.trim()) return;
@@ -44,10 +59,6 @@ export default function OfflineLab() {
 
   return (
     <>
-      <PageHeader
-        title="Offline & đồng bộ"
-        lead="Ghi chú thử nghiệm được lưu trên máy ngay, rồi gửi lên máy chủ đúng một lần khi có mạng."
-      />
       {store?.kind === 'memory' && (
         <p
           role="alert"

@@ -3,6 +3,7 @@ import { Inter, Noto_Sans_SC, Nunito } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { OfflineProvider } from '@/components/OfflineProvider';
+import { AuthProvider } from '@/lib/auth';
 import { PwaProvider } from '@/components/PwaProvider';
 import './globals.css';
 
@@ -92,9 +93,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </p>
         </noscript>
         <PwaProvider>
-          <OfflineProvider>
-            <AppShell>{children}</AppShell>
-          </OfflineProvider>
+          <AuthProvider>
+            <OfflineProvider>
+              <AppShell>{children}</AppShell>
+            </OfflineProvider>
+          </AuthProvider>
         </PwaProvider>
       </body>
     </html>

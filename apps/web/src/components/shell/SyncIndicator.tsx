@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { SYNC_DISABLED_MESSAGE, describeSyncResult } from '@/offline/sync-message';
 import { useOffline } from '../OfflineProvider';
 import { Button } from '../ui/Button';
+import { ButtonLink } from '../ui/ButtonLink';
 import { useToast } from '../ui/Toast';
 
 /**
@@ -18,28 +19,33 @@ import { useToast } from '../ui/Toast';
  * to assistive tech.
  */
 export function useSyncStatus() {
-  const { online, pending, rejected, syncAvailability } = useOffline();
+  const { online, pending, rejected, syncAvailability, signedIn } = useOffline();
   const localOnly = syncAvailability === 'disabled';
+  // Signed out (D-042): no local data and no sync — never "Đã đồng bộ".
   const state =
     rejected > 0
       ? 'error'
       : !online
         ? 'offline'
-        : localOnly
-          ? 'local-only'
-          : pending > 0
-            ? 'pending'
-            : 'synced';
+        : !signedIn
+          ? 'signed-out'
+          : localOnly
+            ? 'local-only'
+            : pending > 0
+              ? 'pending'
+              : 'synced';
   const text =
     state === 'error'
       ? `${rejected} lỗi đồng bộ`
       : state === 'offline'
         ? 'Offline'
-        : state === 'local-only'
-          ? 'Lưu trên thiết bị'
-          : state === 'pending'
-            ? `${pending} chờ đồng bộ`
-            : 'Đã đồng bộ';
+        : state === 'signed-out'
+          ? 'Chưa đăng nhập'
+          : state === 'local-only'
+            ? 'Lưu trên thiết bị'
+            : state === 'pending'
+              ? `${pending} chờ đồng bộ`
+              : 'Đã đồng bộ';
   return { state, text, localOnly } as const;
 }
 
@@ -47,6 +53,7 @@ const DOT = {
   error: 'bg-error-base',
   offline: 'bg-warning',
   'local-only': 'bg-fg-subtle',
+  'signed-out': 'bg-fg-subtle',
   pending: 'bg-primary-base',
   synced: 'bg-success',
 } as const;
@@ -59,7 +66,7 @@ export function SyncIndicator({
   /** Popover alignment relative to the pill. */
   align?: 'start' | 'end';
 }) {
-  const { online, pending, rejected, store, lastSync, syncNow } = useOffline();
+  const { online, pending, rejected, store, lastSync, syncNow, signedIn } = useOffline();
   const { state, text } = useSyncStatus();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -193,20 +200,32 @@ export function SyncIndicator({
               : '—'}
           </dd>
         </dl>
-        <Button
-          size="sm"
-          variant="secondary"
-          fullWidth
-          loading={busy}
-          // aria-disabled (not disabled): focus stays on the button when the device goes offline.
-          aria-disabled={!online || undefined}
-          aria-describedby={online ? undefined : `${id}-needs-net`}
-          className={online ? '' : 'opacity-60'}
-          onClick={() => void syncNowClicked()}
-          data-testid="sync-popover-now"
-        >
-          Đồng bộ ngay
-        </Button>
+        {signedIn ? (
+          <Button
+            size="sm"
+            variant="secondary"
+            fullWidth
+            loading={busy}
+            // aria-disabled (not disabled): focus stays on the button when the device goes offline.
+            aria-disabled={!online || undefined}
+            aria-describedby={online ? undefined : `${id}-needs-net`}
+            className={online ? '' : 'opacity-60'}
+            onClick={() => void syncNowClicked()}
+            data-testid="sync-popover-now"
+          >
+            Đồng bộ ngay
+          </Button>
+        ) : (
+          <ButtonLink
+            href="/login"
+            size="sm"
+            variant="secondary"
+            fullWidth
+            data-testid="sync-popover-login"
+          >
+            Đăng nhập để đồng bộ
+          </ButtonLink>
+        )}
         {!online && (
           <p id={`${id}-needs-net`} className="mt-2 text-xs text-fg-muted">
             Cần có mạng để đồng bộ.

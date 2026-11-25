@@ -123,7 +123,7 @@ Phân tích JS (gzip, chunk chung cho mọi route): react-dom ≈ 70 KB, runtime
 
 ## 7. Khoảng trống đã phát hiện (sửa ở M1, không sửa trong đợt tài liệu này)
 - **G1 — Trạng thái đồng bộ:** `SyncChip` hiển thị "Đã đồng bộ" khi `pending = 0` kể cả khi outbox có thao tác `rejected` → phải hiển thị lỗi và số thao tác bị từ chối.
-- **G2 — Supabase SDK tải sẵn:** `OfflineProvider` (layout gốc) → `api-client` → `session` import tĩnh `@supabase/supabase-js` (~62 KB gzip) → chuyển sang `import()` động chỉ khi cần phiên đăng nhập.
+- **G2 — Supabase SDK tải sẵn:** ~~`OfflineProvider` (layout gốc) → `api-client` → `session` import tĩnh `@supabase/supabase-js` (~62 KB gzip)~~ → **đã sửa ở M1:** SDK tải bằng `import()` động, chỉ khi thiết bị có phiên đã lưu hoặc khi người dùng bấm đăng nhập; người chưa đăng nhập không tải SDK (E2E `m1-auth.spec.ts` kiểm). Đo lại sau M1 (Chromium, build production, localhost): `/`, `/lab/offline`, `/login` ≈ **229–230 KB** script (trước ≈ 275–294 KB) — vẫn trên mục tiêu 200 KB, dưới ngưỡng fail 300 KB; phần còn lại là React/Next, Dexie, zod.
 - **G3 — zod phía client (~32 KB):** cần để kiểm tra phản hồi API; cân nhắc `zod/mini` hoặc chỉ kiểm tra ở ranh giới cần thiết — đo trước khi đổi (trade-off: an toàn kiểu dữ liệu ↔ kích thước).
 - **G4 — Chưa có bộ đo:** chưa có `web-vitals`, `Server-Timing`, chỉ số sync.
 

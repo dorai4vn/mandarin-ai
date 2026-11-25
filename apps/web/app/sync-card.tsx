@@ -1,9 +1,10 @@
 'use client';
+import Link from 'next/link';
 import { SYNC_DISABLED_MESSAGE, useOffline } from '@/components/OfflineProvider';
 import { Card } from '@/components/ui';
 
 export function SyncCard() {
-  const { online, pending, store, lastSync, syncAvailability } = useOffline();
+  const { online, pending, store, lastSync, syncAvailability, signedIn } = useOffline();
   return (
     <Card title="Đồng bộ" data-testid="home-sync">
       <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
@@ -11,11 +12,13 @@ export function SyncCard() {
         <dd>{online ? 'Đang trực tuyến' : 'Offline'}</dd>
         <dt className="text-fg-muted">Lưu trữ</dt>
         <dd data-testid="store-kind">
-          {store
-            ? store.kind === 'indexeddb'
-              ? 'IndexedDB (lâu dài)'
-              : 'Bộ nhớ tạm (dự phòng)'
-            : '…'}
+          {!signedIn
+            ? 'Chưa đăng nhập'
+            : store
+              ? store.kind === 'indexeddb'
+                ? 'IndexedDB (lâu dài)'
+                : 'Bộ nhớ tạm (dự phòng)'
+              : '…'}
         </dd>
         <dt className="text-fg-muted">Chờ gửi</dt>
         <dd>{pending}</dd>
@@ -32,6 +35,14 @@ export function SyncCard() {
         <dt className="text-fg-muted">Lần cuối</dt>
         <dd>{lastSync ? new Date(lastSync.at).toLocaleTimeString('vi-VN') : '—'}</dd>
       </dl>
+      {!signedIn && (
+        <p className="mt-3 text-sm text-fg-muted" data-testid="home-sync-signed-out">
+          <Link href="/login" className="font-medium text-link underline underline-offset-2">
+            Đăng nhập
+          </Link>{' '}
+          để lưu và đồng bộ dữ liệu học của bạn.
+        </p>
+      )}
       {syncAvailability === 'disabled' && (
         <p className="mt-3 text-sm text-fg-muted" role="note" data-testid="sync-disabled-note">
           {SYNC_DISABLED_MESSAGE}

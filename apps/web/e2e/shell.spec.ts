@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { deviceClass, expectNoHorizontalScroll } from './helpers';
+import { deviceClass, expectNoHorizontalScroll, signIn } from './helpers';
 
 /**
  * UI-3 shell (COMPONENT_SPEC_V2 §6–8, RESPONSIVE_V2): sidebar collapse + memory, phone bottom
@@ -165,6 +165,7 @@ test('phone: 5 bottom items; "Thêm" sheet opens, focuses, and closes by Esc, ba
 
 test('phone: bottom navigation hides while typing (virtual keyboard)', async ({ page }) => {
   test.skip(deviceClass(page) !== 'phone', 'phone navigation only');
+  await signIn(page); // the note field is personal data (D-042)
   await hydrated(page, '/lab/offline');
   const bottom = page.getByTestId('nav-bottom');
   await expect(bottom).toBeVisible();
