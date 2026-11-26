@@ -4,20 +4,21 @@ import { runImport, serialize } from '../src/importer.mjs';
 import { createClient, BudgetExceeded } from '../src/client.mjs';
 import { page, fakeClient, SAFE_SVG } from './helpers.mjs';
 
+const B_SVG = SAFE_SVG.replace('M0 0L10 10', 'M1 1L9 9');
 const cats = ['Category:Synthetic'];
 const pages = () => [
-  page('File:b.svg', { revid: 2, sha1: 'b'.repeat(40) }),
+  page('File:b.svg', { revid: 2, svg: B_SVG }),
   page('File:a.svg', { lic: 'CC0', author: '', revid: 1 }),
   page('File:nc.svg', { lic: 'CC BY-NC 4.0' }),
   page('File:unknown.svg', { lic: 'Weird' }),
   page('File:noauthor.svg', { lic: 'CC BY 4.0', author: '' }),
   page('File:png.png', { mime: 'image/png' }),
-  page('File:b.svg', { revid: 2, sha1: 'b'.repeat(40) }), // duplicate listing
+  page('File:b.svg', { revid: 2, svg: B_SVG }), // duplicate listing
 ];
 
 test('imports eligible, rejects the rest with reasons, deterministic order', async () => {
   const c = fakeClient(pages(), {
-    [pages()[0].imageinfo[0].url]: SAFE_SVG.replace('M0 0L10 10', 'M1 1L9 9'),
+    [pages()[0].imageinfo[0].url]: B_SVG,
   });
   const { manifest, report } = await runImport({ client: c, categories: cats });
   assert.deepEqual(
@@ -46,10 +47,9 @@ test('identical content under different titles is deduped', async () => {
 });
 
 test('unsafe svg rejected, others kept', async () => {
-  const p = [page('File:ok.svg'), page('File:evil.svg', { revid: 9 })];
-  const c = fakeClient(p, {
-    [p[1].imageinfo[0].url]: '<svg xmlns="http://www.w3.org/2000/svg"><script/></svg>',
-  });
+  const evil = '<svg xmlns="http://www.w3.org/2000/svg"><script/></svg>';
+  const p = [page('File:ok.svg'), page('File:evil.svg', { revid: 9, svg: evil })];
+  const c = fakeClient(p, { [p[1].imageinfo[0].url]: evil });
   const { manifest } = await runImport({ client: c, categories: cats });
   assert.deepEqual(
     manifest.entries.map((e) => e.title),
@@ -78,10 +78,20 @@ test('incremental: unchanged reused, changed re-downloaded, curated mapping pres
       })),
     }),
   );
+  const localFiles = Object.fromEntries(
+    first.manifest.entries.map((e, i) => [`svg/${i}.svg`, e.svg]),
+  );
   const p = pages();
-  p[0] = page('File:b.svg', { revid: 3, sha1: 'c'.repeat(40) });
-  const c = fakeClient(p);
-  const { manifest, report } = await runImport({ client: c, categories: cats, prior: persisted });
+  const B2 = B_SVG.replace('M1 1', 'M2 2');
+  p[0] = page('File:b.svg', { revid: 3, svg: B2 });
+  const c = fakeClient(p, { [p[0].imageinfo[0].url]: B2 });
+  const readLocal = async (e) => localFiles[e.file];
+  const { manifest, report } = await runImport({
+    client: c,
+    categories: cats,
+    prior: persisted,
+    readLocal,
+  });
   assert.equal(report.reused, 1);
   assert.equal(report.downloaded, 1);
   assert.equal(c.calls.download.length, 1);
@@ -104,13 +114,10 @@ test('client: pagination follows continue, request budget enforced, truncation r
   const fetchImpl = async (u) => {
     urls.push(u);
     n++;
-    return {
-      ok: true,
-      json: async () => ({
-        query: { pages: [page(`File:${n}.svg`)] },
-        ...(n < 10 ? { continue: { gcmcontinue: `t${n}`, continue: 'gcmcontinue||' } } : {}),
-      }),
-    };
+    return Response.json({
+      query: { pages: [page(`File:${n}.svg`)] },
+      ...(n < 10 ? { continue: { gcmcontinue: `t${n}`, continue: 'gcmcontinue||' } } : {}),
+    });
   };
   const cl = createClient({ fetchImpl, userAgent: 'test (synthetic)', maxRequests: 3 });
   const r = await cl.listCategory('Category:S', { pageLimit: 2 });
@@ -135,6 +142,6 @@ test('client: requires UA, restricts download host, offline cache miss fails wit
     userAgent: 'x',
     offline: true,
   });
-  await assert.rejects(cl.downloadSvg('https://evil.example/x.svg'), /host-not-allowed/);
-  await assert.rejects(cl.downloadSvg('https://upload.wikimedia.org/x.svg'), /offline-cache-miss/);
+  await assert.rejects(cl.downloadSvg('https://evil.example/x.svg'), /url-not-allowed/);
+  await assert.rejects(cl.downloadSvg('https://upload.wikimedia.org/wikipedia/commons/x.svg', { sha1: 'a'.repeat(40) }), /offline-cache-miss/);
 });

@@ -1,6 +1,7 @@
 // Deterministic, incremental Commons import pipeline. Pure of network: takes a client.
 import { createHash } from 'node:crypto';
-import { classifyLicence } from './licence.mjs';
+import { checkLicenceUrl, classifyLicence } from './licence.mjs';
+import { isCommonsFileUrl, isCommonsPageUrl, normalizeSha1, verifySha1 } from './provenance.mjs';
 import { sanitizeSvg, SvgRejected } from './sanitize.mjs';
 
 const sha256 = (s) => createHash('sha256').update(s).digest('hex');
@@ -20,25 +21,32 @@ export function evaluateFile(page, { downloaded = null } = {}) {
   if (ii.mime !== 'image/svg+xml') return reject(`mime-not-svg:${ii.mime}`);
   const lic = classifyLicence(meta(ii.extmetadata, 'LicenseShortName'));
   if (!lic.ok) return reject(lic.reason);
+  const licUrl = checkLicenceUrl(lic, meta(ii.extmetadata, 'LicenseUrl'));
+  if (!licUrl.ok) return reject('licence-url-not-canonical');
   const author = meta(ii.extmetadata, 'Artist');
   if (lic.attribution && !author) return reject('attribution-required-but-author-missing');
-  if (!ii.sha1 || !ii.url) return reject('missing-provenance');
+  const sha1 = normalizeSha1(ii.sha1);
+  if (!sha1) return reject('sha1-invalid');
+  const rev = page.revisions?.[0];
+  if (!Number.isInteger(rev?.revid) || !rev?.timestamp) return reject('revision-missing');
+  if (!isCommonsPageUrl(ii.descriptionurl)) return reject('source-url-invalid');
+  if (!isCommonsFileUrl(ii.url)) return reject('file-url-invalid');
   const entry = {
     status: 'eligible',
     title,
     pageId: page.pageid,
-    revisionId: page.revisions?.[0]?.revid ?? null,
-    revisionTimestamp: page.revisions?.[0]?.timestamp ?? null,
-    sourceUrl: ii.descriptionurl ?? null,
+    revisionId: rev.revid,
+    revisionTimestamp: rev.timestamp,
+    sourceUrl: ii.descriptionurl,
     fileUrl: ii.url,
-    upstreamSha1: ii.sha1,
+    upstreamSha1: sha1, // normalised to hex
     author: author || null,
     credit: meta(ii.extmetadata, 'Credit') || null,
     licence: {
       id: lic.id,
       version: lic.version,
       name: lic.rawName,
-      url: meta(ii.extmetadata, 'LicenseUrl') || null,
+      url: licUrl.url,
       attributionRequired: lic.attribution,
       shareAlike: lic.shareAlike,
     },
@@ -47,6 +55,7 @@ export function evaluateFile(page, { downloaded = null } = {}) {
     character: null,
   };
   if (downloaded !== null) {
+    if (!verifySha1(Buffer.from(downloaded, 'utf8'), sha1)) return reject('sha1-mismatch');
     try {
       const clean = sanitizeSvg(downloaded);
       entry.sanitizedSha256 = sha256(clean);
@@ -59,6 +68,20 @@ export function evaluateFile(page, { downloaded = null } = {}) {
   return entry;
 }
 
+/** Everything the stage/character mapping and licence compliance rest on. */
+export const evidenceKey = (e) =>
+  JSON.stringify([
+    e.upstreamSha1,
+    e.revisionId,
+    e.fileUrl,
+    e.sourceUrl,
+    e.author,
+    e.licence?.id,
+    e.licence?.version,
+    e.licence?.name,
+    e.licence?.url,
+  ]);
+
 /**
  * prior: previous manifest ({entries}) or null. Incremental: a file is re-downloaded only
  * if absent from prior or its upstream sha1/revision changed. dryRun => no downloads, no svg output.
@@ -69,11 +92,12 @@ export async function runImport({
   prior = null,
   dryRun = false,
   pageLimit = 5,
+  readLocal = null, // async (entry) => sanitized svg text | null; required for reuse
 }) {
   const priorByTitle = new Map((prior?.entries ?? []).map((e) => [e.title, e]));
   const seen = new Map();
   const rejected = [];
-  const stats = { listed: 0, duplicates: 0, reused: 0, downloaded: 0 };
+  const stats = { listed: 0, duplicates: 0, reused: 0, downloaded: 0, mappingsDropped: 0 };
   const truncated = [];
   for (const cat of [...categories].sort()) {
     const { files, complete } = await client.listCategory(cat, { pageLimit });
@@ -96,37 +120,45 @@ export async function runImport({
       continue;
     }
     const old = priorByTitle.get(title);
-    if (
-      old &&
-      old.upstreamSha1 === base.upstreamSha1 &&
-      old.revisionId === base.revisionId &&
-      old.sanitizedSha256 &&
-      old.file
-    ) {
-      entries.push({
-        ...base,
-        sanitizedSha256: old.sanitizedSha256,
-        file: old.file,
-        stage: old.stage,
-        character: old.character,
-      });
-      stats.reused++;
-      continue;
+    const unchanged = old && evidenceKey(old) === evidenceKey(base);
+    if (unchanged && old.sanitizedSha256 && old.file && readLocal) {
+      // Reuse only if the local file still exists, matches its recorded checksum and is still safe.
+      let local = null;
+      try {
+        local = await readLocal(old);
+        if (typeof local !== 'string' || sha256(local) !== old.sanitizedSha256 || sanitizeSvg(local) !== local)
+          local = null;
+      } catch {
+        local = null;
+      }
+      if (local !== null) {
+        entries.push({
+          ...base,
+          sanitizedSha256: old.sanitizedSha256,
+          file: old.file,
+          stage: old.stage,
+          character: old.character,
+        });
+        stats.reused++;
+        continue;
+      }
     }
     if (dryRun) {
       entries.push(base);
       continue;
     }
-    const raw = await client.downloadSvg(base.fileUrl);
+    const raw = await client.downloadSvg(base.fileUrl, { sha1: base.upstreamSha1 });
     stats.downloaded++;
     const full = evaluateFile(page, { downloaded: raw });
     if (full.status === 'rejected') {
       rejected.push({ title, reason: full.reason });
       continue;
     }
-    if (old) {
+    if (unchanged) {
       full.stage = old.stage;
       full.character = old.character;
+    } else if (old && (old.stage != null || old.character != null)) {
+      stats.mappingsDropped++; // evidence changed: curated mapping must be re-reviewed
     }
     entries.push(full);
   }

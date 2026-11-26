@@ -126,9 +126,12 @@ export function sanitizeSvg(input) {
     const attrs = [];
     const ar = /([^\s=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'))?/g;
     let a;
+    const names = new Set();
     while ((a = ar.exec(m[3] ?? ''))) {
       const an = a[1].toLowerCase();
       const val = a[2] ?? a[3] ?? '';
+      if (names.has(an)) throw new SvgRejected(`duplicate-attribute:${an}`);
+      names.add(an);
       if (an.startsWith('on')) throw new SvgRejected(`event-handler:${an}`);
       if (an === 'href' || an.endsWith(':href') || an === 'style' || an === 'src')
         throw new SvgRejected(`attribute-not-allowed:${an}`);
@@ -137,6 +140,8 @@ export function sanitizeSvg(input) {
         throw new SvgRejected(`attribute-not-allowed:${an}`);
       }
       if (!ATTRS.has(an)) throw new SvgRejected(`attribute-not-allowed:${an}`);
+      // CSS escapes (u\72l(...), \75rl) and comments can hide external url() references.
+      if (val.includes('\\') || val.includes('/*')) throw new SvgRejected('css-escape');
       const decoded = val.replace(/&#x?[0-9a-f]+;?/gi, '\u0000');
       if (decoded.includes('\u0000')) throw new SvgRejected('char-reference');
       if (/javascript:|data:|vbscript:|@import|expression\(/i.test(val))

@@ -41,6 +41,10 @@ const { manifest, report } = await runImport({
   client,
   categories: values.category,
   prior,
+  readLocal: async (e) => {
+    if (!values.out || !/^svg\/[0-9a-f]{16}\.svg$/.test(e.file)) return null; // confine to out/svg
+    return readFile(path.join(values.out, e.file), 'utf8');
+  },
   dryRun: !!values['dry-run'],
 });
 if (manifestPath && !values['dry-run']) {

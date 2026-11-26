@@ -7,7 +7,7 @@ for (const [n, id] of [
   ['PD-old-100', 'PD'],
   ['CC BY 4.0', 'CC-BY'],
   ['CC BY-SA 3.0', 'CC-BY-SA'],
-  ['CC-BY-SA-2.5', 'CC-BY-SA'],
+  ['CC BY-SA 2.5', 'CC-BY-SA'],
 ]) {
   test(`allow ${n}`, () => {
     const r = classifyLicence(n);
@@ -25,6 +25,11 @@ for (const n of [
   'Custom licence',
   'CC BY-NC-SA 3.0',
   'CC BY 4.0 NC',
+  'CC BY',
+  'CC BY 9.9',
+  'CC BY-SA 3.0 de',
+  'CC-BY-SA-2.5',
+  'cc by 4.0',
 ]) {
   test(`reject ${JSON.stringify(n)}`, () => assert.equal(classifyLicence(n).ok, false));
 }
