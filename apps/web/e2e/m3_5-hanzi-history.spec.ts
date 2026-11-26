@@ -1,0 +1,44 @@
+import { expect, test } from '@playwright/test';
+
+test.describe('M3.5 hanzi history (山)', () => {
+  test('shows sourced stages, evidence, explicit gap, mnemonic label, stroke-order gap', async ({
+    page,
+  }) => {
+    await page.goto('/lab/hanzi-history');
+    await expect(page.getByTestId('hanzi-history')).toBeVisible();
+    await expect(page.getByTestId('hanzi-stage-clerical')).toHaveAttribute(
+      'data-status',
+      'missing',
+    );
+    await expect(page.getByTestId('hanzi-evidence')).toContainText('Public domain');
+    await expect(page.getByTestId('hanzi-evidence')).toContainText('Chưa được chủ dự án duyệt');
+    await expect(page.getByTestId('hanzi-mnemonic')).toContainText('không phải bằng chứng');
+    await expect(page.getByTestId('hanzi-strokeorder-note')).toContainText('chưa có');
+  });
+
+  test('keyboard navigation, play/pause/replay', async ({ page }) => {
+    await page.goto('/lab/hanzi-history');
+    const stage = page.getByTestId('hanzi-history-stage');
+    await expect(stage).toHaveAttribute('data-stage', 'oracle');
+    await page.getByTestId('hanzi-stage-oracle').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(stage).toHaveAttribute('data-stage', 'bronze');
+    await page.getByTestId('hanzi-play').click();
+    await expect(stage).toHaveAttribute('data-playing', 'true');
+    await page.getByTestId('hanzi-play').click();
+    await expect(stage).toHaveAttribute('data-playing', 'false');
+    await page.getByTestId('hanzi-replay').click();
+    await expect(stage).toHaveAttribute('data-stage', 'oracle');
+    await expect(stage).toHaveAttribute('data-stage', 'bronze', { timeout: 5000 });
+  });
+
+  test('reduced motion disables the fade', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/lab/hanzi-history');
+    await expect(page.getByTestId('hanzi-reduced-note')).toBeVisible();
+    const t = await page
+      .getByTestId('hanzi-layer-oracle')
+      .evaluate((e) => getComputedStyle(e).transitionDuration);
+    expect(parseFloat(t)).toBeLessThan(0.01);
+  });
+});

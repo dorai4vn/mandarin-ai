@@ -78,6 +78,21 @@ Device smoke on real phones/desktops is reported as **not verified** until the o
 
 **Performance (D-032, `docs/PERFORMANCE.md`):** Local quiz answer feedback P4 p95 < 100 ms offline with D-L (12 000 review cards); UI interaction P1 p95 < 100 ms; due-card query indexed; no N+1 when loading a session.
 
+## M3.5 — Visual Hanzi: historical evolution animation (pilot 山)
+
+> 2026-11-26: chủ dự án duyệt tách phần *lịch sử chữ* khỏi M5 (issue #27, sau PR #25). **Nhận dạng chữ viết tay và bài quiz viết vẫn ở M5.** Thứ tự nét (stroke order) là tính năng riêng, chưa làm. Báo cáo: `docs/M3_5_REPORT.md`; nguồn: `docs/HANZI_HISTORY_SOURCES.md`.
+
+**Deliverables:** dữ liệu lịch sử có nguồn/giấy phép cho 山 (không bịa), timeline tương tác, hoạt ảnh SVG/CSS chỉ chuyển mờ giữa các giai đoạn đã ghi nhận, phát/tạm dừng/phát lại, nhãn giai đoạn + metadata bằng chứng + giấy phép, tách "minh họa gợi nhớ" khỏi bằng chứng, giai đoạn thiếu hiển thị rõ, tích hợp từ điển cá nhân, component dùng lại cho M4 (`HanziHistory`), lazy-load, bàn phím, giảm chuyển động, dự phòng khi không tải được chunk.
+
+**Acceptance criteria:**
+1. 山 có ≥ 3 giai đoạn lịch sử, mỗi giai đoạn có URL nguồn, giấy phép, hash tệp, xuất xứ, trạng thái duyệt (test `model.test.ts`).
+2. Giai đoạn không có tư liệu (lệ thư) hiển thị "Chưa có tư liệu" và bị bỏ qua khi phát; không có hình nội suy.
+3. Minh họa gợi nhớ gắn nhãn "không phải bằng chứng".
+4. Phát/tạm dừng/phát lại/Trước/Sau; điều hướng timeline bằng phím mũi tên/Home/End; `prefers-reduced-motion` tắt chuyển mờ.
+5. Mã hoạt ảnh + dữ liệu ở chunk riêng, chỉ tải khi chi tiết từ chứa chữ có lịch sử.
+6. Không đổi schema/auth/RLS/cấu hình cloud/API trả phí; test M3 giữ nguyên.
+**Không thuộc phạm vi:** thứ tự nét, nhận dạng chữ viết tay, mở rộng bộ chữ, M4.
+
 ## M4 — PDF import pipeline
 
 **Deliverables:** private PDF upload from any device (file picker, desktop drag-and-drop; resumable upload for large files), async parsing in the worker, page-level provenance, structure extraction, human review screen (side-by-side source/extraction on desktop/tablet, stacked on phones), edits, course publishing, re-import/version/dedupe.
@@ -88,7 +103,7 @@ Device smoke on real phones/desktops is reported as **not verified** until the o
 
 ## M5 — Visual Hanzi + handwriting quiz
 
-**Deliverables:** sourced historical character forms, visual evolution timeline and animations (SVG/CSS), evidence metadata; picture/meaning prompt -> Pointer Events canvas (touch, mouse, stylus) -> `HandwritingRecognitionPort` candidates (adapter chosen in M0-PWA) -> feedback with stroke guidance after submission.
+**Deliverables:** (lịch sử chữ/hoạt ảnh đã chuyển sang **M3.5**; M5 mở rộng bộ chữ nếu cần và thêm thứ tự nét) picture/meaning prompt -> Pointer Events canvas (touch, mouse, stylus) -> `HandwritingRecognitionPort` candidates (adapter chosen in M0-PWA) -> feedback with stroke guidance after submission.
 
 **Exit:** 山 exercise works on a real phone (finger) and a desktop browser (mouse/pen), target never leaked before submission (not present in DOM/network before submit), history sources displayed; unsupported invented historical forms prohibited; recognition accuracy on the evaluation set reported.
 
