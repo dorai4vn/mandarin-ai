@@ -20,3 +20,10 @@ Limits: fixtures are SYNTHETIC (not historical data). Importer never maps file�
 - Incremental reuse needs a verified local file (checksum + re-sanitize); `character`/`stage` mappings carry over only if all evidence (sha1, revision, URLs, author, licence) is unchanged, otherwise dropped and counted in `mappingsDropped`.
 - Sanitizer: duplicate attributes and backslash/comment (CSS-escape) values rejected.
   Limits: still no live Commons run; tests use synthetic fixtures. Real Commons `LicenseUrl`/short-name variants may reject legitimate files (fail-closed) — verify on a live dry-run.
+
+## C1: pilot mapping + readiness (this revision)
+
+- `src/mapping.mjs`: documented-convention filename parser (`-oracle`, `-bronze[-shang|-spring|-warring]`, `-silk`, `-slip`, `-seal`), `PILOT_CHARACTERS` (山水木火日月人雨魚鳥), `coverageReport`. Mappings are **pending-review candidates, never evidence**; the representation (historically accurate vs teaching) is `unknown`. Importer entries keep `character`/`stage` = null.
+- `listTitles` client method + `--pilot` CLI mode: exact-title lookup (2 API requests for 80 titles), missing titles counted separately.
+- Coverage separates `candidateFiles` / `eligibleFiles` / `curatedFiles` (curated = human `--curations file.json` `[{title, reviewer}]`; default 0).
+- Reproduce: `node src/cli.mjs --pilot --dry-run --max-requests 4 --ua "name (contact-url)"`; then download: `node src/cli.mjs --pilot --out pilot-output --max-requests 60 --ua "..."` (serial, no retry; if Commons answers 429, wait and re-run — the cache keeps verified files).
