@@ -17,7 +17,9 @@ const svgResp = (body, init) => new Response(body, init);
 test('sha1: hex and base36 both verify against raw bytes; wrong/garbage rejected', () => {
   const bytes = Buffer.from(SAFE_SVG);
   const hex = sha1Hex(bytes);
-  const b36 = BigInt('0x' + hex).toString(36).padStart(31, '0');
+  const b36 = BigInt('0x' + hex)
+    .toString(36)
+    .padStart(31, '0');
   assert.equal(normalizeSha1(b36), hex);
   assert.ok(verifySha1(bytes, hex) && verifySha1(bytes, b36));
   assert.ok(!verifySha1(Buffer.from('other'), hex));
@@ -27,7 +29,11 @@ test('sha1: hex and base36 both verify against raw bytes; wrong/garbage rejected
 
 test('client: download verifies sha1 on raw bytes; mismatch rejected and not cached', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'ci-'));
-  const cl = createClient({ fetchImpl: async () => svgResp('tampered'), userAgent: UA, cacheDir: dir });
+  const cl = createClient({
+    fetchImpl: async () => svgResp('tampered'),
+    userAgent: UA,
+    cacheDir: dir,
+  });
   await assert.rejects(cl.downloadSvg(URL1, { sha1: sha1of(SAFE_SVG) }), /sha1-mismatch/);
   assert.equal((await readdir(dir)).length, 0);
   await assert.rejects(cl.downloadSvg(URL1), /sha1-required/);
@@ -67,7 +73,14 @@ test('client: API JSON cache expires by TTL; offline may use stale', async () =>
   let calls = 0;
   const f = async () => (calls++, Response.json({ query: { pages: [] } }));
   const mk = (extra = {}) =>
-    createClient({ fetchImpl: f, userAgent: UA, cacheDir: dir, now: () => t, maxAgeMs: 100, ...extra });
+    createClient({
+      fetchImpl: f,
+      userAgent: UA,
+      cacheDir: dir,
+      now: () => t,
+      maxAgeMs: 100,
+      ...extra,
+    });
   await mk().listCategory('Category:S');
   await mk().listCategory('Category:S');
   assert.equal(calls, 1);
@@ -98,7 +111,13 @@ test('client: redirects are refused (API and file)', async () => {
   const cl = createClient({ fetchImpl: f, userAgent: UA });
   await assert.rejects(cl.listCategory('Category:S'), /redirect-not-allowed/);
   await assert.rejects(cl.downloadSvg(URL1, { sha1: sha1of('x') }), /redirect-not-allowed/);
-  const g = async () => ({ ok: true, status: 200, redirected: true, headers: new Headers(), arrayBuffer: async () => new ArrayBuffer(0) });
+  const g = async () => ({
+    ok: true,
+    status: 200,
+    redirected: true,
+    headers: new Headers(),
+    arrayBuffer: async () => new ArrayBuffer(0),
+  });
   await assert.rejects(
     createClient({ fetchImpl: g, userAgent: UA }).downloadSvg(URL1, { sha1: sha1of('x') }),
     /redirect-not-allowed/,
@@ -110,7 +129,9 @@ test('client: fetch is called with redirect:manual and an abort signal; timeout 
   const cl = createClient({
     fetchImpl: (u, i) => {
       init = i;
-      return new Promise((_, rej) => i.signal.addEventListener('abort', () => rej(new Error('aborted'))));
+      return new Promise((_, rej) =>
+        i.signal.addEventListener('abort', () => rej(new Error('aborted'))),
+      );
     },
     userAgent: UA,
     timeoutMs: 20,
@@ -142,13 +163,20 @@ test('importer: provenance, licence name/version/url enforced', () => {
     assert.match(r.reason, re);
   };
   assert.equal(evaluateFile(page('File:t.svg')).status, 'eligible');
-  assert.equal(evaluateFile(page('File:t.svg')).licence.url, 'https://creativecommons.org/licenses/by-sa/4.0/');
+  assert.equal(
+    evaluateFile(page('File:t.svg')).licence.url,
+    'https://creativecommons.org/licenses/by-sa/4.0/',
+  );
   bad({ licUrl: 'https://example.invalid/l' }, /licence-url-not-canonical/);
   bad({ licUrl: 'https://creativecommons.org/licenses/by-sa/3.0/' }, /licence-url-not-canonical/); // version mismatch
   bad({ licUrl: '' }, /licence-url-not-canonical/);
   bad({ lic: 'CC BY-SA' }, /licence-unknown/); // no version
   bad({}, /sha1-invalid/, (ii) => (ii.sha1 = 'nope'));
-  bad({}, /source-url-invalid/, (ii) => (ii.descriptionurl = 'http://commons.wikimedia.org/wiki/X'));
+  bad(
+    {},
+    /source-url-invalid/,
+    (ii) => (ii.descriptionurl = 'http://commons.wikimedia.org/wiki/X'),
+  );
   bad({}, /file-url-invalid/, (ii) => (ii.url = 'https://evil.example/a.svg'));
   const p = page('File:t.svg');
   delete p.revisions;
@@ -181,7 +209,13 @@ test('incremental: reuse requires valid local file matching checksum', async () 
     runImport({ client: fakeClient(p), categories: ['Category:S'], prior, readLocal });
   assert.equal((await run(async () => svg)).report.reused, 1);
   assert.equal((await run(null)).report.reused, 0); // no verifier => no reuse
-  for (const bad of [async () => null, async () => svg + ' ', async () => { throw new Error('ENOENT'); }]) {
+  for (const bad of [
+    async () => null,
+    async () => svg + ' ',
+    async () => {
+      throw new Error('ENOENT');
+    },
+  ]) {
     const r = await run(bad);
     assert.equal(r.report.reused, 0);
     assert.equal(r.report.downloaded, 1);
@@ -218,7 +252,13 @@ test('sanitizer: duplicate attributes rejected (case-insensitive)', () => {
 
 test('sanitizer: CSS-escaped / commented external url() values rejected', () => {
   const s = (v) => `<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0" fill="${v}"/></svg>`;
-  for (const v of ['u\\72l(http://e.example/a)', '\\75rl(http://e.example/a)', 'url(/**/http://e.example/a)', 'url(http://e.example/a)', 'url(&#117;)'])
+  for (const v of [
+    'u\\72l(http://e.example/a)',
+    '\\75rl(http://e.example/a)',
+    'url(/**/http://e.example/a)',
+    'url(http://e.example/a)',
+    'url(&#117;)',
+  ])
     assert.throws(() => sanitizeSvg(s(v)));
   assert.doesNotThrow(() => sanitizeSvg(s('url(#g1)')));
 });

@@ -6,10 +6,13 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { createClient } from './client.mjs';
 import { runImport, serialize } from './importer.mjs';
+import { candidateTitles, coverageReport, PILOT_CHARACTERS } from './mapping.mjs';
 
 const { values } = parseArgs({
   options: {
     category: { type: 'string', multiple: true },
+    pilot: { type: 'boolean' }, // look up documented-convention titles for the 10 pilot characters
+    curations: { type: 'string' }, // JSON [{title, reviewer}] human-approved mappings
     out: { type: 'string' },
     'dry-run': { type: 'boolean' },
     offline: { type: 'boolean' },
@@ -18,8 +21,10 @@ const { values } = parseArgs({
     cache: { type: 'string', default: '.cache/commons' },
   },
 });
-if (!values.category?.length || !values.ua) {
-  console.error('required: --category <Category:..> --ua "<client name (contact URL)>"');
+if ((!values.category?.length && !values.pilot) || !values.ua) {
+  console.error(
+    'required: (--category <Category:..> | --pilot) --ua "<client name (contact URL)>"',
+  );
   process.exit(2);
 }
 const manifestPath = values.out ? path.join(values.out, 'manifest.json') : null;
@@ -39,7 +44,8 @@ const client = createClient({
 });
 const { manifest, report } = await runImport({
   client,
-  categories: values.category,
+  categories: values.category ?? [],
+  titles: values.pilot ? candidateTitles() : null,
   prior,
   readLocal: async (e) => {
     if (!values.out || !/^svg\/[0-9a-f]{16}\.svg$/.test(e.file)) return null; // confine to out/svg
@@ -57,5 +63,19 @@ if (manifestPath && !values['dry-run']) {
   }
   const slim = { ...manifest, entries: manifest.entries.map(({ svg, ...rest }) => rest) };
   await writeFile(manifestPath, serialize(slim));
+}
+if (values.pilot) {
+  const curations = values.curations ? JSON.parse(await readFile(values.curations, 'utf8')) : [];
+  const existing = [
+    ...manifest.entries.map((e) => e.title),
+    ...manifest.rejected.map((r) => r.title),
+  ];
+  report.coverage = coverageReport({
+    chars: PILOT_CHARACTERS,
+    existing,
+    eligible: manifest.entries,
+    curations,
+    rejected: manifest.rejected,
+  });
 }
 console.log(JSON.stringify(report, null, 2));

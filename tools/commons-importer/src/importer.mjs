@@ -88,7 +88,8 @@ export const evidenceKey = (e) =>
  */
 export async function runImport({
   client,
-  categories,
+  categories = [],
+  titles = null, // exact File: titles (pilot); pages that do not exist are counted, not imported
   prior = null,
   dryRun = false,
   pageLimit = 5,
@@ -111,6 +112,19 @@ export async function runImport({
       seen.set(page.title, page);
     }
   }
+  const missing = [];
+  if (titles?.length) {
+    const { files } = await client.listTitles(titles);
+    for (const page of files) {
+      if (page.missing || !page.imageinfo) {
+        missing.push(page.title);
+        continue;
+      }
+      stats.listed++;
+      if (!seen.has(page.title)) seen.set(page.title, page);
+    }
+    missing.sort();
+  }
   const entries = [];
   for (const title of [...seen.keys()].sort()) {
     const page = seen.get(title);
@@ -126,7 +140,11 @@ export async function runImport({
       let local = null;
       try {
         local = await readLocal(old);
-        if (typeof local !== 'string' || sha256(local) !== old.sanitizedSha256 || sanitizeSvg(local) !== local)
+        if (
+          typeof local !== 'string' ||
+          sha256(local) !== old.sanitizedSha256 ||
+          sanitizeSvg(local) !== local
+        )
           local = null;
       } catch {
         local = null;
@@ -184,6 +202,7 @@ export async function runImport({
     truncatedCategories: truncated,
     entries: finalEntries,
     rejected,
+    missingTitles: missing,
   };
   // Source coverage vs eligible coverage; deliberately NO per-character coverage claim.
   const report = {
@@ -191,6 +210,7 @@ export async function runImport({
     ...stats,
     eligible: finalEntries.length,
     rejected: rejected.length,
+    missing: missing.length,
     complete: manifest.complete,
     characterCoverage: 'unverified: stage/character mapping not performed by importer',
   };

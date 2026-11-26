@@ -41,7 +41,8 @@ export async function readBounded(r, max) {
 
 /** Validates a parsed Action API response; API-level errors arrive with HTTP 200. */
 export function assertApiOk(res) {
-  if (res === null || typeof res !== 'object' || Array.isArray(res)) throw new Error('api-malformed');
+  if (res === null || typeof res !== 'object' || Array.isArray(res))
+    throw new Error('api-malformed');
   if (res.error) throw new Error(`api-error:${res.error.code ?? 'unknown'}`);
   if (res.query !== undefined && (res.query === null || typeof res.query !== 'object'))
     throw new Error('api-malformed');
@@ -68,7 +69,8 @@ export function createClient({
     if (!cacheDir) return undefined;
     try {
       const e = JSON.parse(await readFile(cachePath(key), 'utf8'));
-      if (e?.v !== CACHE_VERSION || e.key !== key || typeof e.fetchedAt !== 'number') return undefined;
+      if (e?.v !== CACHE_VERSION || e.key !== key || typeof e.fetchedAt !== 'number')
+        return undefined;
       return validate(e) ? e.body : undefined;
     } catch {
       return undefined; // missing, corrupt or invalid => miss
@@ -142,6 +144,22 @@ export function createClient({
     }
     return { files, complete: false, continuation: cont }; // truncated: caller must not claim full coverage
   }
+  /** Looks up exact File: titles (batches of 50). Missing titles come back with `missing: true`. */
+  async function listTitles(titles, { batch = 50 } = {}) {
+    const files = [];
+    const sorted = [...new Set(titles)].sort();
+    for (let i = 0; i < sorted.length; i += batch) {
+      const res = await getJson({
+        action: 'query',
+        titles: sorted.slice(i, i + batch).join('|'),
+        prop: 'imageinfo|revisions',
+        iiprop: 'url|sha1|size|mime|timestamp|extmetadata',
+        rvprop: 'ids|timestamp',
+      });
+      for (const p of res.query?.pages ?? []) files.push(p);
+    }
+    return { files, complete: true };
+  }
   /**
    * Downloads one SVG. `sha1` (upstream, hex or base36) is mandatory: the cache key is bound to
    * it (a changed upstream file can never be served from an old cache entry) and the raw bytes
@@ -168,5 +186,5 @@ export function createClient({
     await writeCache(key, text);
     return text;
   }
-  return { listCategory, downloadSvg, requestsUsed: () => used };
+  return { listCategory, listTitles, downloadSvg, requestsUsed: () => used };
 }

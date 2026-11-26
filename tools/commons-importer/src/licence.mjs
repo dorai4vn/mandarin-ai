@@ -32,10 +32,17 @@ export function classifyLicence(shortName) {
  */
 export function checkLicenceUrl(lic, reported) {
   const r = String(reported ?? '').trim();
-  const norm = r.replace(/^http:/, 'https:').replace(/\/deed\.[a-z-]+$/i, '').replace(/\/?$/, '/');
+  const norm = r
+    .replace(/^http:/, 'https:')
+    .replace(/\/deed\.[a-z-]+$/i, '')
+    .replace(/\/?$/, '/');
   if (!lic.canonicalUrl) {
     const mark = 'https://creativecommons.org/publicdomain/mark/1.0/';
-    return r === '' ? { ok: true, url: null } : norm === mark ? { ok: true, url: mark } : { ok: false };
+    return r === ''
+      ? { ok: true, url: null }
+      : norm === mark
+        ? { ok: true, url: mark }
+        : { ok: false };
   }
   return norm === lic.canonicalUrl ? { ok: true, url: lic.canonicalUrl } : { ok: false };
 }

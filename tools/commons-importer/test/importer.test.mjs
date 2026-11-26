@@ -143,5 +143,10 @@ test('client: requires UA, restricts download host, offline cache miss fails wit
     offline: true,
   });
   await assert.rejects(cl.downloadSvg('https://evil.example/x.svg'), /url-not-allowed/);
-  await assert.rejects(cl.downloadSvg('https://upload.wikimedia.org/wikipedia/commons/x.svg', { sha1: 'a'.repeat(40) }), /offline-cache-miss/);
+  await assert.rejects(
+    cl.downloadSvg('https://upload.wikimedia.org/wikipedia/commons/x.svg', {
+      sha1: 'a'.repeat(40),
+    }),
+    /offline-cache-miss/,
+  );
 });
