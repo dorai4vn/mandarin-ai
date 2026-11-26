@@ -1,0 +1,9 @@
+{
+  "name": "@mandarin/commons-importer",
+  "private": true,
+  "type": "module",
+  "description": "Standalone Wikimedia Commons SVG importer (isolated; not wired into turbo/CI)",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  }
+}
