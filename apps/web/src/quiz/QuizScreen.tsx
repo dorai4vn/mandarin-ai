@@ -1,7 +1,6 @@
 'use client';
 import {
   addDays,
-  buildQueue,
   buildQuestion,
   gradeChoice,
   preferredTypes,
@@ -17,6 +16,7 @@ import { HanziText } from '@/components/Hanzi';
 import { Badge, Button, ButtonLink, Card, EmptyState, ProgressBar } from '@/components/ui';
 import { useLearning } from '@/learning/LearningProvider';
 import { useOffline } from '@/components/OfflineProvider';
+import { buildSessionIds } from './queue-inputs';
 
 const localDate = () => {
   const d = new Date();
@@ -159,18 +159,14 @@ export function QuizScreen() {
     async (mode: SessionMode) => {
       if (!store) return;
       setNotice(null);
-      const carded = await store.cardedItemIds(QUIZ_SKILL_MEANING);
-      const dueCards = (
-        await store.dueCards(today, QUIZ_SKILL_MEANING, SESSION_LIMITS.due * 2)
-      ).filter((c) => items.has(c.vocabularyItemId));
-      const allCards =
-        mode === 'recall'
-          ? (await store.listCards()).filter(
-              (c) => c.skill === QUIZ_SKILL_MEANING && items.has(c.vocabularyItemId),
-            )
-          : undefined;
-      const newItemIds = vocabulary.filter((v) => !carded.has(v.id)).map((v) => v.id);
-      const ids = buildQueue({ mode, today, dueCards, allCards, newItemIds });
+      const ids = await buildSessionIds(
+        store,
+        mode,
+        today,
+        QUIZ_SKILL_MEANING,
+        new Set(items.keys()),
+        vocabulary.map((v) => v.id),
+      );
       const id = newSessionId();
       const queue: QuizSessionState['queue'] = [];
       for (const itemId of ids) {

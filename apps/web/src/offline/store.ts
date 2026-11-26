@@ -76,9 +76,12 @@ export interface LocalStore {
   recordLearningEvent(event: LearningEventPayload, now?: Date): Promise<boolean>;
   /** Every review card (recall, home counters). */
   listCards(): Promise<ReviewCard[]>;
-  /** Cards of `skill` due on/before `today`, oldest first — uses the `due` index. */
+  /**
+   * Cards of `skill` due on/before `today`, oldest first — uses the `due` index. Only cards whose
+   * word is live in this account's vocabulary count; orphans are filtered before `limit`.
+   */
   dueCards(today: string, skill: string, limit: number): Promise<ReviewCard[]>;
-  /** Count of due cards without loading them. */
+  /** Count of due cards (same orphan rule as `dueCards`) without loading them. */
   countDue(today: string, skill: string): Promise<number>;
   /** Ids of words that already have a card for `skill`. */
   cardedItemIds(skill: string): Promise<Set<string>>;
@@ -389,17 +392,27 @@ export class IndexedDbStore implements LocalStore {
   listCards() {
     return this.db.cards.toArray();
   }
-  dueCards(today: string, skill: string, limit: number) {
+  /** Ids of this account's live (non-deleted) words: the only words a card may be studied for. */
+  private async liveItemIds() {
+    const keys = await this.db.vocab.filter((v) => !v.deleted).primaryKeys();
+    return new Set(keys);
+  }
+  async dueCards(today: string, skill: string, limit: number) {
+    const live = await this.liveItemIds();
+    // Orphans are filtered BEFORE the limit, so they can never push a valid card out of a session.
     return this.db.cards
       .where('[skill+due]')
       .between([skill, ''], [skill, today], true, true)
+      .filter((c) => live.has(c.vocabularyItemId))
       .limit(limit)
       .toArray();
   }
-  countDue(today: string, skill: string) {
+  async countDue(today: string, skill: string) {
+    const live = await this.liveItemIds();
     return this.db.cards
       .where('[skill+due]')
       .between([skill, ''], [skill, today], true, true)
+      .filter((c) => live.has(c.vocabularyItemId))
       .count();
   }
   async cardedItemIds(skill: string) {
@@ -609,14 +622,20 @@ export class MemoryStore implements LocalStore {
   async listCards() {
     return [...this.cards.values()];
   }
+  private isLive(c: ReviewCard) {
+    const v = this.vocab.get(c.vocabularyItemId);
+    return !!v && !v.deleted;
+  }
   async dueCards(today: string, skill: string, limit: number) {
     return [...this.cards.values()]
-      .filter((c) => c.skill === skill && c.due <= today)
+      .filter((c) => c.skill === skill && c.due <= today && this.isLive(c))
       .sort((a, b) => a.due.localeCompare(b.due))
       .slice(0, limit);
   }
   async countDue(today: string, skill: string) {
-    return [...this.cards.values()].filter((c) => c.skill === skill && c.due <= today).length;
+    return [...this.cards.values()].filter(
+      (c) => c.skill === skill && c.due <= today && this.isLive(c),
+    ).length;
   }
   async cardedItemIds(skill: string) {
     return new Set(

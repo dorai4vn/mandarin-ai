@@ -70,6 +70,28 @@ describe.each([
 
   it('due query: only cards due on/before the day, oldest first, limited', async () => {
     const s = await open();
+    // Only cards of words that exist in this account's vocabulary are due (orphans are ignored).
+    for (const id of ['vocab-0000-aaaa', 'vocab-0001-aaaa', 'vocab-0002-aaaa'])
+      await s.recordVocabulary('create', {
+        id,
+        lexemeId: null,
+        fields: {
+          simplified: '字',
+          traditional: null,
+          pinyin: 'zì',
+          meaningVi: 'chữ',
+          example: null,
+          notes: null,
+          tags: [],
+        },
+        addition: {
+          key: `k-${id}`,
+          studyDate: '2026-11-20',
+          method: 'manual',
+          lessonId: null,
+          courseId: null,
+        },
+      });
     await s.recordAttempt(attempt(1, true, '2026-11-20', 'vocab-0000-aaaa')); // due 11-21
     await s.recordAttempt(attempt(2, true, '2026-11-25', 'vocab-0001-aaaa')); // due 11-26
     await s.recordAttempt(attempt(3, true, '2026-11-26', 'vocab-0002-aaaa')); // due 11-27

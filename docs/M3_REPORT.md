@@ -15,7 +15,7 @@ Quy ước nhãn: **Verified-local** = đã chạy trong môi trường dev củ
 | Dùng được bằng bàn phím trên desktop | `e2e/m3-quiz.spec.ts` | CI; thiết bị thật: **Pending** |
 | P4 < 100 ms, D-L 12 000 thẻ, offline | `e2e/perf-quiz.spec.ts`: p95 khoảng 19 ms (n = 69), chỉ chặn trên Chromium (CPU 4×) | CI (Chromium). Firefox/WebKit **không** đo throttle (xem dưới) |
 | Truy vấn due có index | Xem dưới | Client: có index; server: không có bảng |
-| Không N+1 khi tải phiên | Xem dưới | Verified bằng đọc mã; chưa có test tự động |
+| Không N+1 khi tải phiên | Xem dưới | Test tự động số lần gọi store (`queue-inputs.test.ts`): không tăng theo số thẻ |
 
 ## pgTAP: quiz_attempts, RLS, replay
 
@@ -29,12 +29,28 @@ Quy ước nhãn: **Verified-local** = đã chạy trong môi trường dev củ
 
 - **Client (nơi M3 truy vấn due):** Dexie store `cards: 'key, [skill+due], skill'`; `dueCards`/`countDue` dùng `.where('[skill+due]').between(...)` (`apps/web/src/offline/store.ts`), không quét toàn bộ. P4 (12 000 thẻ) đạt trên Chromium.
 - **Server (log đồng bộ):** `EXPLAIN (ANALYZE, BUFFERS)` **Verified-local** trên Postgres thật với 24 000 operation của một user, truy vấn pull `user_id = … and server_seq > 23000 order by server_seq limit 200`: `Index Scan using sync_operations_user_seq`, 10 buffer hit, thực thi 0,073 ms. Không có truy vấn "due" phía server vì không có bảng review_cards.
-- **N+1:** `QuizScreen.start()` gọi store một số lần cố định (`cardedItemIds`, `dueCards`, và `listCards` ở chế độ recall), độc lập với kích thước hàng đợi; vòng lặp tạo queue chỉ chạy trên bộ nhớ. **Chưa có test tự động** khẳng định số lần gọi — **Pending**.
+- **N+1:** `buildSessionIds` (dùng bởi `QuizScreen.start()`) gọi store tối đa 3 lần (`cardedItemIds`, `dueCards`, `listCards` chỉ ở recall), độc lập với số thẻ; có test tự động (xem trên).
 
-## Rủi ro đã ghi ở P4: thẻ due mồ côi (orphan)
+## Thẻ due mồ côi (orphan) — đã chốt và sửa
 
-- **Xác nhận bằng đọc mã, chưa sửa:** `start()` lấy `dueCards(..., limit = SESSION_LIMITS.due * 2)` rồi mới lọc `items.has(vocabularyItemId)`. Nếu từ đã bị xóa khỏi từ điển cá nhân mà thẻ còn, thẻ mồ côi (a) vẫn được `countDue` đếm (bộ đếm "đến hạn" lớn hơn số câu thực tế) và (b) có thể chiếm chỗ trong giới hạn trước khi lọc, làm thẻ hợp lệ bị đẩy ra ngoài phiên.
-- Chưa sửa vì thay đổi hành vi nằm ngoài phạm vi "bổ sung test/bằng chứng" và cần quyết định sản phẩm (xóa thẻ khi xóa từ? hay bỏ qua?). **Pending**, đề xuất: đếm/lọc theo tập từ hiện có ở cùng truy vấn hoặc dọn thẻ khi xóa từ, kèm test.
+- **Quyết định sản phẩm (owner):** chỉ tính và chọn thẻ có từ hợp lệ (tồn tại, chưa xóa) trong từ điển cá nhân của user hiện tại; lọc **trước** `limit`; **không** tự xóa dữ liệu mồ côi.
+- **Cài đặt:** `IndexedDbStore.dueCards/countDue` (và `MemoryStore`) lọc theo tập id từ còn sống của chính DB tài khoản (`vocab`, loại tombstone) ngay trong truy vấn index `[skill+due]` trước `.limit()`. Thẻ mồ côi vẫn nằm trong `cards`. `QuizScreen.start()` dùng helper `quiz/queue-inputs.ts#buildSessionIds`.
+- **Test (unit, CI):** `quiz/queue-inputs.test.ts` (IndexedDB + memory): (a) 45 thẻ mồ côi cũ hơn đứng trước 3 thẻ hợp lệ + 2 từ đã xóa → `dueCards` trả đúng 3, `countDue` = 3, thẻ mồ côi vẫn còn trong `listCards`; (b) phiên `due`/`mixed` không vượt giới hạn và chỉ chứa từ hợp lệ; (c) D-L 12 000 thẻ mồ côi + 7 thẻ hợp lệ → vẫn chọn đủ 7, count nhất quán; (d) **số lần gọi store không đổi** giữa 10 và 600 thẻ cho cả 4 chế độ (≤ 3 lần). `quiz-store.test.ts` "due query" nay tạo từ trước khi có thẻ (hệ quả của quy tắc mới, không nới assertion).
+- **Đánh đổi/giới hạn (cần biết):** lọc theo index + filter nghĩa là chi phí truy vấn tỉ lệ với **số thẻ mồ côi nằm trong khoảng due**, không còn O(limit) khi có rất nhiều orphan. Đo timing trên fake-indexeddb vô nghĩa (chậm hàng chục lần trình duyệt: ~4 s cho 3 000 orphan) nên unit test **không** khẳng định thời gian; P4 thật vẫn do `e2e/perf-quiz.spec.ts` (Chromium, CPU 4×) – chạy local sau thay đổi này: pass. Nếu orphan tích tụ lớn, cần dọn dẹp có chủ đích (chưa làm theo quyết định "không xóa tự động").
+
+## Chống trùng attempt id với operation_id khác (đánh giá, chưa triển khai)
+
+Hiện trạng: server chỉ đảm bảo exactly-once theo `operation_id` (`sync_operations`). Hai operation_id khác nhau cùng `payload.id` sẽ thành 2 hàng log; client hiện chặn qua projection (`attempts` khóa theo `payload.id`) nên lịch ôn không đổi, nhưng log server và `learning_event` đếm đôi. Attempt id là xác định (`att-<session>-<n>`) và operation_id sinh theo thiết bị/clock, nên trùng chủ yếu khi bug client hoặc client độc hại.
+
+| Phương án | Ưu | Nhược |
+| --- | --- | --- |
+| A. Giữ nguyên, chỉ client-projection (hiện tại) | Không migration; replay không đổi lịch | Log server có thể chứa trùng; analytics phải dedupe |
+| B. Dedupe khi đọc/phân tích (view/query `DISTINCT ON (payload->>'id')`) | Không đổi ghi; rẻ | Chỉ che; chi phí mỗi lần đọc |
+| C. Làm `operation_id` xác định từ attempt id (client sinh `op = hash(entity, payload.id)`) | Dùng đúng ràng buộc có sẵn; không migration server | Đổi contract client↔ID; thiết bị cũ đã gửi op ngẫu nhiên không được dedupe hồi tố |
+| D. Index unique một phần trên `(user_id, entity_type, (payload->>'id'))` cho `quiz_attempt`/`learning_event` | Bảo đảm cứng tại DB | **Cần migration** + xử lý dữ liệu đã trùng + quyết định status trả về (`duplicate`) |
+| E. Bảng `quiz_attempts` thật + `UNIQUE(user_id, attempt_id)` | Đúng mô tả ARCHITECTURE; truy vấn due phía server | Migration lớn, đổi server contract |
+
+Đề xuất: **C** (rẻ, tương thích) ngắn hạn, **D** nếu cần bảo đảm cứng; cả hai cần owner duyệt. **Không làm gì ở chặng này** (không migration, không đổi contract).
 
 ## 76 WebKit skip (không phải 18)
 
@@ -62,7 +78,13 @@ CI run 45805304987, job WebKit: **402 passed, 76 skipped**. Con số "18" không
 
 1. CI xanh với pgTAP mới (job `database`).
 2. Quyết định migration thật cho `quiz_attempts`/`review_cards` (cần owner duyệt) nếu muốn ràng buộc phía server theo attempt id.
-3. Sửa/chốt hành vi thẻ due mồ côi + test.
-4. Test tự động số lần gọi store trong `start()` (N+1).
+3. Chọn phương án chống trùng attempt id (C/D ở trên) — cần owner duyệt.
 5. Smoke thiết bị thật (M1/M2/M3), P4 trên Firefox/WebKit/thiết bị thật.
 6. Independent review.
+
+## Chạy trong chặng orphan (local, Verified-local)
+
+- `prettier --check .`, `pnpm lint` (0 lỗi; 1 warning sẵn có "unused eslint-disable" ở `QuizScreen.tsx`), `pnpm typecheck`, `vitest` (58 test pass) — pass.
+- Playwright `retries=0` sau `next build` có dev token: `chromium-*` `m3-quiz` + `perf-quiz`: 19 pass, 2 skip, **3 fail** (`offline answers … synced exactly once`, cả mobile/tablet/desktop): thất bại **giống hệt trên HEAD gốc** (đã `git stash` kiểm chứng ở desktop) — chờ chip "Đã đồng bộ" vì môi trường này không có Supabase/sync backend. Không xem là PASS; CI quyết định.
+- `firefox-*` `m3-quiz` + `perf-quiz` + `ui4-feedback` (bỏ test sync): 39 pass, 9 skip, một số test `ui4-feedback` (toast "Đồng bộ ngay", banner offline) fail — chưa kiểm chứng trên HEAD gốc, nhiều khả năng cùng nguyên nhân thiếu backend sync; **chưa kết luận**, chờ CI.
+- WebKit: không chạy local (chưa cài).
