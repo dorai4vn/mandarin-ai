@@ -8,6 +8,8 @@ import { opStamp } from '../vocabulary/projection.js';
  * card is due again the same day. A failure in one skill never touches another skill's card.
  */
 export const BOX_INTERVAL_DAYS = [0, 1, 2, 4, 7, 15, 30, 60] as const;
+/** Skill trained by the three M3 quiz types (D-007). */
+export const QUIZ_SKILL_MEANING = 'meaning' as const satisfies Skill;
 export const MAX_BOX = BOX_INTERVAL_DAYS.length - 1;
 
 export interface ReviewCard {
