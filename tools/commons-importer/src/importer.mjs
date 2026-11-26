@@ -4,6 +4,7 @@ import { checkLicenceUrl, classifyLicence } from './licence.mjs';
 import { isCommonsFileUrl, isCommonsPageUrl, normalizeSha1, verifySha1 } from './provenance.mjs';
 import { BudgetExceeded, RateLimited } from './client.mjs';
 import { sanitizeSvg, SvgRejected } from './sanitize.mjs';
+import { stripInertMetadata } from './xmlclean.mjs';
 
 const sha256 = (s) => createHash('sha256').update(s).digest('hex');
 const strip = (h) =>
@@ -59,9 +60,12 @@ export function evaluateFile(page, { downloaded = null } = {}) {
   if (downloaded !== null) {
     if (!verifySha1(Buffer.from(downloaded, 'utf8'), sha1)) return reject('sha1-mismatch');
     try {
-      const clean = sanitizeSvg(downloaded);
+      // 1) strict XML parse + removal of recognised inert editor metadata, 2) strict sanitizer.
+      const { svg: pre, stripped } = stripInertMetadata(downloaded);
+      const clean = sanitizeSvg(pre);
       entry.sanitizedSha256 = sha256(clean);
       entry.svg = clean;
+      entry.metadataStripped = stripped;
     } catch (e) {
       if (e instanceof SvgRejected) return reject(`svg-unsafe:${e.reason}`);
       throw e;
@@ -98,7 +102,19 @@ export async function runImport({
   readLocal = null, // async (entry) => sanitized svg text | null; required for reuse
   maxDownloads = Infinity, // bounded pilot: further files stay `downloadStatus: pending`
   onCheckpoint = null, // async (manifest) => void; called after every verified download
+  now = () => Date.now(),
 }) {
+  // A persisted cool-down (429/503 Retry-After from an earlier run) is honoured across runs:
+  // no network request at all until retryAt has passed. Unparseable/absent retryAt cannot be honoured.
+  const priorRetryAt = prior?.halted?.retryAt ? Date.parse(prior.halted.retryAt) : NaN;
+  if (!dryRun && Number.isFinite(priorRetryAt) && now() < priorRetryAt) {
+    const blocked = { reason: 'cooldown-active', retryAt: prior.halted.retryAt, originalReason: prior.halted.reason };
+    return {
+      // keep the ORIGINAL halted record (with its retryAt) so the cool-down persists, not a new one
+      manifest: { ...prior, halted: prior.halted },
+      report: { dryRun, blocked, networkRequests: 0, persisted: prior.entries?.length ?? 0, note: 'cool-down from prior run still active; no requests made' },
+    };
+  }
   const priorByTitle = new Map((prior?.entries ?? []).map((e) => [e.title, e]));
   const seen = new Map();
   const rejected = [];
@@ -158,13 +174,22 @@ export async function runImport({
     missingTitles: missing,
   });
   const entries = [];
-  for (const title of [...seen.keys()].sort()) {
+  // Pre-pass: metadata-level evaluation of EVERY listed title so a checkpoint can list all of them.
+  const order = [...seen.keys()].sort();
+  const bases = new Map();
+  for (const title of order) {
+    const base = evaluateFile(seen.get(title));
+    if (base.status === 'rejected') rejected.push({ title, reason: base.reason });
+    else bases.set(title, base);
+  }
+  const todo = order.filter((t) => bases.has(t));
+  let idx = 0; // todo[idx..] are unprocessed => explicitly `downloadStatus: pending` in any checkpoint
+  const pendingTail = () =>
+    todo.slice(idx).map((t) => ({ ...bases.get(t), downloadStatus: 'pending' }));
+  for (; idx < todo.length; idx++) {
+    const title = todo[idx];
     const page = seen.get(title);
-    const base = evaluateFile(page);
-    if (base.status === 'rejected') {
-      rejected.push({ title, reason: base.reason });
-      continue;
-    }
+    const base = bases.get(title);
     const old = priorByTitle.get(title);
     const unchanged = old && evidenceKey(old) === evidenceKey(base);
     if (unchanged && old.sanitizedSha256 && old.file && readLocal) {
@@ -216,6 +241,11 @@ export async function runImport({
     const full = evaluateFile(page, { downloaded: raw });
     if (full.status === 'rejected') {
       rejected.push({ title, reason: full.reason });
+      if (onCheckpoint) {
+        idx++;
+        await onCheckpoint(buildManifest(entries.concat(pendingTail())));
+        idx--;
+      }
       continue;
     }
     if (unchanged) {
@@ -227,10 +257,9 @@ export async function runImport({
     }
     entries.push(full);
     if (onCheckpoint) {
-      const pend = entries.concat(
-        [...seen.keys()].sort().filter((t) => t > title).map((t) => priorByTitle.get(t)).filter(Boolean),
-      );
-      await onCheckpoint(buildManifest(pend));
+      idx++; // this title is now processed; everything after it is explicitly pending
+      await onCheckpoint(buildManifest(entries.concat(pendingTail())));
+      idx--;
     }
   }
   // Dedupe identical sanitized content (different titles, same bytes): keep first by title.
@@ -260,6 +289,7 @@ export async function runImport({
     halted: halt,
     rejected: rejected.length,
     missing: missing.length,
+    titlesRequested: titles?.length ? new Set(titles).size : 0,
     complete: manifest.complete,
     characterCoverage: 'unverified: stage/character mapping not performed by importer',
   };

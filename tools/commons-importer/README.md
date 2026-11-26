@@ -27,3 +27,11 @@ Limits: fixtures are SYNTHETIC (not historical data). Importer never maps file�
 - `listTitles` client method + `--pilot` CLI mode: exact-title lookup (2 API requests for 80 titles), missing titles counted separately.
 - Coverage separates `candidateFiles` / `eligibleFiles` / `curatedFiles` (curated = human `--curations file.json` `[{title, reviewer}]`; default 0).
 - Reproduce: `node src/cli.mjs --pilot --dry-run --max-requests 4 --ua "name (contact-url)"`; then download: `node src/cli.mjs --pilot --out pilot-output --max-requests 60 --ua "..."` (serial, no retry; if Commons answers 429, wait and re-run — the cache keeps verified files).
+
+## C1c: inert-metadata removal, complete checkpoints, cool-down persistence
+
+- `src/xmlclean.mjs`: dependency-free strict XML tree parser (no DTD/entity/CDATA/PI support — all rejected, nothing is resolved or fetched). Before the strict sanitizer it removes ONLY, by exact namespace URI: the SVG `<metadata>` subtree, sodipodi/inkscape elements and attributes, and `xmlns` declarations of dc/cc/rdf/sodipodi/inkscape/xlink/svg. Unknown namespaces/declarations, undeclared prefixes, duplicate attributes (also after prefix resolution) and malformed markup are rejected. A used `xlink:*` attribute is kept and rejected by the sanitizer. The sanitizer itself is unchanged (not relaxed). Entries record `metadataStripped` counts.
+- Checkpoints now list every eligible title; unprocessed ones carry `downloadStatus: 'pending'`.
+- A persisted `halted.retryAt` blocks all network requests in later runs until it passes (`report.blocked`, `networkRequests: 0`). HTTP 503 **with** `Retry-After` halts like 429.
+- `report.titlesRequested` (deduped) makes counts reconcilable. `candidateTitles()` yields 10 chars × 8 documented suffixes = 80 titles; the earlier "70" vs "80" and "39" vs "49" figures came from different runs whose artifacts are not in the repo and cannot be reconciled offline — compare `titlesRequested`, `missing`, `candidateFiles` in a fresh run.
+- Limit: Illustrator/other editor namespaces are NOT allowed (fail closed); real-file acceptance still depends on a live run.

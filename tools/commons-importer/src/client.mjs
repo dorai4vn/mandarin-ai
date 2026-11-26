@@ -121,10 +121,11 @@ export function createClient({
       const r = await fetchImpl(url, { headers, redirect: 'manual', signal: ctl.signal });
       if (r.type === 'opaqueredirect' || r.redirected || (r.status >= 300 && r.status < 400))
         throw new Error(`redirect-not-allowed:${r.status}`);
-      if (r.status === 429) {
-        const ra = parseRetryAfter(r.headers?.get?.('retry-after'), now());
+      const raHeader = r.headers?.get?.('retry-after');
+      if (r.status === 429 || (r.status === 503 && raHeader != null)) {
+        const ra = parseRetryAfter(raHeader, now());
         halted = new RateLimited(
-          429,
+          r.status,
           ra,
           ra === null ? null : new Date(now() + ra * 1000).toISOString(),
         );
