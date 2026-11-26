@@ -3,7 +3,14 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { HanziText } from '@/components/Hanzi';
 import { Badge, Button } from '@/components/ui';
 import { HANZI_HISTORY } from './data';
-import { nextIndex, playableStages } from './model';
+import {
+  clampIndex,
+  nextIndex,
+  playStartIndex,
+  playableStages,
+  stageProgress,
+  uncertaintyText,
+} from './model';
 import type { HanziHistory as History, HistoryStage } from './types';
 
 const STEP_MS = 1800;
@@ -28,13 +35,22 @@ function usePrefersReducedMotion(): boolean {
  */
 export default function HanziHistoryView({ glyph }: { glyph: string }) {
   const history: History | undefined = HANZI_HISTORY[glyph];
+  if (!history || playableStages(history).length === 0) return null;
+  // key resets selected stage / playback when the character changes.
+  return <HistoryPanel key={glyph} glyph={glyph} history={history} />;
+}
+
+function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
   const reduced = usePrefersReducedMotion();
-  const [index, setIndex] = useState(0);
+  const [rawIndex, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [mode, setMode] = useState<'quick' | 'explore'>('quick');
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
-  const stages = history ? playableStages(history) : [];
+  const stages = playableStages(history);
+  const index = clampIndex(rawIndex, stages.length);
+  const atEnd = index >= stages.length - 1;
 
+  // One timer per step; cleared on pause, unmount, stage or glyph change.
   useEffect(() => {
     if (!playing) return;
     const t = setTimeout(() => {
@@ -45,7 +61,14 @@ export default function HanziHistoryView({ glyph }: { glyph: string }) {
     return () => clearTimeout(t);
   }, [playing, index, stages.length]);
 
-  if (!history) return null;
+  // Stop playing once the last stage is shown.
+  useEffect(() => {
+    if (playing && atEnd) {
+      const t = setTimeout(() => setPlaying(false), STEP_MS);
+      return () => clearTimeout(t);
+    }
+  }, [playing, atEnd]);
+
   const all = history.stages;
   const active = stages[index]!;
 
@@ -58,7 +81,7 @@ export default function HanziHistoryView({ glyph }: { glyph: string }) {
     setPlaying(true);
   };
   const play = () => {
-    if (index >= stages.length - 1) setIndex(0);
+    setIndex(playStartIndex(index, stages.length));
     setPlaying(true);
   };
   const onKey = (e: KeyboardEvent, i: number) => {
@@ -82,8 +105,7 @@ export default function HanziHistoryView({ glyph }: { glyph: string }) {
   const modeBtn = (m: 'quick' | 'explore', label: string) => (
     <button
       type="button"
-      role="tab"
-      aria-selected={mode === m}
+      aria-pressed={mode === m}
       onClick={() => setMode(m)}
       data-testid={`hanzi-mode-${m}`}
       className={`rounded-control border px-3 py-1 text-sm ${
@@ -106,7 +128,7 @@ export default function HanziHistoryView({ glyph }: { glyph: string }) {
         <h3 className="text-sm font-semibold text-fg-muted">
           Tiến hóa chữ <HanziText>{glyph}</HanziText> ({history.meaningVi})
         </h3>
-        <div role="tablist" aria-label="Chế độ xem" className="flex gap-2">
+        <div role="group" aria-label="Chế độ xem" className="flex gap-2" data-testid="hanzi-modes">
           {modeBtn('quick', 'Xem nhanh')}
           {modeBtn('explore', 'Khám phá lịch sử')}
         </div>
@@ -143,6 +165,26 @@ export default function HanziHistoryView({ glyph }: { glyph: string }) {
         <p className="text-sm" data-testid="hanzi-stage-caption">
           <span className="font-medium">{active.label}</span> · {active.period}
         </p>
+
+        <div
+          role="progressbar"
+          aria-label="Tiến độ giai đoạn"
+          aria-valuemin={1}
+          aria-valuemax={stages.length}
+          aria-valuenow={index + 1}
+          aria-valuetext={`Giai đoạn ${index + 1}/${stages.length}${atEnd ? ' (cuối)' : ''}`}
+          className="h-1.5 w-full max-w-[320px] overflow-hidden rounded-full bg-subtle"
+          data-testid="hanzi-progress"
+          data-progress={stageProgress(index, stages.length)}
+        >
+          <div
+            className="h-full bg-primary"
+            style={{
+              width: `${stageProgress(index, stages.length) * 100}%`,
+              transition: reduced ? 'none' : `width ${FADE_MS}ms ease-in-out`,
+            }}
+          />
+        </div>
 
         <div className="flex flex-wrap justify-center gap-2" data-testid="hanzi-history-controls">
           <Button
@@ -247,19 +289,18 @@ export default function HanziHistoryView({ glyph }: { glyph: string }) {
         Giai đoạn hiện tại: {active.label}
       </p>
 
+      <p className="mt-3 text-xs text-fg-muted" data-testid="hanzi-uncertainty">
+        {uncertaintyText(active)}
+      </p>
+
       <details
-        className="mt-3 rounded-control bg-subtle p-3 text-sm"
+        className="mt-1 rounded-control bg-subtle p-3 text-sm"
         data-testid="hanzi-evidence"
         data-stage={active.id}
         open={mode === 'explore'}
         key={mode}
       >
         <summary className="cursor-pointer font-semibold">Bằng chứng — {active.label}</summary>
-        <p className="mt-1 text-xs text-fg-muted" data-testid="hanzi-uncertainty">
-          {active.status === 'attested'
-            ? 'Độ chắc chắn: bản vẽ lại của cộng tác viên Wikimedia Commons, chưa đối chiếu độc lập với bản gốc.'
-            : 'Hình hiện đại — không phải chứng cứ lịch sử.'}
-        </p>
         {active.status === 'attested' ? (
           <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
             <dt className="text-fg-muted">Nguồn</dt>
@@ -305,8 +346,8 @@ export default function HanziHistoryView({ glyph }: { glyph: string }) {
       {mode === 'explore' && (
         <div className="mt-3 space-y-2 text-xs" data-testid="hanzi-explore-extra">
           <p data-testid="hanzi-variants">
-            <span className="font-medium">Biến thể (phồn thể/giản thể, song song):</span> chưa có
-            dữ liệu có nguồn cho chữ này; không suy đoán.
+            <span className="font-medium">Biến thể (phồn thể/giản thể, song song):</span> chưa có dữ
+            liệu có nguồn cho chữ này; không suy đoán.
           </p>
           <div data-testid="hanzi-skipped">
             <p className="font-medium">Nguồn đã loại và lý do:</p>

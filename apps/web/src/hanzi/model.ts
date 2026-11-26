@@ -9,6 +9,29 @@ export function nextIndex(current: number, length: number): number | null {
   return current + 1 < length ? current + 1 : null;
 }
 
+export function clampIndex(i: number, length: number): number {
+  if (length <= 0) return 0;
+  return Math.min(Math.max(Number.isFinite(i) ? Math.trunc(i) : 0, 0), length - 1);
+}
+
+/** Playback progress 0..1 over the attested/modern stages (a single stage counts as complete). */
+export function stageProgress(index: number, length: number): number {
+  if (length <= 1) return 1;
+  return clampIndex(index, length) / (length - 1);
+}
+
+/** Pressing play at the end restarts from the first stage; otherwise it resumes in place. */
+export function playStartIndex(index: number, length: number): number {
+  return length > 0 && index >= length - 1 ? 0 : clampIndex(index, length);
+}
+
+/** Always-visible uncertainty statement for a stage (never hidden inside a disclosure). */
+export function uncertaintyText(s: HistoryStage): string {
+  return s.status === 'attested'
+    ? 'Độ chắc chắn: bản vẽ lại của cộng tác viên Wikimedia Commons, chưa đối chiếu độc lập với bản gốc.'
+    : 'Hình hiện đại — không phải chứng cứ lịch sử.';
+}
+
 /** Returns a list of problems; empty means the dataset obeys the "no invented forms" rules. */
 export function validateHistory(h: HanziHistory): string[] {
   const errs: string[] = [];

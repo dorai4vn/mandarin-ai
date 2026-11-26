@@ -63,4 +63,30 @@ test.describe('M3.5 hanzi history (山)', () => {
       'missing',
     );
   });
+
+  test('uncertainty is visible outside the closed evidence disclosure in Quick View', async ({
+    page,
+  }) => {
+    await page.goto('/lab/hanzi-history');
+    await expect(page.getByTestId('hanzi-evidence')).not.toHaveAttribute('open', '');
+    const u = page.getByTestId('hanzi-uncertainty');
+    await expect(u).toBeVisible();
+    expect(await u.evaluate((e) => !!e.closest('details'))).toBe(false);
+  });
+
+  test('mode buttons are pressed-state buttons and progress follows the stage', async ({
+    page,
+  }) => {
+    await page.goto('/lab/hanzi-history');
+    await expect(page.getByTestId('hanzi-mode-quick')).toHaveAttribute('aria-pressed', 'true');
+    await page.getByTestId('hanzi-mode-explore').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByTestId('hanzi-mode-explore')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByTestId('hanzi-mode-quick')).toHaveAttribute('aria-pressed', 'false');
+    await page.getByTestId('hanzi-stage-seal').click();
+    await expect(page.getByTestId('hanzi-progress')).toHaveAttribute('aria-valuenow', '3');
+    await page.getByTestId('hanzi-next').click();
+    await expect(page.getByTestId('hanzi-progress')).toHaveAttribute('data-progress', '1');
+    await expect(page.getByTestId('hanzi-next')).toBeDisabled();
+  });
 });
