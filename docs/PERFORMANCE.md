@@ -19,7 +19,7 @@ Ngày: 2026-11-23 · Trạng thái: **mục tiêu ban đầu đã được chủ
 | P1 | Phản hồi tương tác UI (Event Timing `duration`; INP lab) | p95 < 100 ms | p95 ≥ 100 ms | p95 > 200 ms | Profile mobile-mid (mục 3.1) | **Ngay** (lab) |
 | P2 | Tra từ điển cục bộ (gõ → kết quả hiển thị) | p95 < 200 ms | ≥ 200 ms | > 400 ms | Dataset D-L (mục 4), mobile-mid | **M2: đo được p95 khoảng 90–118 ms** (`e2e/perf-dictionary.spec.ts`, chặn trong CI) |
 | P3 | Điều hướng giữa route đã cache (click → nội dung chính hiển thị) | p95 < 300 ms | ≥ 300 ms | > 600 ms | mobile-mid, route đã mở 1 lần | **Ngay** (lab) — kiểm lại trên HTTPS |
-| P4 | Phản hồi đáp án quiz cục bộ (chọn → đúng/sai hiển thị) | p95 < 100 ms | ≥ 100 ms | > 200 ms | Dataset D-L, offline | M3 |
+| P4 | Phản hồi đáp án quiz cục bộ (chọn → đúng/sai hiển thị) | p95 < 100 ms | ≥ 100 ms | > 200 ms | Dataset D-L, offline | **M3: đo được p95 khoảng 19 ms** (n = 69, p50 13 ms; `e2e/perf-quiz.spec.ts`: 12 000 thẻ, offline, CPU chậm 4×, chặn trong CI) |
 | P5 | AI text: token đầu tiên hiển thị | 1–2 s | > 2 s | p95 > 4 s | Mạng thử nghiệm xác định (mục 3.1: "4G-lab"), prompt chuẩn | M7 (cần OpenAI key) |
 | P6 | Kết quả chấm phát âm (dừng ghi → điểm hiển thị, không tính thời gian nói) | p95 < 3 s | ≥ 3 s | > 5 s | Mẫu 1–3 s, 4G-lab | M6 (cần Azure key) |
 | P7 | LCP | p75 ≤ 2,5 s | > 2,5 s | p75 > 4 s | RUM thật; lab: mobile-mid + 4G-lab | Lab ngay; **RUM sau deploy** |

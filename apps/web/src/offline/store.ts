@@ -1,12 +1,23 @@
 import {
+  LEARNING_EVENT_ENTITY,
+  LearningEventPayloadSchema,
+  QUIZ_ATTEMPT_ENTITY,
   VOCABULARY_ENTITY,
   type ContentSnapshot,
+  type LearningEventPayload,
+  type QuizAttemptPayload,
   type PulledSyncOperation,
   type SyncOperation,
 } from '@mandarin/contracts';
 import {
   applyVocabularyOp,
+  attemptFromOp,
+  cardKey,
+  foldCard,
   type OutboxEntry,
+  type QuizSessionState,
+  type ReviewCard,
+  type StoredAttempt,
   type Reconciliation,
   type VocabularyItem,
 } from '@mandarin/domain';
@@ -55,6 +66,31 @@ export interface LocalStore {
   /** Cached shared content snapshot (offline reading, M2). */
   getContent(): Promise<ContentSnapshot | null>;
   putContent(snapshot: ContentSnapshot): Promise<void>;
+  /**
+   * Records one quiz answer made on this device (M3): the attempt, its `quiz.answered` event, the
+   * updated review card and two outbox rows in ONE transaction. Idempotent by attempt id: a repeat
+   * changes nothing and returns the current card.
+   */
+  recordAttempt(attempt: QuizAttemptPayload, now?: Date): Promise<ReviewCard | undefined>;
+  /** Records a learning event (session started/completed…); a repeated id is a no-op. */
+  recordLearningEvent(event: LearningEventPayload, now?: Date): Promise<boolean>;
+  /** Every review card (recall, home counters). */
+  listCards(): Promise<ReviewCard[]>;
+  /**
+   * Cards of `skill` due on/before `today`, oldest first — uses the `due` index. Only cards whose
+   * word is live in this account's vocabulary count; orphans are filtered before `limit`.
+   */
+  dueCards(today: string, skill: string, limit: number): Promise<ReviewCard[]>;
+  /** Count of due cards (same orphan rule as `dueCards`) without loading them. */
+  countDue(today: string, skill: string): Promise<number>;
+  /** Ids of words that already have a card for `skill`. */
+  cardedItemIds(skill: string): Promise<Set<string>>;
+  listAttempts(sessionId: string): Promise<StoredAttempt[]>;
+  countEvents(): Promise<number>;
+  /** The session in progress (resume after reload) — one per account. */
+  getSession(): Promise<QuizSessionState | null>;
+  putSession(session: QuizSessionState): Promise<void>;
+  clearSession(): Promise<void>;
   /** Releases the database (account switch). */
   close(): void;
   /** Closes and permanently deletes this account's local data (sign-out, D-042). */
@@ -88,7 +124,8 @@ const newId = () =>
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(16).slice(2)}-0000`;
 
-function vocabOp(
+function entityOp(
+  entityType: string,
   deviceId: string,
   clock: number,
   opType: SyncOperation['opType'],
@@ -98,13 +135,50 @@ function vocabOp(
   return {
     operationId: newId(),
     deviceId,
-    entityType: VOCABULARY_ENTITY,
+    entityType,
     opType,
     schemaVersion: 1,
     logicalClock: clock,
     occurredAt: now.toISOString(),
     payload,
   };
+}
+
+const vocabOp = (
+  deviceId: string,
+  clock: number,
+  opType: SyncOperation['opType'],
+  payload: Record<string, unknown>,
+  now: Date,
+) => entityOp(VOCABULARY_ENTITY, deviceId, clock, opType, payload, now);
+
+/** The attempt operation and its `quiz.answered` event operation (two outbox rows). */
+function attemptOps(deviceId: string, clock: number, a: QuizAttemptPayload, now: Date) {
+  const attemptOp = entityOp(QUIZ_ATTEMPT_ENTITY, deviceId, clock, 'create', { ...a }, now);
+  const event: LearningEventPayload = {
+    id: `${a.id}:answered`,
+    eventType: 'quiz.answered',
+    eventVersion: 1,
+    sessionId: a.sessionId,
+    data: {
+      attemptId: a.id,
+      vocabularyItemId: a.vocabularyItemId,
+      skill: a.skill,
+      quizType: a.quizType,
+      correct: a.correct,
+    },
+  };
+  const eventOp = entityOp(LEARNING_EVENT_ENTITY, deviceId, clock + 1, 'event', { ...event }, now);
+  return { attemptOp, eventOp, event };
+}
+
+/** Learning events carried by pulled operations. */
+function pulledEvents(ops: PulledSyncOperation[]): LearningEventPayload[] {
+  return ops.flatMap((op) => {
+    if (op.entityType !== LEARNING_EVENT_ENTITY) return [];
+    const p = LearningEventPayloadSchema.safeParse(op.payload);
+    return p.success ? [p.data] : [];
+  });
 }
 
 function makeOp(deviceId: string, clock: number, note: SpikeNote): SyncOperation {
@@ -126,6 +200,9 @@ class MandarinDb extends Dexie {
   meta!: Table<{ key: string; value: string | number }, string>;
   vocab!: Table<VocabularyItem, string>;
   content!: Table<{ key: string; snapshot: ContentSnapshot }, string>;
+  attempts!: Table<StoredAttempt, string>;
+  cards!: Table<ReviewCard, string>;
+  events!: Table<LearningEventPayload, string>;
   constructor(name: string) {
     super(name);
     this.version(1).stores({
@@ -135,6 +212,12 @@ class MandarinDb extends Dexie {
     });
     // M2: personal vocabulary projection + cached shared content.
     this.version(2).stores({ vocab: 'id, updatedAt', content: 'key' });
+    // M3: attempts, per-skill review cards (indexed by due day), learning events.
+    this.version(3).stores({
+      attempts: 'id, cardKey, sessionId',
+      cards: 'key, [skill+due], skill',
+      events: 'id',
+    });
   }
 }
 
@@ -221,19 +304,135 @@ export class IndexedDbStore implements LocalStore {
   }
 
   async applyPulled(ops: PulledSyncOperation[], cursor: number) {
-    await this.db.transaction('rw', this.db.notes, this.db.vocab, this.db.meta, async () => {
-      // put: the same note (same id) arriving again — e.g. our own operation — is a no-op.
-      await this.db.notes.bulkPut(pulledNotes(ops));
-      for (const op of ops) {
-        if (op.entityType !== VOCABULARY_ENTITY) continue;
-        const id = (op.payload as { id?: unknown }).id;
-        if (typeof id !== 'string') continue;
-        const before = await this.db.vocab.get(id);
-        const after = applyVocabularyOp(before, op);
-        if (after && after !== before) await this.db.vocab.put(after);
-      }
-      await this.db.meta.put({ key: 'pullCursor', value: cursor });
+    const db = this.db;
+    await db.transaction(
+      'rw',
+      [db.notes, db.vocab, db.meta, db.attempts, db.cards, db.events],
+      async () => {
+        // put: the same note (same id) arriving again — e.g. our own operation — is a no-op.
+        await this.db.notes.bulkPut(pulledNotes(ops));
+        const touched = new Set<string>();
+        for (const op of ops) {
+          const a = attemptFromOp(op);
+          if (a && !(await this.db.attempts.get(a.id))) {
+            await this.db.attempts.put(a);
+            touched.add(a.cardKey);
+          }
+        }
+        for (const k of touched) await this.refoldCard(k);
+        for (const e of pulledEvents(ops)) await this.db.events.put(e);
+        for (const op of ops) {
+          if (op.entityType !== VOCABULARY_ENTITY) continue;
+          const id = (op.payload as { id?: unknown }).id;
+          if (typeof id !== 'string') continue;
+          const before = await this.db.vocab.get(id);
+          const after = applyVocabularyOp(before, op);
+          if (after && after !== before) await this.db.vocab.put(after);
+        }
+        await this.db.meta.put({ key: 'pullCursor', value: cursor });
+      },
+    );
+  }
+
+  /** The card is the fold of all its attempts (order-independent, replay-safe). */
+  private async refoldCard(key: string) {
+    const card = foldCard(await this.db.attempts.where('cardKey').equals(key).toArray());
+    if (card) await this.db.cards.put(card);
+  }
+
+  async recordAttempt(attempt: QuizAttemptPayload, now = new Date()) {
+    const db = this.db;
+    const key = cardKey(attempt.vocabularyItemId, attempt.skill);
+    await db.transaction('rw', [db.attempts, db.cards, db.events, db.outbox, db.meta], async () => {
+      if (await db.attempts.get(attempt.id)) return; // replay: nothing to do
+      const clock = (((await db.meta.get('clock'))?.value as number | undefined) ?? 0) + 1;
+      await db.meta.put({ key: 'clock', value: clock + 1 });
+      const { attemptOp, eventOp, event } = attemptOps(this.deviceId, clock, attempt, now);
+      await db.attempts.put(attemptFromOp(attemptOp)!);
+      await this.refoldCard(key);
+      await db.events.put(event);
+      for (const [op, c] of [
+        [attemptOp, clock],
+        [eventOp, clock + 1],
+      ] as const)
+        await db.outbox.add({
+          op,
+          operationId: op.operationId,
+          logicalClock: c,
+          status: 'pending',
+          attempts: 0,
+          lastError: null,
+        });
     });
+    return db.cards.get(key);
+  }
+
+  async recordLearningEvent(event: LearningEventPayload, now = new Date()) {
+    const db = this.db;
+    let recorded = false;
+    await db.transaction('rw', [db.events, db.outbox, db.meta], async () => {
+      if (await db.events.get(event.id)) return;
+      const clock = (((await db.meta.get('clock'))?.value as number | undefined) ?? 0) + 1;
+      await db.meta.put({ key: 'clock', value: clock });
+      const op = entityOp(LEARNING_EVENT_ENTITY, this.deviceId, clock, 'event', { ...event }, now);
+      await db.events.put(event);
+      await db.outbox.add({
+        op,
+        operationId: op.operationId,
+        logicalClock: clock,
+        status: 'pending',
+        attempts: 0,
+        lastError: null,
+      });
+      recorded = true;
+    });
+    return recorded;
+  }
+
+  listCards() {
+    return this.db.cards.toArray();
+  }
+  /** Ids of this account's live (non-deleted) words: the only words a card may be studied for. */
+  private async liveItemIds() {
+    const keys = await this.db.vocab.filter((v) => !v.deleted).primaryKeys();
+    return new Set(keys);
+  }
+  async dueCards(today: string, skill: string, limit: number) {
+    const live = await this.liveItemIds();
+    // Orphans are filtered BEFORE the limit, so they can never push a valid card out of a session.
+    return this.db.cards
+      .where('[skill+due]')
+      .between([skill, ''], [skill, today], true, true)
+      .filter((c) => live.has(c.vocabularyItemId))
+      .limit(limit)
+      .toArray();
+  }
+  async countDue(today: string, skill: string) {
+    const live = await this.liveItemIds();
+    return this.db.cards
+      .where('[skill+due]')
+      .between([skill, ''], [skill, today], true, true)
+      .filter((c) => live.has(c.vocabularyItemId))
+      .count();
+  }
+  async cardedItemIds(skill: string) {
+    const cards = await this.db.cards.where('skill').equals(skill).toArray();
+    return new Set(cards.map((c) => c.vocabularyItemId));
+  }
+  listAttempts(sessionId: string) {
+    return this.db.attempts.where('sessionId').equals(sessionId).toArray();
+  }
+  countEvents() {
+    return this.db.events.count();
+  }
+  async getSession() {
+    return ((await this.db.meta.get('quizSession'))?.value as QuizSessionState | undefined) ?? null;
+  }
+  async putSession(session: QuizSessionState) {
+    await this.db.meta.put({ key: 'quizSession', value: session as never });
+  }
+  async clearSession() {
+    await this.db.meta.delete('quizSession');
   }
 
   listVocabulary() {
@@ -370,13 +569,100 @@ export class MemoryStore implements LocalStore {
       const after = applyVocabularyOp(this.vocab.get(id), op);
       if (after) this.vocab.set(id, after);
     }
+    const touched = new Set<string>();
+    for (const op of ops) {
+      const a = attemptFromOp(op);
+      if (a && !this.attempts.has(a.id)) {
+        this.attempts.set(a.id, a);
+        touched.add(a.cardKey);
+      }
+    }
+    touched.forEach((k) => this.refold(k));
+    for (const e of pulledEvents(ops)) this.events.set(e.id, e);
     const known = new Set(this.notes.map((n) => n.id));
     for (const n of pulledNotes(ops)) if (!known.has(n.id)) this.notes.unshift(n);
     this.notes.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     this.cursor = cursor;
   }
+  private attempts = new Map<string, StoredAttempt>();
+  private cards = new Map<string, ReviewCard>();
+  private events = new Map<string, LearningEventPayload>();
+  private session: QuizSessionState | null = null;
+  private refold(key: string) {
+    const card = foldCard([...this.attempts.values()].filter((a) => a.cardKey === key));
+    if (card) this.cards.set(key, card);
+  }
+  async recordAttempt(attempt: QuizAttemptPayload, now = new Date()) {
+    const key = cardKey(attempt.vocabularyItemId, attempt.skill);
+    if (this.attempts.has(attempt.id)) return this.cards.get(key);
+    const clock = this.clock + 1;
+    this.clock += 2;
+    const { attemptOp, eventOp, event } = attemptOps(this.deviceId, clock, attempt, now);
+    this.attempts.set(attempt.id, attemptFromOp(attemptOp)!);
+    this.refold(key);
+    this.events.set(event.id, event);
+    this.outbox.push(
+      { op: attemptOp, status: 'pending', attempts: 0, lastError: null },
+      { op: eventOp, status: 'pending', attempts: 0, lastError: null },
+    );
+    return this.cards.get(key);
+  }
+  async recordLearningEvent(event: LearningEventPayload, now = new Date()) {
+    if (this.events.has(event.id)) return false;
+    this.clock += 1;
+    this.events.set(event.id, event);
+    this.outbox.push({
+      op: entityOp(LEARNING_EVENT_ENTITY, this.deviceId, this.clock, 'event', { ...event }, now),
+      status: 'pending',
+      attempts: 0,
+      lastError: null,
+    });
+    return true;
+  }
+  async listCards() {
+    return [...this.cards.values()];
+  }
+  private isLive(c: ReviewCard) {
+    const v = this.vocab.get(c.vocabularyItemId);
+    return !!v && !v.deleted;
+  }
+  async dueCards(today: string, skill: string, limit: number) {
+    return [...this.cards.values()]
+      .filter((c) => c.skill === skill && c.due <= today && this.isLive(c))
+      .sort((a, b) => a.due.localeCompare(b.due))
+      .slice(0, limit);
+  }
+  async countDue(today: string, skill: string) {
+    return [...this.cards.values()].filter(
+      (c) => c.skill === skill && c.due <= today && this.isLive(c),
+    ).length;
+  }
+  async cardedItemIds(skill: string) {
+    return new Set(
+      [...this.cards.values()].filter((c) => c.skill === skill).map((c) => c.vocabularyItemId),
+    );
+  }
+  async listAttempts(sessionId: string) {
+    return [...this.attempts.values()].filter((a) => a.sessionId === sessionId);
+  }
+  async countEvents() {
+    return this.events.size;
+  }
+  async getSession() {
+    return this.session;
+  }
+  async putSession(session: QuizSessionState) {
+    this.session = session;
+  }
+  async clearSession() {
+    this.session = null;
+  }
   close() {}
   async destroy() {
+    this.attempts.clear();
+    this.cards.clear();
+    this.events.clear();
+    this.session = null;
     await this.clearAll();
     this.cursor = 0;
     this.vocab.clear();

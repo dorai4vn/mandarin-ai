@@ -1,4 +1,4 @@
-import { Card, CardLink, EmptyState, PageHeader, StudyCard } from '@/components/ui';
+import { ButtonLink, Card, CardLink, EmptyState, PageHeader, StudyCard } from '@/components/ui';
 import { SyncCard } from './sync-card';
 
 /**
@@ -49,12 +49,12 @@ export default function Home() {
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2" data-testid="home-today">
           <EmptyState
-            variant="coming-soon"
+            variant="first-use"
             hanzi="学"
             headingLevel="h2"
-            title="Lịch ôn hằng ngày sẽ có ở đây"
-            description="Thẻ đến hạn, mục tiêu ngày và từ mới trong ngày."
-            milestone="M3"
+            title="Ôn tập hằng ngày"
+            description="Vào Luyện tập để ôn các thẻ đến hạn và học từ mới trong từ điển cá nhân của bạn."
+            primaryAction={<ButtonLink href="/practice">Mở Luyện tập</ButtonLink>}
           />
         </Card>
         <SyncCard />

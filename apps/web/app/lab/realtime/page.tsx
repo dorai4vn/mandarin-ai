@@ -1,6 +1,6 @@
 'use client';
 import type { RealtimeSessionGrant } from '@mandarin/contracts';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button, Card, Mono, PageHeader } from '@/components/ui';
 import { api, describeApiError } from '@/lib/api-client';
@@ -11,6 +11,11 @@ export default function RealtimeLab() {
   const [grant, setGrant] = useState<RealtimeSessionGrant | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  // A click before React hydrates is silently dropped (no onClick yet): keep the button disabled
+  // until the page is interactive (same pattern as the upload lab and the sign-in form, X1).
+  const [ready, setReady] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => setReady(true), []);
   const webrtc = typeof window !== 'undefined' && 'RTCPeerConnection' in window;
 
   const request = async () => {
@@ -35,7 +40,12 @@ export default function RealtimeLab() {
         <p className="text-sm text-fg-muted">
           WebRTC trên trình duyệt này: {webrtc ? 'có' : 'không (sẽ dùng chế độ lượt lời)'}
         </p>
-        <Button className="mt-3" onClick={() => void request()} data-testid="realtime-request">
+        <Button
+          className="mt-3"
+          onClick={() => void request()}
+          disabled={!ready}
+          data-testid="realtime-request"
+        >
           Xin khóa tạm thời
         </Button>
         <div className="mt-3">

@@ -51,7 +51,7 @@ test('home: no fake metrics; study tiles are "Sắp có" and not links; sync car
   const main = page.locator('main');
   for (const fake of [/chuỗi\s*\d/i, /\d+\s*ngày/i, /\bXP\b/, /Lv\.?\s*\d/i, /\d+\s*thẻ đến hạn/i])
     await expect(main).not.toContainText(fake);
-  await expect(page.getByTestId('home-today')).toContainText('Ra mắt ở M3');
+  await expect(page.getByTestId('home-today')).toContainText('Ôn tập hằng ngày');
   const tiles = page.getByTestId('home-study').locator('> *');
   await expect(tiles).toHaveCount(3);
   for (let i = 0; i < 3; i++) {
@@ -90,11 +90,15 @@ test('library: tabs Giáo trình / Tài liệu của tôi, both honest', async (
   await expect(page.locator('main')).not.toContainText('Học bài');
 });
 
-test('practice: six modes with milestones; no simulated quiz', async ({ page }) => {
+test('practice: six modes (three playable, three with a milestone); signed out starts no quiz', async ({
+  page,
+}) => {
   await page.goto('/practice');
   const modes = page.getByTestId('practice-modes').locator('> li');
   await expect(modes).toHaveCount(6);
-  for (let i = 0; i < 6; i++) await expect(modes.nth(i)).toContainText(/Ra mắt ở M[356]/);
+  for (let i = 0; i < 3; i++) await expect(modes.nth(i)).toContainText('Có thể luyện');
+  for (let i = 3; i < 6; i++) await expect(modes.nth(i)).toContainText(/Ra mắt ở M[56]/);
+  await expect(page.getByTestId('quiz-home')).toHaveCount(0);
   await expect(page.locator('main button')).toHaveCount(0);
 });
 

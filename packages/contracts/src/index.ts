@@ -11,3 +11,4 @@ export * from './sync.js';
 export * from './upload.js';
 export * from './content.js';
 export * from './vocabulary.js';
+export * from './review.js';
