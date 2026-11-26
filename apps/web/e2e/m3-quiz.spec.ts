@@ -148,6 +148,32 @@ test('reload mid-session resumes at the same question without duplicating attemp
   expect(counts.events).toBe(3); // started + 2 answered
 });
 
+/** Reads durable outbox state; network status alone does not prove quiz operations synced. */
+async function outboxCounts(page: Page, user: string): Promise<{ pending: number; rejected: number }> {
+  return page.evaluate(
+    (u) =>
+      new Promise<{ pending: number; rejected: number }>((resolve, reject) => {
+        const req = indexedDB.open(`mandarin-ai:${u}`);
+        req.onerror = () => reject(req.error);
+        req.onsuccess = () => {
+          const db = req.result;
+          const tx = db.transaction('outbox', 'readonly');
+          const rows = tx.objectStore('outbox').getAll();
+          rows.onsuccess = () => {
+            const entries = rows.result as { status: string }[];
+            resolve({
+              pending: entries.filter((e) => e.status === 'pending').length,
+              rejected: entries.filter((e) => e.status === 'rejected').length,
+            });
+          };
+          rows.onerror = () => reject(rows.error);
+          tx.oncomplete = () => db.close();
+        };
+      }),
+    user,
+  );
+}
+
 test('offline answers are kept and synced exactly once when back online; the other device sees them', async ({
   browser,
 }) => {
@@ -164,9 +190,14 @@ test('offline answers are kept and synced exactly once when back online; the oth
   await p1.getByTestId('quiz-start-new').click();
   await runToSummary(p1);
   await p1.getByTestId('quiz-done').click();
+  // Prove the offline answers are durable and queued before allowing sync.
+  await expect.poll(async () => (await outboxCounts(p1, user)).pending).toBeGreaterThan(0);
   await d1.setOffline(false);
   await p1.evaluate(() => window.dispatchEvent(new Event('online')));
   await expect.poll(async () => p1.evaluate(() => navigator.onLine)).toBe(true);
+  // Do not mistake browser connectivity for a completed push to the shared server.
+  await expect.poll(async () => (await outboxCounts(p1, user)).pending, { timeout: 30_000 }).toBe(0);
+  expect((await outboxCounts(p1, user)).rejected).toBe(0);
 
   const d2 = await browser.newContext();
   const p2 = await d2.newPage();
