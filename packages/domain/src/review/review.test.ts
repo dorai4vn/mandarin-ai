@@ -1,4 +1,3 @@
-import { performance } from 'node:perf_hooks';
 import type { QuizAttemptPayload, SyncOperation } from '@mandarin/contracts';
 import { describe, expect, it } from 'vitest';
 import { buildQueue, SESSION_LIMITS } from './queue.js';
@@ -210,9 +209,9 @@ describe('questions', () => {
       id: `b${i}`,
       meaningVi: `m${i}`,
     }));
-    const t = performance.now();
+    const t = Date.now();
     for (let i = 0; i < 200; i++) buildQuestion('meaning_recognition', big[i]!, big, `s${i}`);
-    expect(performance.now() - t).toBeLessThan(200);
+    expect(Date.now() - t).toBeLessThan(200);
   });
   it('rotates the starting type per seed over all three', () => {
     const starts = new Set(Array.from({ length: 30 }, (_, i) => preferredTypes(`k${i}`)[0]));
