@@ -5,3 +5,7 @@ export * from './sync/outbox.js';
 export * from './dictionary/search.js';
 export * from './vocabulary/projection.js';
 export * from './content/starter.js';
+export * from './review/schedule.js';
+export * from './review/queue.js';
+export * from './review/questions.js';
+export * from './review/session.js';
