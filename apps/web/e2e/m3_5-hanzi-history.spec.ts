@@ -41,4 +41,26 @@ test.describe('M3.5 hanzi history (山)', () => {
       .evaluate((e) => getComputedStyle(e).transitionDuration);
     expect(parseFloat(t)).toBeLessThan(0.01);
   });
+
+  test('Quick View default; Explore keeps stage and shows full evidence + uncertainty', async ({
+    page,
+  }) => {
+    await page.goto('/lab/hanzi-history');
+    const root = page.getByTestId('hanzi-history');
+    await expect(root).toHaveAttribute('data-mode', 'quick');
+    await expect(page.getByTestId('hanzi-uncertainty')).toBeVisible();
+    await page.getByTestId('hanzi-stage-seal').click();
+    await page.getByTestId('hanzi-mode-explore').click();
+    await expect(root).toHaveAttribute('data-mode', 'explore');
+    await expect(page.getByTestId('hanzi-history-stage')).toHaveAttribute('data-stage', 'seal');
+    await expect(page.getByTestId('hanzi-evidence')).toHaveAttribute('open', '');
+    await expect(page.getByTestId('hanzi-variants')).toContainText('chưa có dữ liệu');
+    await expect(page.getByTestId('hanzi-skipped')).toContainText('bigseal');
+    await page.getByTestId('hanzi-mode-quick').click();
+    await expect(page.getByTestId('hanzi-history-stage')).toHaveAttribute('data-stage', 'seal');
+    await expect(page.getByTestId('hanzi-stage-clerical')).toHaveAttribute(
+      'data-status',
+      'missing',
+    );
+  });
 });
