@@ -257,7 +257,6 @@ export function QuizScreen() {
   const finish = useCallback(async () => {
     if (!store || !session) return;
     const done = { ...session, completed: true };
-    setSession(done);
     await chain.current;
     await store.putSession(done);
     await store.recordLearningEvent({
@@ -270,6 +269,8 @@ export function QuizScreen() {
         correct: session.answers.filter((a) => a.correct).length,
       },
     });
+    await refreshCounts();
+    setSession(done);
     const cards = new Map((await store.listCards()).map((c) => [c.key, c]));
     setSummaryRows(
       [...new Set(session.answers.map((a) => a.itemId))].map((itemId) => {
@@ -277,7 +278,7 @@ export function QuizScreen() {
         return { itemId, text: c ? whenText(c.due, today) : '' };
       }),
     );
-  }, [store, session, today]);
+  }, [store, session, today, refreshCounts]);
 
   useEffect(() => {
     finishRef.current = finish;
