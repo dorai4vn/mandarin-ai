@@ -88,7 +88,11 @@ test('keyboard only: 1–4 chooses, Enter continues, options expose their shortc
   const user = crypto.randomUUID();
   await addLesson(page, user);
   await page.goto('/practice');
-  await page.getByTestId('quiz-start-mixed').focus();
+  await expect(page.getByTestId('quiz-new-count')).toHaveText('7');
+  const start = page.getByTestId('quiz-start-mixed');
+  await expect(start).toBeEnabled();
+  await start.focus();
+  await expect(start).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByTestId('quiz-question')).toBeVisible();
   await expect(page.getByTestId('quiz-option').first()).toHaveAttribute('aria-keyshortcuts', '1');
