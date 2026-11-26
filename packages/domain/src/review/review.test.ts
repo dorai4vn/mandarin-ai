@@ -1,3 +1,4 @@
+import { performance } from 'node:perf_hooks';
 import type { QuizAttemptPayload, SyncOperation } from '@mandarin/contracts';
 import { describe, expect, it } from 'vitest';
 import { buildQueue, SESSION_LIMITS } from './queue.js';
