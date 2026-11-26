@@ -149,7 +149,10 @@ test('reload mid-session resumes at the same question without duplicating attemp
 });
 
 /** Reads durable outbox state; network status alone does not prove quiz operations synced. */
-async function outboxCounts(page: Page, user: string): Promise<{ pending: number; rejected: number }> {
+async function outboxCounts(
+  page: Page,
+  user: string,
+): Promise<{ pending: number; rejected: number }> {
   return page.evaluate(
     (u) =>
       new Promise<{ pending: number; rejected: number }>((resolve, reject) => {
@@ -196,7 +199,9 @@ test('offline answers are kept and synced exactly once when back online; the oth
   await p1.evaluate(() => window.dispatchEvent(new Event('online')));
   await expect.poll(async () => p1.evaluate(() => navigator.onLine)).toBe(true);
   // Do not mistake browser connectivity for a completed push to the shared server.
-  await expect.poll(async () => (await outboxCounts(p1, user)).pending, { timeout: 30_000 }).toBe(0);
+  await expect
+    .poll(async () => (await outboxCounts(p1, user)).pending, { timeout: 30_000 })
+    .toBe(0);
   expect((await outboxCounts(p1, user)).rejected).toBe(0);
 
   const d2 = await browser.newContext();
