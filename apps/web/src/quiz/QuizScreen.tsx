@@ -96,12 +96,17 @@ export function QuizScreen() {
     };
   }, [store]);
 
+  // Refreshes can overlap (summary opens while the last attempt is still being written, then the
+  // summary is dismissed): only the newest read may update the counters, never an older one.
+  const countsSeq = useRef(0);
   const refreshCounts = useCallback(async () => {
     if (!store) return;
+    const seq = ++countsSeq.current;
     const [due, carded] = await Promise.all([
       store.countDue(today, QUIZ_SKILL_MEANING),
       store.cardedItemIds(QUIZ_SKILL_MEANING),
     ]);
+    if (seq !== countsSeq.current) return;
     setCounts({ due, fresh: vocabulary.filter((v) => !carded.has(v.id)).length });
   }, [store, today, vocabulary]);
   useEffect(() => {
@@ -286,9 +291,11 @@ export function QuizScreen() {
   const dismiss = useCallback(async () => {
     await chain.current;
     await store?.clearSession();
+    // Counters are read after the last attempt is durable, before the home screen is shown.
+    await refreshCounts();
     setSession(null);
     setSummaryRows([]);
-  }, [store]);
+  }, [store, refreshCounts]);
 
   const advance = useCallback(() => {
     if (!session || !feedback) return;
