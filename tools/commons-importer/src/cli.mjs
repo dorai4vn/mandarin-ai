@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 // Usage: node src/cli.mjs --category "Category:X" [--out dir] [--dry-run] [--offline] [--max-requests 50] [--ua "name (contact-url)"]
 // Default is dry-run-safe: writes nothing unless --out is given. Not run in CI.
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { createClient } from './client.mjs';
-import { runImport, serialize } from './importer.mjs';
+import { runImport } from './importer.mjs';
+import { persistManifest } from './persist.mjs';
 import { candidateTitles, coverageReport, PILOT_CHARACTERS } from './mapping.mjs';
 
 const { values } = parseArgs({
@@ -18,6 +19,8 @@ const { values } = parseArgs({
     offline: { type: 'boolean' },
     'max-requests': { type: 'string', default: '50' },
     ua: { type: 'string' },
+    'max-downloads': { type: 'string', default: '10' },
+    'min-interval-ms': { type: 'string', default: '2000' },
     cache: { type: 'string', default: '.cache/commons' },
   },
 });
@@ -41,6 +44,7 @@ const client = createClient({
   maxRequests: Number(values['max-requests']),
   cacheDir: values.cache,
   offline: values.offline,
+  minIntervalMs: Math.max(2000, Number(values['min-interval-ms'])),
 });
 const { manifest, report } = await runImport({
   client,
@@ -52,18 +56,10 @@ const { manifest, report } = await runImport({
     return readFile(path.join(values.out, e.file), 'utf8');
   },
   dryRun: !!values['dry-run'],
+  maxDownloads: Number(values['max-downloads']),
+  onCheckpoint: manifestPath && !values['dry-run'] ? (m) => persistManifest(values.out, m) : null,
 });
-if (manifestPath && !values['dry-run']) {
-  await mkdir(path.join(values.out, 'svg'), { recursive: true });
-  for (const e of manifest.entries) {
-    if (!e.svg) continue; // reused from prior manifest
-    const f = `${e.sanitizedSha256.slice(0, 16)}.svg`;
-    await writeFile(path.join(values.out, 'svg', f), e.svg);
-    e.file = `svg/${f}`;
-  }
-  const slim = { ...manifest, entries: manifest.entries.map(({ svg, ...rest }) => rest) };
-  await writeFile(manifestPath, serialize(slim));
-}
+if (manifestPath && !values['dry-run']) await persistManifest(values.out, manifest);
 if (values.pilot) {
   const curations = values.curations ? JSON.parse(await readFile(values.curations, 'utf8')) : [];
   const existing = [

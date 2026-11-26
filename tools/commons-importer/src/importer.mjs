@@ -2,6 +2,7 @@
 import { createHash } from 'node:crypto';
 import { checkLicenceUrl, classifyLicence } from './licence.mjs';
 import { isCommonsFileUrl, isCommonsPageUrl, normalizeSha1, verifySha1 } from './provenance.mjs';
+import { BudgetExceeded, RateLimited } from './client.mjs';
 import { sanitizeSvg, SvgRejected } from './sanitize.mjs';
 
 const sha256 = (s) => createHash('sha256').update(s).digest('hex');
@@ -53,6 +54,7 @@ export function evaluateFile(page, { downloaded = null } = {}) {
     // Stage/character are NOT inferred from file names here; they require human/curated mapping.
     stage: null,
     character: null,
+    review: 'pending-review', // never auto-approved as historical evidence
   };
   if (downloaded !== null) {
     if (!verifySha1(Buffer.from(downloaded, 'utf8'), sha1)) return reject('sha1-mismatch');
@@ -94,12 +96,23 @@ export async function runImport({
   dryRun = false,
   pageLimit = 5,
   readLocal = null, // async (entry) => sanitized svg text | null; required for reuse
+  maxDownloads = Infinity, // bounded pilot: further files stay `downloadStatus: pending`
+  onCheckpoint = null, // async (manifest) => void; called after every verified download
 }) {
   const priorByTitle = new Map((prior?.entries ?? []).map((e) => [e.title, e]));
   const seen = new Map();
   const rejected = [];
   const stats = { listed: 0, duplicates: 0, reused: 0, downloaded: 0, mappingsDropped: 0 };
   const truncated = [];
+  const missing = [];
+  let halt = null; // { reason, retryAfterSeconds?, retryAt? }
+  const haltFrom = (e) => {
+    if (e instanceof RateLimited)
+      return { reason: 'http-429', retryAfterSeconds: e.retryAfterSeconds, retryAt: e.retryAt };
+    if (e instanceof BudgetExceeded) return { reason: 'request-budget' };
+    throw e;
+  };
+  try {
   for (const cat of [...categories].sort()) {
     const { files, complete } = await client.listCategory(cat, { pageLimit });
     if (!complete) truncated.push(cat);
@@ -112,7 +125,6 @@ export async function runImport({
       seen.set(page.title, page);
     }
   }
-  const missing = [];
   if (titles?.length) {
     const { files } = await client.listTitles(titles);
     for (const page of files) {
@@ -125,6 +137,26 @@ export async function runImport({
     }
     missing.sort();
   }
+  } catch (e) {
+    halt = haltFrom(e);
+    // Listing incomplete: do not rebuild the manifest from partial data; keep prior untouched.
+    const kept = prior ?? { schema: 'commons-import-manifest/1', categories: [], entries: [], rejected: [], missingTitles: [] };
+    return {
+      manifest: { ...kept, complete: false, halted: halt },
+      report: { dryRun, ...stats, halted: halt, persisted: kept.entries.length, note: 'listing halted; prior manifest preserved' },
+    };
+  }
+  const buildManifest = (es) => ({
+    schema: 'commons-import-manifest/1',
+    categories: [...categories].sort(),
+    complete: truncated.length === 0,
+    truncatedCategories: truncated,
+    partial: es.some((e) => e.downloadStatus === 'pending') || halt !== null,
+    halted: halt,
+    entries: es,
+    rejected,
+    missingTitles: missing,
+  });
   const entries = [];
   for (const title of [...seen.keys()].sort()) {
     const page = seen.get(title);
@@ -155,6 +187,7 @@ export async function runImport({
           sanitizedSha256: old.sanitizedSha256,
           file: old.file,
           stage: old.stage,
+          review: old.review ?? 'pending-review',
           character: old.character,
         });
         stats.reused++;
@@ -165,7 +198,20 @@ export async function runImport({
       entries.push(base);
       continue;
     }
-    const raw = await client.downloadSvg(base.fileUrl, { sha1: base.upstreamSha1 });
+    const keepPending = () => entries.push({ ...base, downloadStatus: 'pending' });
+    if (halt || stats.downloaded >= maxDownloads) {
+      if (!halt) halt = { reason: 'max-downloads' };
+      keepPending();
+      continue;
+    }
+    let raw;
+    try {
+      raw = await client.downloadSvg(base.fileUrl, { sha1: base.upstreamSha1 });
+    } catch (e) {
+      halt = haltFrom(e);
+      keepPending();
+      continue;
+    }
     stats.downloaded++;
     const full = evaluateFile(page, { downloaded: raw });
     if (full.status === 'rejected') {
@@ -174,11 +220,18 @@ export async function runImport({
     }
     if (unchanged) {
       full.stage = old.stage;
+      full.review = old.review ?? 'pending-review';
       full.character = old.character;
     } else if (old && (old.stage != null || old.character != null)) {
       stats.mappingsDropped++; // evidence changed: curated mapping must be re-reviewed
     }
     entries.push(full);
+    if (onCheckpoint) {
+      const pend = entries.concat(
+        [...seen.keys()].sort().filter((t) => t > title).map((t) => priorByTitle.get(t)).filter(Boolean),
+      );
+      await onCheckpoint(buildManifest(pend));
+    }
   }
   // Dedupe identical sanitized content (different titles, same bytes): keep first by title.
   const byHash = new Map();
@@ -195,20 +248,16 @@ export async function runImport({
     finalEntries.push(e);
   }
   rejected.sort((a, b) => (a.title < b.title ? -1 : 1));
-  const manifest = {
-    schema: 'commons-import-manifest/1',
-    categories: [...categories].sort(),
-    complete: truncated.length === 0,
-    truncatedCategories: truncated,
-    entries: finalEntries,
-    rejected,
-    missingTitles: missing,
-  };
+  const manifest = buildManifest(finalEntries);
+  manifest.rejected = rejected;
   // Source coverage vs eligible coverage; deliberately NO per-character coverage claim.
   const report = {
     dryRun,
     ...stats,
     eligible: finalEntries.length,
+    persistedVerified: finalEntries.filter((e) => e.sanitizedSha256).length,
+    pendingDownload: finalEntries.filter((e) => e.downloadStatus === 'pending').length,
+    halted: halt,
     rejected: rejected.length,
     missing: missing.length,
     complete: manifest.complete,

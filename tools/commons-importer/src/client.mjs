@@ -14,6 +14,25 @@ const MAX_JSON_BYTES = 5 * 1024 * 1024;
 
 export class BudgetExceeded extends Error {}
 
+/** HTTP 429 (or 503 with Retry-After): the run must stop issuing network requests. */
+export class RateLimited extends Error {
+  constructor(status, retryAfterSeconds, retryAt) {
+    super(`rate-limited:http-${status}`);
+    this.status = status;
+    this.retryAfterSeconds = retryAfterSeconds; // null if header absent/unparseable
+    this.retryAt = retryAt; // ISO string or null
+  }
+}
+
+/** Retry-After: delta-seconds or HTTP-date. Returns seconds (>=0) or null. */
+export function parseRetryAfter(value, nowMs) {
+  if (value == null) return null;
+  const v = String(value).trim();
+  if (/^\d+$/.test(v)) return Number(v);
+  const t = Date.parse(v);
+  return Number.isNaN(t) ? null : Math.max(0, Math.ceil((t - nowMs) / 1000));
+}
+
 /** Reads at most `max` bytes; aborts the stream as soon as the cap is exceeded. */
 export async function readBounded(r, max) {
   const declared = Number(r.headers?.get?.('content-length'));
@@ -60,9 +79,13 @@ export function createClient({
   timeoutMs = 15000,
   maxAgeMs = 24 * 3600 * 1000,
   now = () => Date.now(),
+  minIntervalMs = 2000, // conservative serial pacing between network requests
+  sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
 } = {}) {
   if (!userAgent) throw new Error('userAgent required (Wikimedia API policy: identify the client)');
   let used = 0;
+  let lastRequestAt = null;
+  let halted = null; // RateLimited once a 429 was seen: no further network requests this run
   const cachePath = (key) =>
     path.join(cacheDir, createHash('sha256').update(key).digest('hex') + '.json');
   async function readCache(key, validate) {
@@ -85,13 +108,28 @@ export function createClient({
     await rename(tmp, p);
   }
   async function guardedFetch(url, headers, max) {
+    if (halted) throw halted; // never re-contact the server after 429
     if (++used > maxRequests) throw new BudgetExceeded(`request budget ${maxRequests} exhausted`);
+    if (lastRequestAt !== null) {
+      const wait = lastRequestAt + minIntervalMs - now();
+      if (wait > 0) await sleep(wait);
+    }
+    lastRequestAt = now();
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), timeoutMs);
     try {
       const r = await fetchImpl(url, { headers, redirect: 'manual', signal: ctl.signal });
       if (r.type === 'opaqueredirect' || r.redirected || (r.status >= 300 && r.status < 400))
         throw new Error(`redirect-not-allowed:${r.status}`);
+      if (r.status === 429) {
+        const ra = parseRetryAfter(r.headers?.get?.('retry-after'), now());
+        halted = new RateLimited(
+          429,
+          ra,
+          ra === null ? null : new Date(now() + ra * 1000).toISOString(),
+        );
+        throw halted;
+      }
       if (!r.ok) throw new Error(`http-${r.status}`);
       return await readBounded(r, max);
     } finally {
@@ -186,5 +224,5 @@ export function createClient({
     await writeCache(key, text);
     return text;
   }
-  return { listCategory, listTitles, downloadSvg, requestsUsed: () => used };
+  return { listCategory, listTitles, downloadSvg, requestsUsed: () => used, rateLimited: () => halted };
 }
