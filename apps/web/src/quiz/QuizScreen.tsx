@@ -12,7 +12,7 @@ import {
   type SessionMode,
 } from '@mandarin/domain';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { HanziText } from '@/components/Hanzi';
 import { Badge, Button, ButtonLink, Card, EmptyState, ProgressBar } from '@/components/ui';
 import { useLearning } from '@/learning/LearningProvider';
@@ -296,8 +296,9 @@ export function QuizScreen() {
     else setFeedback(null);
   }, [session, feedback, finish]);
 
+  // Install shortcuts before the quiz question paints so the first key is never lost.
   // Keyboard: 1–4 choose, Enter/Space continue.
-  useEffect(() => {
+  useLayoutEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!question || e.ctrlKey || e.metaKey || e.altKey) return;
       const t = e.target as HTMLElement | null;
