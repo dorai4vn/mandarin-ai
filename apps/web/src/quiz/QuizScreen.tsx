@@ -16,6 +16,7 @@ import { HanziText } from '@/components/Hanzi';
 import { Badge, Button, ButtonLink, Card, EmptyState, ProgressBar } from '@/components/ui';
 import { useLearning } from '@/learning/LearningProvider';
 import { useOffline } from '@/components/OfflineProvider';
+import { AttemptPersistQueue, type PersistResult } from './persist-queue';
 import { buildSessionIds } from './queue-inputs';
 
 const localDate = () => {
@@ -57,7 +58,15 @@ export function QuizScreen() {
   } | null>(null);
   const [persisted, setPersisted] = useState(false);
   const [summaryRows, setSummaryRows] = useState<{ itemId: string; text: string }[]>([]);
-  const chain = useRef<Promise<unknown>>(Promise.resolve());
+  const persist = useMemo(() => (store ? new AttemptPersistQueue(store) : null), [store]);
+  // Unsaved answers (a write failed): the quiz cannot move on or finish until they are durable.
+  const [unsaved, setUnsaved] = useState(false);
+  // Another tab stored a different answer for the same slot: its record is canonical.
+  const [conflict, setConflict] = useState(false);
+  const finishing = useRef(false);
+  // Synchronous guard: set in the same tick as the first answer so key-repeat / double click /
+  // click+key can never grade a second answer before React re-renders `feedback`.
+  const answering = useRef(false);
   const shownAt = useRef(0);
   const nextRef = useRef<HTMLButtonElement>(null);
   const today = localDate();
@@ -110,7 +119,6 @@ export function QuizScreen() {
     setCounts({ due, fresh: vocabulary.filter((v) => !carded.has(v.id)).length });
   }, [store, today, vocabulary]);
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void refreshCounts();
   }, [refreshCounts, session?.completed, lastSync]);
 
@@ -195,6 +203,7 @@ export function QuizScreen() {
         answers: [],
         completed: false,
       };
+      answering.current = false;
       setSession(s);
       setResumed(false);
       await store.putSession(s);
@@ -209,9 +218,22 @@ export function QuizScreen() {
     [store, today, items, vocabulary, pool],
   );
 
+  const handleResult = useCallback((r: PersistResult) => {
+    if (r.status === 'saved') {
+      setUnsaved(false);
+      setPersisted(true);
+    } else if (r.status === 'failed') {
+      setUnsaved(true);
+    } else {
+      setUnsaved(false);
+      setConflict(true);
+    }
+  }, []);
+
   const answer = useCallback(
     (optionId: string) => {
-      if (!store || !session || !question || feedback) return;
+      if (!store || !persist || !session || !question || feedback || answering.current) return;
+      answering.current = true;
       // Grade and show feedback synchronously (P4); persistence follows in the background chain.
       const graded = gradeChoice(question, optionId);
       const responseMs = Math.max(0, Math.round(performance.now() - shownAt.current));
@@ -233,9 +255,9 @@ export function QuizScreen() {
       };
       setFeedback({ optionId, correct: graded.correct, reason: graded.reason });
       setSession(next);
-      chain.current = chain.current
-        .then(async () => {
-          await store.recordAttempt({
+      void persist
+        .enqueue({
+          attempt: {
             id: attemptId,
             sessionId: session.id,
             vocabularyItemId: entry.itemId,
@@ -246,58 +268,98 @@ export function QuizScreen() {
             reason: graded.reason.slice(0, 40),
             studyDate: session.studyDate,
             responseMs: Math.min(responseMs, 3_600_000),
-          });
-          await store.putSession(next);
-          setPersisted(true);
+          },
+          session: next,
         })
-        .catch(() => setNotice('Không lưu được câu trả lời trên máy này.'));
+        .then((r) => handleResult(r));
     },
-    [store, session, question, feedback, items, pool],
+    [store, persist, handleResult, session, question, feedback, items, pool],
   );
 
   const finish = useCallback(async () => {
-    if (!store || !session) return;
-    const done = { ...session, completed: true };
-    setSession(done);
-    await chain.current;
-    await store.putSession(done);
-    await store.recordLearningEvent({
-      id: `${session.id}:completed`,
-      eventType: 'quiz.session_completed',
-      eventVersion: 1,
-      sessionId: session.id,
-      data: {
-        answered: session.answers.length,
-        correct: session.answers.filter((a) => a.correct).length,
-      },
-    });
-    const cards = new Map((await store.listCards()).map((c) => [c.key, c]));
-    setSummaryRows(
-      [...new Set(session.answers.map((a) => a.itemId))].map((itemId) => {
-        const c = cards.get(`${itemId}|${QUIZ_SKILL_MEANING}`);
-        return { itemId, text: c ? whenText(c.due, today) : '' };
-      }),
-    );
-  }, [store, session, today]);
+    if (!store || !session || !persist || finishing.current) return;
+    finishing.current = true;
+    try {
+      // Never report completion while an answer is not durable.
+      const flushed = await persist.flush();
+      if (flushed.status !== 'saved') {
+        handleResult(flushed);
+        return;
+      }
+      const done = { ...session, completed: true };
+      try {
+        await store.putSession(done);
+        await store.recordLearningEvent({
+          id: `${session.id}:completed`,
+          eventType: 'quiz.session_completed',
+          eventVersion: 1,
+          sessionId: session.id,
+          data: {
+            answered: session.answers.length,
+            correct: session.answers.filter((a) => a.correct).length,
+          },
+        });
+        const cards = new Map((await store.listCards()).map((c) => [c.key, c]));
+        setSummaryRows(
+          [...new Set(session.answers.map((a) => a.itemId))].map((itemId) => {
+            const c = cards.get(`${itemId}|${QUIZ_SKILL_MEANING}`);
+            return { itemId, text: c ? whenText(c.due, today) : '' };
+          }),
+        );
+        setUnsaved(false);
+        setSession(done);
+      } catch {
+        setUnsaved(true); // completion not written: stay on the quiz, retry is safe (idempotent ids)
+      }
+    } finally {
+      finishing.current = false;
+    }
+  }, [store, session, persist, today, handleResult]);
+
+  const retrySave = useCallback(async () => {
+    if (!persist) return;
+    const r = await persist.retry();
+    handleResult(r);
+    if (r.status === 'saved' && session && session.answers.length >= session.queue.length) {
+      void finish();
+    }
+  }, [persist, handleResult, session, finish]);
+
+  const reloadAfterConflict = useCallback(async () => {
+    if (!store) return;
+    const s = await store.getSession();
+    answering.current = false;
+    setFeedback(null);
+    setConflict(false);
+    setSession(s);
+    setResumed(!!s && !s.completed);
+  }, [store]);
 
   useEffect(() => {
     finishRef.current = finish;
   }, [finish]);
 
   const dismiss = useCallback(async () => {
-    await chain.current;
+    const flushed = await persist?.flush();
+    if (flushed && flushed.status !== 'saved') {
+      handleResult(flushed);
+      return;
+    }
     await store?.clearSession();
     // Counters are read after the last attempt is durable, before the home screen is shown.
     await refreshCounts();
     setSession(null);
     setSummaryRows([]);
-  }, [store, refreshCounts]);
+  }, [store, persist, refreshCounts, handleResult]);
 
   const advance = useCallback(() => {
-    if (!session || !feedback) return;
+    if (!session || !feedback || unsaved || conflict) return;
     if (session.answers.length >= session.queue.length) void finish();
-    else setFeedback(null);
-  }, [session, feedback, finish]);
+    else {
+      answering.current = false;
+      setFeedback(null);
+    }
+  }, [session, feedback, finish, unsaved, conflict]);
 
   // Install shortcuts before the quiz question paints so the first key is never lost.
   // Keyboard: 1–4 choose, Enter/Space continue.
@@ -326,6 +388,38 @@ export function QuizScreen() {
   }, [feedback]);
 
   if (!store || !loaded) return <p className="text-sm text-fg-muted">Đang mở dữ liệu học…</p>;
+
+  const saveBanner = unsaved ? (
+    <div role="alert" className="mt-4 text-sm text-fg" data-testid="quiz-save-error">
+      <p>Chưa lưu được câu trả lời trên máy này. Câu trả lời vẫn được giữ; hãy thử lại.</p>
+      <Button
+        variant="secondary"
+        className="mt-2"
+        onClick={() => void retrySave()}
+        data-testid="quiz-retry-save"
+      >
+        Thử lưu lại
+      </Button>
+    </div>
+  ) : null;
+
+  if (conflict) {
+    return (
+      <Card data-testid="quiz-conflict" title="Phiên đã thay đổi ở tab khác">
+        <p className="text-sm text-fg-muted">
+          Câu này đã được trả lời ở một tab khác với kết quả khác. Kết quả đã lưu được giữ nguyên;
+          hãy tải lại phiên để tiếp tục từ trạng thái đó.
+        </p>
+        <Button
+          className="mt-3"
+          onClick={() => void reloadAfterConflict()}
+          data-testid="quiz-conflict-reload"
+        >
+          Tải lại phiên
+        </Button>
+      </Card>
+    );
+  }
 
   // ---- Summary -----------------------------------------------------------------------------
   if (session?.completed) {
@@ -375,6 +469,7 @@ export function QuizScreen() {
         <Button variant="secondary" className="mt-3" onClick={() => void dismiss()}>
           Bỏ phiên này
         </Button>
+        {saveBanner}
       </Card>
     );
   }
@@ -473,8 +568,9 @@ export function QuizScreen() {
             </p>
           )}
         </div>
+        {saveBanner}
         {feedback && (
-          <Button ref={nextRef} onClick={advance} data-testid="quiz-next">
+          <Button ref={nextRef} onClick={advance} disabled={unsaved} data-testid="quiz-next">
             {session.answers.length >= session.queue.length ? 'Xem kết quả' : 'Câu tiếp (Enter)'}
           </Button>
         )}

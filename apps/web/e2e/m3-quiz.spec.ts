@@ -43,6 +43,12 @@ async function runToSummary(page: Page) {
     if (await answerWithKeyboard(page)) right += 1;
     total += 1;
     await page.getByTestId('quiz-next').click();
+    // Completion is shown only once the last answer is durable: wait for the next question or the summary.
+    await expect(
+      page
+        .getByTestId('quiz-summary')
+        .or(page.locator('[data-testid=quiz-option]:enabled').first()),
+    ).toBeVisible();
   }
   await expect(page.getByTestId('quiz-summary')).toBeVisible();
   return { right, total };
@@ -146,6 +152,85 @@ test('reload mid-session resumes at the same question without duplicating attemp
   );
   expect(counts.attempts).toBe(2);
   expect(counts.events).toBe(3); // started + 2 answered
+});
+
+async function idbCounts(page: Page, user: string) {
+  return page.evaluate(
+    (u) =>
+      new Promise<{ attempts: number; events: number }>((resolve) => {
+        const req = indexedDB.open(`mandarin-ai:${u}`);
+        req.onsuccess = () => {
+          const db = req.result;
+          const tx = db.transaction(['attempts', 'events'], 'readonly');
+          const a = tx.objectStore('attempts').count();
+          const e = tx.objectStore('events').count();
+          tx.oncomplete = () => {
+            db.close();
+            resolve({ attempts: a.result, events: e.result });
+          };
+        };
+      }),
+    user,
+  );
+}
+
+test('rapid key-repeat in one tick grades and stores exactly one attempt (I1)', async ({
+  page,
+}) => {
+  const user = crypto.randomUUID();
+  await addLesson(page, user);
+  await page.goto('/practice');
+  await page.getByTestId('quiz-start-new').click();
+  await expect(page.getByTestId('quiz-option').first()).toBeEnabled();
+  // Let the key handler attach (same readiness the other tests rely on), then fire a burst of
+  // keydowns synchronously — before React can re-render the disabled options.
+  await expect(async () => {
+    await page.evaluate(() => {
+      for (const k of ['1', '2', '3', '1', '4', '1'])
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
+    });
+    await expect(page.getByTestId('quiz-feedback')).toHaveAttribute(
+      'data-result',
+      /correct|wrong/,
+      {
+        timeout: 1500,
+      },
+    );
+  }).toPass({ timeout: 10_000 });
+  await expect(page.getByTestId('quiz-question')).toHaveAttribute('data-persisted', 'true');
+  await expect(page.getByTestId('quiz-progress')).toContainText('1/');
+  expect((await idbCounts(page, user)).attempts).toBe(1);
+});
+
+test('two tabs on the same session never store two different attempts for one slot (I1)', async ({
+  page,
+  context,
+}) => {
+  const user = crypto.randomUUID();
+  await addLesson(page, user);
+  await page.goto('/practice');
+  await page.getByTestId('quiz-start-new').click();
+  await expect(page.getByTestId('quiz-question')).toBeVisible();
+  const tabB = await context.newPage();
+  await signIn(tabB, user); // same account, same IndexedDB (sessionStorage is per tab)
+  // Tab B resumes the session once tab A has written it to the shared IndexedDB.
+  await expect(async () => {
+    await tabB.goto('/practice');
+    await expect(tabB.getByTestId('quiz-resumed')).toBeVisible({ timeout: 2000 });
+  }).toPass({ timeout: 15_000 });
+  await page.getByTestId('quiz-option').nth(0).click();
+  await expect(page.getByTestId('quiz-question')).toHaveAttribute('data-persisted', 'true');
+  await tabB.getByTestId('quiz-option').nth(1).click();
+  // Tab B either agrees with the canonical attempt (same correctness) or is told about the
+  // conflict — it never silently shows a different persisted result.
+  await expect(
+    tabB.getByTestId('quiz-conflict').or(tabB.getByTestId('quiz-question')),
+  ).toBeVisible();
+  await expect.poll(async () => (await idbCounts(tabB, user)).attempts).toBe(1);
+  if (await tabB.getByTestId('quiz-conflict').isVisible()) {
+    await tabB.getByTestId('quiz-conflict-reload').click();
+    await expect(tabB.getByTestId('quiz-progress')).toContainText('2/');
+  }
 });
 
 /** Reads durable outbox state; network status alone does not prove quiz operations synced. */

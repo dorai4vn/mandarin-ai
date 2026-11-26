@@ -88,3 +88,23 @@ CI run 45805304987, job WebKit: **402 passed, 76 skipped**. Con số "18" không
 - Playwright `retries=0` sau `next build` có dev token: `chromium-*` `m3-quiz` + `perf-quiz`: 19 pass, 2 skip, **3 fail** (`offline answers … synced exactly once`, cả mobile/tablet/desktop): thất bại **giống hệt trên HEAD gốc** (đã `git stash` kiểm chứng ở desktop) — chờ chip "Đã đồng bộ" vì môi trường này không có Supabase/sync backend. Không xem là PASS; CI quyết định.
 - `firefox-*` `m3-quiz` + `perf-quiz` + `ui4-feedback` (bỏ test sync): 39 pass, 9 skip, một số test `ui4-feedback` (toast "Đồng bộ ngay", banner offline) fail — chưa kiểm chứng trên HEAD gốc, nhiều khả năng cùng nguyên nhân thiếu backend sync; **chưa kết luận**, chờ CI.
 - WebKit: không chạy local (chưa cài).
+
+## Xử lý findings self-review (HEAD d71417b) — đây là **self-review**, KHÔNG phải independent review
+
+| ID | Trạng thái | Thay đổi / bằng chứng |
+| --- | --- | --- |
+| I1 (double answer, resume/cross-tab cùng attemptId) | **Đã sửa (Verified-local)** | `QuizScreen.tsx`: cờ đồng bộ `answering` (ref) đặt ngay trong tick đầu tiên của `answer()` → key-repeat/double click/click+phím không chấm điểm lần 2 trước khi React render lại. Sau mỗi lần ghi, `AttemptPersistQueue` đọc lại attempt đã lưu; nếu khác `correct` với điều UI đã hiện (tab khác trả lời trước cùng attemptId) → trả `conflict`, **không** ghi đè session, UI hiện thẻ `quiz-conflict` + nút "Tải lại phiên" (nạp session canonical). Không đổi schema/contract. |
+| I2 (lỗi ghi bị báo hoàn thành giả) | **Đã sửa (Verified-local)** | Hàng đợi tuần tự `persist-queue.ts`: lỗi ghi **giữ job** (cùng attempt id), job sau xếp hàng chờ; `flush()` chỉ trả `saved` khi mọi thứ đã bền. `finish()` chỉ đặt `completed` + hiện summary sau khi flush + `putSession` + event thành công; lỗi → ở lại câu hỏi với `quiz-save-error` + nút `quiz-retry-save`, nút "Câu tiếp" bị khóa. Thử lại an toàn vì `recordAttempt`/event id idempotent. |
+| I3 (operation_id xác định theo attempt id) | **Chỉ đề xuất — cần owner duyệt** | Xem mục "Chống trùng attempt id…". Bổ sung threat model: hash theo user-scope chỉ làm 2 op hợp lệ cùng attempt trùng nhau; **không** ngăn client độc hại "preclaim" operation_id của attempt khác trong cùng user nếu server không kiểm tra khớp `operation_id == f(entity, payload.id)`; chặn cứng cần D/E (migration). Chưa triển khai. |
+| Benchmark browser nhiều orphan | **Chưa làm** (hết lượt) — P4 12000 thẻ hiện có không đổi, p95 thật của kịch bản orphan chưa đo. |
+| SRS out-of-order studyDate (D-007) | **Đã thêm test** | `review.test.ts`: studyDate đi lùi theo stamp → lịch neo theo attempt cuối theo stamp, mọi hoán vị + redelivery cho cùng thẻ; skill khác không ảnh hưởng. |
+| Lint | **Đã dọn** | `eslint --report-unused-disable-directives`: directive `set-state-in-effect` ở `refreshCounts` là thừa (đã xóa); 2 directive còn lại được lint yêu cầu (đã thử xóa → lỗi) nên giữ. |
+
+Test mới: `apps/web/src/quiz/persist-queue.test.ts` (lỗi ghi/retry/finish; trùng id; conflict; đua 2 kết nối IndexedDB cùng DB), `m3-quiz.spec.ts` (burst keydown 1 tick → đúng 1 attempt; 2 tab cùng session → đúng 1 attempt, conflict nếu khác kết quả).
+
+Thay đổi hành vi: summary chỉ hiện sau khi lưu xong (không còn tức thời) → helper `runToSummary` chờ "summary hoặc câu kế tiếp" sau mỗi lần bấm Next (không nới assertion).
+
+### Chạy local (Verified-local, retries=0)
+- `prettier --check .` pass; `eslint . --report-unused-disable-directives` pass; `tsc --noEmit` (web) pass; `vitest` web 69 pass, domain 47 pass.
+- Playwright chromium-desktop + chromium-tablet (`next build` có dev token): `m3-quiz` + `ui4-feedback` + `realtime`: 33 pass, 3 skip, **6 fail** = 3 test × 2 project (`m3-quiz offline answers…synced exactly once`, `ui4-feedback "Đồng bộ ngay" toast`, `ui4-feedback offline banner`): chip sync ở `local-only` vì môi trường không có Supabase/sync backend (test sync đầu tiên đã được kiểm chứng giống hệt trên HEAD gốc ở chặng trước; 2 test ui4 chưa kiểm chứng riêng trên HEAD gốc). **Không claim PASS** cho 6 test này. Test mới I1 chạy lặp 3 lần × 2 project: 12/12 pass.
+- Firefox/WebKit/9 project: chưa chạy local; chờ CI.

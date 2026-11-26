@@ -87,6 +87,33 @@ describe('review schedule (D-007)', () => {
     expect(foldCard([...list].reverse())).toEqual(reference);
     expect(foldCard([...list, ...list])).toEqual(reference);
   });
+  it('out-of-order studyDate (offline device syncs late) folds deterministically, per skill (D-007)', () => {
+    // Stamp order = arrival order; studyDate goes backwards: a second device answered on 11-26
+    // while offline and its operation was stamped after the 11-28 answer.
+    const late = [
+      attempt(true, '2026-11-28'),
+      attempt(true, '2026-11-26'), // earlier study day, later stamp
+      attempt(false, '2026-11-27'),
+    ];
+    const ref = foldCard(late)!;
+    // The schedule is anchored on the LAST attempt by stamp, never on the largest studyDate.
+    expect(ref.lastStudyDate).toBe('2026-11-27');
+    expect(ref.due).toBe(addDays('2026-11-27', BOX_INTERVAL_DAYS[0]!));
+    expect(ref.reps).toBe(3);
+    expect(ref.lapses).toBe(1);
+    // Every permutation (and a redelivery) converges on the same card.
+    const perms = [
+      [2, 1, 0],
+      [1, 0, 2],
+      [0, 2, 1],
+    ];
+    for (const p of perms) expect(foldCard(p.map((i) => late[i]!))).toEqual(ref);
+    expect(foldCard([...late, ...late])).toEqual(ref);
+    // A wrong answer on another skill never touches the meaning schedule.
+    const other = attempt(false, '2026-11-30', { skill: 'writing' });
+    expect(foldCard([...late, other].filter((a) => a.skill === 'meaning'))).toEqual(ref);
+    expect(foldCard([other])!.key).toBe(`${ITEM}|writing`);
+  });
   it('reads attempts from operations and ignores invalid ones', () => {
     const base: SyncOperation = {
       operationId: 'op-0000000000000001',
