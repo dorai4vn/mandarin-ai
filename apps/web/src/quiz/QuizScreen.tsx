@@ -43,7 +43,7 @@ function whenText(due: string, today: string) {
 
 /** Quiz (M3): due review, new-day quiz, multi-day recall — keyboard-usable, offline-first. */
 export function QuizScreen() {
-  const { store } = useOffline();
+  const { store, lastSync } = useOffline();
   const { vocabulary, lexemes, contentStatus } = useLearning();
   const [session, setSession] = useState<QuizSessionState | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -107,7 +107,7 @@ export function QuizScreen() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void refreshCounts();
-  }, [refreshCounts, session?.completed]);
+  }, [refreshCounts, session?.completed, lastSync]);
 
   const question = useMemo(() => {
     if (!session || session.completed) return null;
