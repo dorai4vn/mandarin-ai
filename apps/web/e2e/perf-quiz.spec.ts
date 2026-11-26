@@ -145,6 +145,15 @@ test('P4: quiz answer feedback p95 < 100 ms offline on D-L (12 000 cards), CPU 4
       expect(ms, 'feedback must be visible in the next frame').toBeGreaterThanOrEqual(0);
       durations.push(ms);
       await page.getByTestId('quiz-next').click();
+      // The final question transitions to summary asynchronously after durable persistence.
+      // Wait for either the next enabled question or the summary, not the disabled old option.
+      await expect
+        .poll(async () => {
+          const summary = await page.getByTestId('quiz-summary').count();
+          const nextQuestion = await page.locator('[data-testid="quiz-option"]:enabled').count();
+          return summary > 0 || nextQuestion > 0;
+        })
+        .toBe(true);
     }
     await expect(page.getByTestId('quiz-summary')).toBeVisible();
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });

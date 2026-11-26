@@ -110,6 +110,7 @@ test('manual entry: numbered pinyin, suggests the shared lexeme, duplicates link
   await expect(dialog.getByTestId('add-word-hanzi')).toHaveValue('龙');
   await dialog.getByRole('button', { name: 'Hủy' }).click();
   await expect(dialog).toBeHidden(); // the page is inert while the modal is open
+  await page.getByTestId('dictionary-search').click(); // waits for the page to become interactive
   await page.getByTestId('dictionary-search').fill('');
   await expect(page.getByTestId('dictionary-search')).toHaveValue('');
 
