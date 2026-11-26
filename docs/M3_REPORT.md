@@ -1,5 +1,17 @@
 # M3 — Báo cáo final QA (quiz engine + spaced repetition)
 
+## Nghiệm thu cuối — bản ứng dụng `29bb191`
+
+Phần này cập nhật trạng thái các mục Pending trong nhật ký lịch sử bên dưới.
+
+- CI [45843709547](https://github.com/dorai4vn/mandarin-ai/actions/runs/45843709547): 6/6 job PASS, gồm database/pgTAP và ba browser engine.
+- Preview READY, SHA đã đối chiếu với Vercel; HTTP login/practice 200. [Preview cố định](https://mandarin-ap73y05v2-dorai4vn.vercel.app).
+- Owner xác nhận 7/7 smoke PASS: login, từ vựng/quiz, ba dạng câu hỏi, tổng kết, offline/reload, reconnect sync, thiết bị thứ hai. [Biên bản](https://github.com/dorai4vn/mandarin-ai/pull/25#issuecomment-7198495996).
+- Review chéo GPT đọc trực tiếp SQL/RLS/RPC, adapter, store, QuizScreen, persistence queue, queue inputs, SRS và test persistence. Đây là review tĩnh có trọng tâm, không phải audit toàn bộ; Claude review phiên riêng không được tính là independent reviewer. Không có workflow file trong diff với main tại thời điểm review.
+- I3: đề xuất backlog, ưu tiên ràng buộc user-scoped và dedupe payload ID ở DB sau khi duyệt migration riêng; không chọn hash client đơn thuần. Exactly-once server chỉ theo operation ID, không theo payload ID.
+- Giới hạn còn lại: queue chưa lưu có thể mất khi đóng trang; snapshot nhiều tab có thể đua ghi; chưa tái hiện trong smoke. P4 chỉ đo Chromium CPU 4×; chưa có benchmark browser nhiều orphan hoặc đo trên thiết bị thật. Không suy rộng PASS sang M1/M2 Cloud.
+- Khuyến nghị GO có điều kiện, giữ nguyên code ứng dụng. Production chưa được duyệt; không merge, không áp migration. Commit tài liệu có thể tự kích hoạt CI theo workflow hiện hành.
+
 Branch `claude/issue-19-20261126-0441` (PR #25), HEAD khi bắt đầu chặng này: `e610302`, CI run 45805304987 success.
 Quy ước nhãn: **Verified-local** = đã chạy trong môi trường dev của chặng này · **CI** = đã xanh trong CI của PR · **Production** = chưa có · **Pending** = chưa làm/chưa có bằng chứng.
 
