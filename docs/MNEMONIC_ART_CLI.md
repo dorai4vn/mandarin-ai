@@ -16,11 +16,15 @@ A selection (`--only`, `--ids` or `--all`) is mandatory; nothing runs on "everyt
 ## Behaviour
 
 - **Generate missing**: skips entries whose manifest status is `stored`, prompt hash unchanged and stored file checksum matches.
-- **Optimise**: output normalised to 1600x1200 WebP (quality 82) with `sharp`. `sharp` is NOT a repo dependency;
-  install locally for live runs: `npm i --no-save sharp`. Output is rejected unless it is WebP with exact dimensions.
-- **Storage**: local mock (`.mnemonic-art/store/`, gitignored) with the same `put(path, body, contentType)` shape as
-  `ObjectStoragePort`. Uploads are read back and checksum-verified. Wiring the Supabase adapter is intentionally NOT
-  done here (no cloud writes in this checkpoint).
+- **Optimise**: output normalised to 1600x1200 WebP (quality 82, `fit: cover`) with `sharp`, pinned as exact root
+  devDependency `sharp@0.35.5` (`pnpm install`; lockfile committed). A test runs real sharp on a synthetic PNG. Output is rejected unless it is WebP with exact dimensions.
+- **Storage** (`--storage local|supabase`, default `local`): local mock (`.mnemonic-art/store/`, gitignored) with the same `put(path, body, contentType)` shape as
+  `ObjectStoragePort`. Uploads are read back and checksum-verified. `--storage supabase` is opt-in and reads
+  `MNEMONIC_SUPABASE_URL`, `MNEMONIC_SUPABASE_SECRET_KEY`, `MNEMONIC_SUPABASE_BUCKET` (private bucket, never printed);
+  it follows the same REST contract as `packages/adapters/src/server/supabase-storage.ts` (re-implemented in plain
+  Node because that adapter is TypeScript - keep in sync) plus an authenticated GET for checksum readback. It is only
+  tested against a mocked transport; **no cloud write has ever been made**. Uploads use `x-upsert: false`, so
+  `--force` regeneration of an already-uploaded object needs the old object deleted first (fails fatally, no re-billing).
 - **Resumable manifest**: `.mnemonic-art/manifest.json`, written atomically after every state change.
 - **No duplicate requests**: an entry left in `requested` (crash after a possibly billed call) is blocked until `--force`.
   A tampered/missing stored file is blocked until `--force`.
@@ -38,17 +42,22 @@ Real calls need `--live` plus ALL of these env vars (values are never printed; k
 | `MNEMONIC_PRICE_USD_PER_IMAGE`                                                 | per-image price **verified by a human on the provider's pricing page** |
 | `MNEMONIC_PRICING_SOURCE_URL`, `MNEMONIC_PRICING_VERIFIED_ON`                  | https URL and YYYY-MM-DD of that check                   |
 
-The owner's ~$11 budget is an unverified estimate; no price is hard-coded. The provider wrapper targets an
-OpenAI-style `/v1/images/generations` endpoint (b64 response) and has only been exercised with a mocked `fetch`.
+The owner's ~$11 budget is an unverified estimate; no price is hard-coded. The provider wrapper builds request bodies per the *documented* OpenAI Images API:
+`gpt-image-*` -> `size 1536x1024`, `quality`, no `response_format`; `dall-e-3` -> `1792x1024`, `response_format b64_json`;
+`dall-e-2`/unknown models are rejected (square-only/unverified). 3:2 output is cover-cropped to 4:3. This is checked
+against documentation and a mocked `fetch` only - **live compatibility is NOT verified**.
+Hard pilot caps in code: `--max-spend-usd` <= 1 (incl. retries, each attempt counted) and <= 10 images per live run.
+Use a separate OpenAI project/key for this CLI.
 **No real API call has been made.** Generated images are candidates: they stay `pending-artwork` until the owner approves.
 
 ## Brief review (before spending)
 
 `review` flags errors (too short, abstract wording, Hanzi inside brief, missing Vietnamese gloss) and warnings
 (no explicit light/material cue; the global style prompt supplies these). Current result: 0 errors,
-see CLI output for warnings. Two weak briefs (小, 好) were rewritten. Vietnamese content was only checked
-mechanically; a native-speaker read of meanings/examples is still recommended before spending.
+see CLI output for warnings. Two weak briefs (小, 好) were rewritten. A manual pass over all 200 meanings/pinyin/examples found one concrete error
+(爱 example 爱人 glossed as "người yêu"; in Mandarin it means spouse -> replaced by 爱好 "sở thích"). Remaining uncertainty:
+no native-speaker or dictionary cross-check; tone-sandhi pinyin (一/不) and glosses are from author knowledge only.
 
 ## Tests
 
-`pnpm test:mnemonic-art` (node:test, 12 mocked cases, synthetic fixtures, no network).
+`pnpm test:mnemonic-art` (node:test, 19 cases (mocked transport, real sharp on a synthetic fixture), synthetic fixtures, no network).

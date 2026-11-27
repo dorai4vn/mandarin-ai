@@ -2,6 +2,7 @@
 // Usage: node scripts/mnemonic-art/cli.mjs <review|plan|generate|verify> [flags]
 // Default is DRY-RUN. Real provider calls need --live AND verified pricing AND --max-spend-usd.
 // Flags: --only 山,水 | --ids 1-10 | --all   --force   --mock   --live
+//        --storage local|supabase (default local; supabase needs MNEMONIC_SUPABASE_URL/_SECRET_KEY/_BUCKET)
 //        --max-spend-usd N   --max-retries N(0-3)   --out DIR (default .mnemonic-art)
 // Env (live only; never printed): MNEMONIC_IMAGE_API_KEY, MNEMONIC_IMAGE_MODEL,
 //        MNEMONIC_PRICE_USD_PER_IMAGE, MNEMONIC_PRICING_SOURCE_URL, MNEMONIC_PRICING_VERIFIED_ON (YYYY-MM-DD)
@@ -14,6 +15,7 @@ import {
   run,
   verify,
   localStorage,
+  supabaseStorage,
   openaiProvider,
   sharpOptimizer,
   sha256,
@@ -29,6 +31,7 @@ const { values: a, positionals } = parseArgs({
     all: { type: 'boolean' },
     force: { type: 'boolean' },
     mock: { type: 'boolean' },
+    storage: { type: 'string', default: 'local' },
     live: { type: 'boolean' },
     'max-spend-usd': { type: 'string' },
     'max-retries': { type: 'string' },
@@ -39,7 +42,16 @@ const { values: a, positionals } = parseArgs({
 const cmd = positionals[0] ?? 'plan';
 const data = loadDataset(a.dataset);
 const manifestPath = join(a.out, 'manifest.json');
-const storage = localStorage(join(a.out, 'store'));
+if (!['local', 'supabase'].includes(a.storage)) throw new Error('--storage must be local|supabase');
+if (a.storage === 'supabase' && a.mock) throw new Error('--mock never uses cloud storage');
+const storage =
+  a.storage === 'supabase'
+    ? supabaseStorage({
+        url: process.env.MNEMONIC_SUPABASE_URL,
+        secretKey: process.env.MNEMONIC_SUPABASE_SECRET_KEY,
+        bucket: process.env.MNEMONIC_SUPABASE_BUCKET,
+      })
+    : localStorage(join(a.out, 'store'));
 
 if (cmd === 'review') {
   const issues = reviewDataset(data);

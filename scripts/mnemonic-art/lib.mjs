@@ -7,6 +7,9 @@ import { dirname, join, resolve, sep } from 'node:path';
 export const IMAGE_WIDTH = 1600;
 export const IMAGE_HEIGHT = 1200;
 export const MAX_RETRIES_CAP = 3;
+/** Owner-approved pilot bounds (budget note 2026-11-27): max $1 incl. retries, max 10 images. Raise only by code change after owner approval. */
+export const PILOT_MAX_USD = 1;
+export const PILOT_MAX_IMAGES = 10;
 export const sha256 = (buf) => createHash('sha256').update(buf).digest('hex');
 
 export function loadDataset(path) {
@@ -130,13 +133,13 @@ export function isWebp(buf, w = IMAGE_WIDTH, h = IMAGE_HEIGHT, dims) {
   return ok && (!dims || (dims.width === w && dims.height === h));
 }
 
-/** Real optimizer: sharp (optional, not a repo dependency). Fails with setup instructions if absent. */
+/** Real optimizer: sharp (pinned root devDependency, exact 0.35.5). */
 export async function sharpOptimizer() {
   let sharp;
   try {
     sharp = (await import('sharp')).default;
   } catch {
-    throw new Error('sharp not installed. Install locally (not committed): npm i --no-save sharp');
+    throw new Error('sharp not installed: run `pnpm install`');
   }
   return async (input) => {
     const { data, info } = await sharp(input)
@@ -147,29 +150,123 @@ export async function sharpOptimizer() {
   };
 }
 
+/**
+ * Request shapes per documented OpenAI Images API model family (OpenAI API reference, "Create image").
+ * Documented-contract only: NOT verified live. Unknown models are rejected rather than guessed.
+ *  - gpt-image-*: sizes 1024x1024 | 1536x1024 | 1024x1536 | auto; always returns b64_json; `response_format` is
+ *    NOT accepted (sending it errors), so it is omitted; `quality` low|medium|high|auto.
+ *  - dall-e-3: sizes 1024x1024 | 1792x1024 | 1024x1792; `response_format` b64_json|url, n must be 1.
+ *  - dall-e-2: square only -> unsuitable for 4:3, rejected.
+ */
+export function imageRequestBody(model, prompt, { quality = 'medium' } = {}) {
+  if (/^gpt-image-/.test(model))
+    return { model, prompt, n: 1, size: '1536x1024', quality, output_format: 'png' };
+  if (model === 'dall-e-3')
+    return { model, prompt, n: 1, size: '1792x1024', response_format: 'b64_json' };
+  throw new Error(
+    `model "${model}" not supported: use a gpt-image-* model or dall-e-3 (dall-e-2 is square-only)`,
+  );
+}
+
+const MAX_RESPONSE_BYTES = 40 * 1024 * 1024;
+
 /** Provider wrapper (OpenAI-style Images API). Only constructed for --live; never logs the key. */
-export function openaiProvider({ apiKey, model, fetchImpl = fetch, timeoutMs = 120000 }) {
+export function openaiProvider({
+  apiKey,
+  model,
+  fetchImpl = fetch,
+  timeoutMs = 120000,
+  quality,
+  baseUrl = 'https://api.openai.com',
+}) {
   if (!apiKey) throw new Error('missing credential env var MNEMONIC_IMAGE_API_KEY');
+  imageRequestBody(model, 'probe'); // fail fast on unsupported model
   return {
     name: 'openai-images',
     model,
     async generate(prompt) {
-      const res = await fetchImpl('https://api.openai.com/v1/images/generations', {
+      const res = await fetchImpl(`${baseUrl}/v1/images/generations`, {
         method: 'POST',
         redirect: 'error',
         signal: AbortSignal.timeout(timeoutMs),
         headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
-        body: JSON.stringify({ model, prompt, n: 1, size: '1536x1024' }),
+        body: JSON.stringify(imageRequestBody(model, prompt, { quality })),
       });
       if (!res.ok) {
+        // Body deliberately not echoed (could contain prompt/request ids); status only.
         const e = new Error(`provider HTTP ${res.status}`);
         e.status = res.status;
+        e.retryAfter = res.headers?.get?.('retry-after') ?? undefined;
         throw e;
       }
-      const j = await res.json();
+      const text = await res.text();
+      if (text.length > MAX_RESPONSE_BYTES) throw new Error('provider: response too large');
+      let j;
+      try {
+        j = JSON.parse(text);
+      } catch {
+        throw new Error('provider: response is not JSON');
+      }
+      if (j?.error) throw new Error('provider: error object in 2xx response');
       const b64 = j?.data?.[0]?.b64_json;
-      if (typeof b64 !== 'string') throw new Error('provider: no b64_json in response');
-      return Buffer.from(b64, 'base64');
+      if (typeof b64 !== 'string' || !b64) throw new Error('provider: no b64_json in response');
+      const buf = Buffer.from(b64, 'base64');
+      if (!buf.length) throw new Error('provider: empty image');
+      return buf;
+    },
+  };
+}
+
+const SAFE_PATH = /^[a-zA-Z0-9/_.-]{1,512}$/;
+
+/**
+ * Opt-in Supabase Storage (private bucket) with the SAME REST contract as
+ * packages/adapters/src/server/supabase-storage.ts (POST /storage/v1/object/{bucket}/{path}, apikey header,
+ * Bearer only for legacy JWT keys, x-upsert false). Re-implemented here because that adapter is TypeScript and
+ * this CLI is plain Node; keep in sync. Adds an authenticated GET for checksum readback. Transport is
+ * injectable (tests use a mock); redirects rejected; bounded timeouts.
+ */
+export function supabaseStorage({ url, secretKey, bucket, fetchImpl = fetch, timeoutMs = 60000 }) {
+  if (!url?.startsWith('https://') || !secretKey || !/^[a-z0-9_-]{1,63}$/.test(bucket ?? ''))
+    throw new Error('supabase storage: need https url, secret key and bucket name');
+  const base = url.replace(/\/$/, '');
+  const headers = (extra = {}) => ({
+    apikey: secretKey,
+    ...(secretKey.startsWith('eyJ') ? { Authorization: `Bearer ${secretKey}` } : {}),
+    ...extra,
+  });
+  const check = (path) => {
+    if (!SAFE_PATH.test(path) || path.includes('..')) throw new Error('storage: invalid path');
+  };
+  return {
+    mode: 'live',
+    async put(path, body, contentType) {
+      check(path);
+      const res = await fetchImpl(`${base}/storage/v1/object/${bucket}/${path}`, {
+        method: 'POST',
+        redirect: 'error',
+        signal: AbortSignal.timeout(timeoutMs),
+        headers: headers({ 'Content-Type': contentType, 'x-upsert': 'false' }),
+        body,
+      });
+      if (!res.ok)
+        throw Object.assign(new Error(`storage put HTTP ${res.status}`), {
+          status: 0,
+          fatal: true,
+        });
+    },
+    async get(path) {
+      check(path);
+      const res = await fetchImpl(`${base}/storage/v1/object/authenticated/${bucket}/${path}`, {
+        method: 'GET',
+        redirect: 'error',
+        signal: AbortSignal.timeout(timeoutMs),
+        headers: headers(),
+      });
+      if (res.status === 404 || res.status === 400) return null; // Storage reports missing objects as 400/404
+      if (!res.ok)
+        throw Object.assign(new Error(`storage get HTTP ${res.status}`), { fatal: true });
+      return Buffer.from(await res.arrayBuffer());
     },
   };
 }
@@ -238,6 +335,10 @@ export async function run({
     };
 
   if (!(maxSpendUsd > 0)) throw new Error('live requires --max-spend-usd > 0');
+  if (maxSpendUsd > PILOT_MAX_USD)
+    throw new Error(`pilot cap: --max-spend-usd may not exceed ${PILOT_MAX_USD}`);
+  if (todo.length > PILOT_MAX_IMAGES)
+    throw new Error(`pilot cap: at most ${PILOT_MAX_IMAGES} images per live run`);
   if (!(unitPriceUsd > 0)) throw new Error('live requires a verified unit price');
   if (manifest.spentUsdEstimated + todo.length * unitPriceUsd > maxSpendUsd)
     throw new Error(
