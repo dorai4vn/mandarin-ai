@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { HanziText } from '@/components/Hanzi';
 import { Badge, Button } from '@/components/ui';
 import { HANZI_HISTORY } from './data';
+import { MnemonicCard } from './MnemonicCard';
 import {
   clampIndex,
   nextIndex,
@@ -60,14 +61,6 @@ function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
     }, STEP_MS);
     return () => clearTimeout(t);
   }, [playing, index, stages.length]);
-
-  // Stop playing once the last stage is shown.
-  useEffect(() => {
-    if (playing && atEnd) {
-      const t = setTimeout(() => setPlaying(false), STEP_MS);
-      return () => clearTimeout(t);
-    }
-  }, [playing, atEnd]);
 
   const all = history.stages;
   const active = stages[index]!;
@@ -362,15 +355,7 @@ function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
         </div>
       )}
 
-      {history.mnemonic && (
-        <div
-          className="mt-3 rounded-control border border-line p-3 text-sm"
-          data-testid="hanzi-mnemonic"
-        >
-          <Badge variant="accent">Minh họa gợi nhớ — không phải bằng chứng</Badge>
-          <p className="mt-1">{history.mnemonic.text}</p>
-        </div>
-      )}
+      <MnemonicCard glyph={glyph} />
 
       <p className="mt-3 text-xs text-fg-muted" data-testid="hanzi-strokeorder-note">
         Thứ tự nét: chưa có trong bản này. {history.strokeOrder.note}
