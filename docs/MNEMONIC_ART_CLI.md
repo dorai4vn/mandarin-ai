@@ -53,7 +53,19 @@ Model allowlist: `gpt-image-2`, `gpt-image-2.5-{flare,sunburst}`, `gpt-image-2.6
 3:2 output is cover-cropped to 4:3. This follows the API reference text only - **live compatibility is NOT verified**.
 Hard pilot caps in code: `--max-spend-usd` <= 1 (incl. retries, each attempt counted) and <= 10 images per live run.
 Use a separate OpenAI project/key for this CLI.
-**No real API call has been made.** Generated images are candidates: they stay `pending-artwork` until the owner approves.
+**
+### Run #1 (46057258136) failure and replacement steps
+Run 46057258136 failed in the Validate step (`[[ =~ [^[:ascii:]] ]]` is an invalid bash character class); Generate was skipped, so no paid call happened and no artifact exists.
+Fixed in the launcher draft: Hanzi validation is `python3 -I` stdlib (CJK Unified Ideograph check, tested in a real shell by `workflow.test.mjs`), `gh` calls use explicit `--repo`,
+Verify/Upload only run when setup succeeded and `.mnemonic-art/manifest.json` exists (the spend ledger rules are unchanged).
+That failed run would otherwise block `first_run=true` forever, so the launcher has input `recover_run_id`, accepted **only** for the hardcoded `46057258136` with `first_run=true`;
+it is honoured only if the jobs API (`filter=all`, every rerun attempt) proves the `Generate` step was skipped, the run is a completed failure of this workflow with zero artifacts. Anything else fails closed. Other prior runs still block (no general bypass).
+Limitation: any future run that fails before Generate also blocks until the owner changes the launcher; a rerun of 46057258136 uses the old file and fails the same way, do not rerun it.
+Owner steps: (1) replace `.github/workflows/mnemonic-art-pilot.yml` on main with `docs/workflow-drafts/mnemonic-art-pilot.yml` from the new reviewed SHA; (2) dispatch from main with `reviewed_sha` = that SHA,
+`only=山`, `first_run=true`, `recover_run_id=46057258136`, `previous_run_id` empty, cap 1; (3) approve the environment; (4) next runs: `first_run=false`, `previous_run_id` = latest run, no recover id.
+Not verified on GitHub: the workflow has still never completed a real dispatch; `gh` was stubbed in tests.
+
+No real API call has been made.** Generated images are candidates: they stay `pending-artwork` until the owner approves.
 
 ## Brief review (before spending)
 
@@ -108,4 +120,16 @@ Safe dispatch prerequisites (all owner actions):
 2. Create Environment `mnemonic-art-pilot` with owner as required reviewer; keep `MNEMONIC_IMAGE_API_KEY` there if possible (separate OpenAI project with a provider-side spend limit).
 3. Set Variables from the pricing section above (`gpt-image-2` recommended), `MNEMONIC_PRICING_SOURCE_URL`, `MNEMONIC_PRICING_VERIFIED_ON`.
 4. Run 1: `first_run=true`, `only=山`, quality `low`, cap 1. QC the artifact and compare manifest `usage`. Run 2+: `previous_run_id` = latest run.
+
+### Run #1 (46057258136) failure and replacement steps
+Run 46057258136 failed in the Validate step (`[[ =~ [^[:ascii:]] ]]` is an invalid bash character class); Generate was skipped, so no paid call happened and no artifact exists.
+Fixed in the launcher draft: Hanzi validation is `python3 -I` stdlib (CJK Unified Ideograph check, tested in a real shell by `workflow.test.mjs`), `gh` calls use explicit `--repo`,
+Verify/Upload only run when setup succeeded and `.mnemonic-art/manifest.json` exists (the spend ledger rules are unchanged).
+That failed run would otherwise block `first_run=true` forever, so the launcher has input `recover_run_id`, accepted **only** for the hardcoded `46057258136` with `first_run=true`;
+it is honoured only if the jobs API (`filter=all`, every rerun attempt) proves the `Generate` step was skipped, the run is a completed failure of this workflow with zero artifacts. Anything else fails closed. Other prior runs still block (no general bypass).
+Limitation: any future run that fails before Generate also blocks until the owner changes the launcher; a rerun of 46057258136 uses the old file and fails the same way, do not rerun it.
+Owner steps: (1) replace `.github/workflows/mnemonic-art-pilot.yml` on main with `docs/workflow-drafts/mnemonic-art-pilot.yml` from the new reviewed SHA; (2) dispatch from main with `reviewed_sha` = that SHA,
+`only=山`, `first_run=true`, `recover_run_id=46057258136`, `previous_run_id` empty, cap 1; (3) approve the environment; (4) next runs: `first_run=false`, `previous_run_id` = latest run, no recover id.
+Not verified on GitHub: the workflow has still never completed a real dispatch; `gh` was stubbed in tests.
+
 No real API call has been made.
