@@ -21,10 +21,10 @@ test.describe('M3.5 hanzi history (山)', () => {
 
   test('timeline thumbnails have equal geometry and no horizontal overflow', async ({ page }) => {
     await page.goto('/lab/hanzi-history');
-    const boxes = await page
-      .getByTestId('hanzi-timeline')
-      .locator('button')
-      .evaluateAll((els) => els.map((e) => [e.clientWidth, e.clientHeight]));
+    const tiles = page.getByTestId('hanzi-timeline').locator('button');
+    // Wait for the lazily rendered timeline before measuring (evaluateAll does not auto-wait).
+    await expect(tiles).toHaveCount(4);
+    const boxes = await tiles.evaluateAll((els) => els.map((e) => [e.clientWidth, e.clientHeight]));
     expect(boxes).toHaveLength(4);
     expect(new Set(boxes.map((b) => b.join('x'))).size).toBe(1);
     const over = await page.evaluate(
