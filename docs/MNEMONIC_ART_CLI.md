@@ -133,3 +133,21 @@ Owner steps: (1) replace `.github/workflows/mnemonic-art-pilot.yml` on main with
 Not verified on GitHub: the workflow has still never completed a real dispatch; `gh` was stubbed in tests.
 
 No real API call has been made.
+
+## Production mode for the remaining ~190 images (DRAFT, no live calls made)
+
+Prerequisites: owner has QC'd the nine-image pilot and given a **separate final budget approval**. Pilot #3 stays on the pilot launcher with `previous_run_id=46058598242`.
+
+CLI: `generate --all --production --live --expect-manifest existing --batch-size N --max-spend-usd B`
+- Requires the carried manifest with >= 10 stored images (the pilot); verified entries are skipped (same prompt hash + checksum), so reruns never repeat paid calls.
+- Serial, **retries forced to 0**, batch of at most `N` (1-200) new images per run; `deferred` in the summary = still missing, continue by re-dispatching with the latest run id.
+- **Stops on the first error**; the failed entry (possibly billed) and any `requested` entry are `blocked` on rerun until the owner uses `--force --only X`.
+- Budget `B` is cumulative across all runs (carried `spentUsdEstimated`) and is checked before every call. `B <= 10` is only a typo guard. It is **not** a provider-enforced cap
+  (do not assume $5 is a hard cap; set the provider-side project limit). The estimate uses the token ceiling bound; when the response has `usage`, actual cost at the same owner-verified rates
+  is stored per entry (`usageCostUsd`) and summed in `spentUsdActualReported` / summary `actualUsdReported`. Actual billing is still not independently verified.
+- Quality is fixed `low` in the workflow and the model must equal the model recorded in the carried manifest (checked offline before the secret step).
+
+Draft launcher: `docs/workflow-drafts/mnemonic-art-production.yml` (not in `.github/workflows`; owner copies it after approval). Same guards as the pilot launcher (dispatch only, owner-only, read-only
+token, pinned actions, exact reviewed SHA, secret in Generate only, hidden-file artifact uploaded also on failure) plus environment `mnemonic-art-production` (owner as required reviewer),
+shared concurrency group and artifact name with the pilot (one ledger chain; `previous_run_id` must be the latest run across both launchers), timeout 340 min. Never run live from CI of this repo.
+Tests: `pnpm test:mnemonic-art` (49 offline tests; the workflow has never run on GitHub).

@@ -10,6 +10,11 @@ export const MAX_RETRIES_CAP = 3;
 /** Owner-approved pilot bounds (budget note 2026-11-27): max $1 incl. retries, max 10 images. Raise only by code change after owner approval. */
 export const PILOT_MAX_USD = 1;
 export const PILOT_MAX_IMAGES = 10;
+// Production (remaining ~190) mode: explicit owner budget per dispatch. This is a sanity ceiling on a typo, NOT a
+// provider-enforced cap and NOT the approved budget (the owner's --max-spend-usd is). Provider-side limit still advised.
+export const PRODUCTION_SANITY_MAX_USD = 10;
+export const PRODUCTION_MAX_BATCH = 200;
+export const PRODUCTION_MIN_STORED = 10; // pilot images must already be stored (carried manifest) before bulk spend
 export const sha256 = (buf) => createHash('sha256').update(buf).digest('hex');
 
 export function loadDataset(path) {
@@ -321,6 +326,9 @@ export async function run({
   maxSpendUsd = 0,
   unitPriceUsd = 0,
   maxRetries = 2,
+  production = false,
+  maxImages = PILOT_MAX_IMAGES,
+  rates,
   sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
   log = () => {},
 }) {
@@ -334,6 +342,8 @@ export async function run({
     const e = manifest.entries[c.artwork.file];
     let action = 'generate';
     if (e?.status === 'requested' && !force) action = 'blocked-unresolved-request';
+    // Production: a failed entry may already have been billed; never silently pay again on rerun.
+    else if (production && e?.status === 'failed' && !force) action = 'blocked-failed-needs-force';
     else if (e?.status === 'stored' && e.promptHash === ph && !force) {
       const body = await storage.get(e.path);
       action = body && sha256(body) === e.sha256 ? 'skip-verified' : 'repair-needs-force';
@@ -341,12 +351,23 @@ export async function run({
     }
     plan.push({ char: c, prompt, ph, action });
   }
-  const todo = plan.filter((p) => p.action === 'generate');
+  const allTodo = plan.filter((p) => p.action === 'generate');
+  if (production) {
+    if (!Number.isInteger(maxImages) || maxImages < 1 || maxImages > PRODUCTION_MAX_BATCH)
+      throw new Error(`production: batch size must be 1..${PRODUCTION_MAX_BATCH}`);
+    if (maxRetries !== 0)
+      throw new Error('production: retries must be 0 (no automatic repeat spend)');
+  }
+  // Bounded batch: only the first maxImages missing items are generated; a rerun continues with the rest.
+  const todo = production ? allTodo.slice(0, maxImages) : allTodo;
   const worst = todo.length * unitPriceUsd * (1 + maxRetries);
   const summary = {
     live,
     planned: plan.length,
     toGenerate: todo.length,
+    deferred: allTodo.length - todo.length,
+    actualUsdReported: 0,
+    stoppedEarly: false,
     worstCaseUsd: worst,
     generated: 0,
     failed: 0,
@@ -363,10 +384,22 @@ export async function run({
     };
 
   if (!(maxSpendUsd > 0)) throw new Error('live requires --max-spend-usd > 0');
-  if (maxSpendUsd > PILOT_MAX_USD)
-    throw new Error(`pilot cap: --max-spend-usd may not exceed ${PILOT_MAX_USD}`);
-  if (todo.length > PILOT_MAX_IMAGES)
-    throw new Error(`pilot cap: at most ${PILOT_MAX_IMAGES} images per live run`);
+  if (production) {
+    if (maxSpendUsd > PRODUCTION_SANITY_MAX_USD)
+      throw new Error(
+        `production: --max-spend-usd above sanity ceiling ${PRODUCTION_SANITY_MAX_USD}`,
+      );
+    const stored = Object.values(manifest.entries).filter((x) => x.status === 'stored').length;
+    if (stored < PRODUCTION_MIN_STORED)
+      throw new Error(
+        `production: carried manifest has ${stored} stored images, need >= ${PRODUCTION_MIN_STORED} (pilot incomplete or wrong manifest)`,
+      );
+  } else {
+    if (maxSpendUsd > PILOT_MAX_USD)
+      throw new Error(`pilot cap: --max-spend-usd may not exceed ${PILOT_MAX_USD}`);
+    if (todo.length > PILOT_MAX_IMAGES)
+      throw new Error(`pilot cap: at most ${PILOT_MAX_IMAGES} images per live run`);
+  }
   if (!(unitPriceUsd > 0)) throw new Error('live requires a verified unit price');
   if (manifest.spentUsdEstimated + todo.length * unitPriceUsd > maxSpendUsd)
     throw new Error(
@@ -381,6 +414,7 @@ export async function run({
       if (manifest.spentUsdEstimated + unitPriceUsd > maxSpendUsd) {
         log(`spend cap reached before ${file}`);
         saveManifest(manifestPath, manifest);
+        summary.stoppedEarly = true;
         return { summary, plan: [] };
       }
       manifest.spentUsdEstimated = round6(manifest.spentUsdEstimated + unitPriceUsd);
@@ -423,6 +457,12 @@ export async function run({
               }
             : undefined,
         };
+        const actual = rates ? usageCost(provider.lastUsage, rates) : undefined;
+        if (actual !== undefined) {
+          manifest.entries[file].usageCostUsd = actual;
+          manifest.spentUsdActualReported = round6((manifest.spentUsdActualReported ?? 0) + actual);
+          summary.actualUsdReported = round6(summary.actualUsdReported + actual);
+        }
         saveManifest(manifestPath, manifest);
         summary.generated++;
         break;
@@ -442,6 +482,11 @@ export async function run({
         summary.failed++;
         break;
       }
+    }
+    if (production && summary.failed > 0) {
+      // Stop on the first error: no further paid calls this run (artifact still uploaded by the workflow).
+      summary.stoppedEarly = true;
+      break;
     }
   }
   return { summary, plan: [] };

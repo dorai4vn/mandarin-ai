@@ -5,6 +5,8 @@
 //        --storage local|supabase (default local; supabase needs MNEMONIC_SUPABASE_URL/_SECRET_KEY/_BUCKET)
 //        --expect-manifest existing|none  (refuse to run unless a prior manifest exists / does not exist: stops a fresh
 //        manifest from silently resetting cumulative spend)   --run-id ID --commit SHA (recorded in manifest provenance)
+//        --production --batch-size N(1-200, default 25)  remaining-190 mode: needs >=10 stored in carried manifest, retries 0,
+//        stops on first error, failed entries need --force, spend ceiling sanity 10 (owner budget = --max-spend-usd)
 //        --max-spend-usd N   --max-retries N(0-3)   --out DIR (default .mnemonic-art)
 // Env (live only; never printed): MNEMONIC_IMAGE_API_KEY, MNEMONIC_IMAGE_MODEL,
 //        MNEMONIC_INPUT_USD_PER_M, MNEMONIC_OUTPUT_USD_PER_M, MNEMONIC_MAX_INPUT_TOKENS, MNEMONIC_MAX_OUTPUT_TOKENS,
@@ -45,6 +47,8 @@ const { values: a, positionals } = parseArgs({
     'expect-manifest': { type: 'string' },
     'run-id': { type: 'string' },
     commit: { type: 'string' },
+    production: { type: 'boolean' },
+    'batch-size': { type: 'string' },
     out: { type: 'string', default: '.mnemonic-art' },
     dataset: { type: 'string', default: 'apps/web/src/hanzi/beginner200.json' },
   },
@@ -61,6 +65,8 @@ if (a['expect-manifest'] !== undefined) {
   if (a['expect-manifest'] === 'none' && exists)
     throw new Error('manifest unexpectedly present: this must be a first run');
 }
+if (a.production && a['expect-manifest'] !== 'existing')
+  throw new Error('--production requires --expect-manifest existing (carried pilot manifest)');
 if (!['local', 'supabase'].includes(a.storage)) throw new Error('--storage must be local|supabase');
 if (a.storage === 'supabase' && a.mock) throw new Error('--mock never uses cloud storage');
 const storage =
@@ -144,7 +150,16 @@ const result = await run({
   force: !!a.force,
   maxSpendUsd: Number(a['max-spend-usd'] ?? 0),
   unitPriceUsd,
-  maxRetries: Number(a['max-retries'] ?? 2),
+  maxRetries: Number(a['max-retries'] ?? (a.production ? 0 : 2)),
+  production: !!a.production,
+  maxImages: Number(a['batch-size'] ?? 25),
+  rates:
+    live && !a.mock
+      ? {
+          inputUsdPerM: Number(process.env.MNEMONIC_INPUT_USD_PER_M),
+          outputUsdPerM: Number(process.env.MNEMONIC_OUTPUT_USD_PER_M),
+        }
+      : undefined,
   log: console.log,
 });
 if (live && (a['run-id'] || a.commit)) {

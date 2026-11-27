@@ -416,3 +416,103 @@ test('token cost bound: ceiling from owner-supplied rates; refuses when unbounde
   assert.equal(usageCost({ input_tokens: 1000, output_tokens: 1000 }, r), 0.035);
   assert.equal(usageCost(undefined, r), undefined);
 });
+
+// ---- Production (remaining-190) mode: synthetic fixtures, mock provider, no network ----
+const seedStored = async (t, d, n) => {
+  // pre-populate the carried "pilot" manifest by really generating n items
+  await run(base(t, { ...d, characters: d.characters.slice(0, n) }, { live: true }));
+};
+const prod = (t, d, extra = {}) =>
+  base(t, d, {
+    live: true,
+    production: true,
+    maxRetries: 0,
+    maxImages: 5,
+    maxSpendUsd: 5,
+    ...extra,
+  });
+
+test('production: refuses without >=10 stored pilot images in the carried manifest', async () => {
+  const t = setup();
+  await assert.rejects(run(prod(t, mk(5))), /carried manifest has 0 stored/);
+  assert.equal(t.calls(), 0);
+});
+test('production: retries must be 0, batch bounded, sanity ceiling', async () => {
+  const t = setup();
+  const d = mk(5);
+  await assert.rejects(run(prod(t, d, { maxRetries: 1 })), /retries must be 0/);
+  await assert.rejects(run(prod(t, d, { maxImages: 0 })), /batch size/);
+  await assert.rejects(run(prod(t, d, { maxImages: 201 })), /batch size/);
+  await assert.rejects(run(prod(t, d, { maxSpendUsd: 11 })), /sanity ceiling/);
+  assert.equal(t.calls(), 0);
+});
+const big = (n) => {
+  const d = mk(1);
+  d.characters = Array.from({ length: n }, (_, i) => ({
+    ...d.characters[0],
+    id: i + 1,
+    hanzi: String.fromCodePoint(0x4e00 + i),
+    artwork: { ...d.characters[0].artwork, file: `g${i + 1}.webp` },
+  }));
+  return d;
+};
+test('production: skips existing, bounded batch, resumes on rerun, no duplicate paid calls', async () => {
+  const t = setup();
+  const d = big(30);
+  await seedStored(t, d, 10);
+  assert.equal(t.calls(), 10);
+  const r1 = await run(prod(t, d, { maxImages: 8 }));
+  assert.equal(r1.summary.generated, 8);
+  assert.equal(r1.summary.deferred, 12);
+  assert.equal(t.calls(), 18);
+  const r2 = await run(prod(t, d, { maxImages: 100 }));
+  assert.equal(r2.summary.generated, 12);
+  const r3 = await run(prod(t, d));
+  assert.equal(r3.summary.generated, 0);
+  assert.equal(t.calls(), 30);
+  // cumulative spend carried across runs: 30 x 0.1
+  assert.ok(Math.abs(loadManifest(t.manifestPath).spentUsdEstimated - 3) < 1e-9);
+});
+test('production: cumulative spend cap includes carried pilot spend; stops before overspend', async () => {
+  const t = setup();
+  const d = big(30);
+  await seedStored(t, d, 10); // 1.0 spent
+  await assert.rejects(run(prod(t, d, { maxImages: 20, maxSpendUsd: 2 })), /spend guard/);
+  assert.equal(t.calls(), 10);
+});
+test('production: stops on first error, failed entry blocked on rerun (no duplicate paid call)', async () => {
+  const t = setup();
+  const d = big(30);
+  await seedStored(t, d, 10);
+  let n = 0;
+  t.provider.generate = async () => {
+    n++;
+    if (n === 3) throw Object.assign(new Error('boom'), { status: 500 });
+    return Buffer.from('raw');
+  };
+  const r = await run(prod(t, d, { maxImages: 10 }));
+  assert.equal(r.summary.generated, 2);
+  assert.equal(r.summary.failed, 1);
+  assert.equal(r.summary.stoppedEarly, true);
+  assert.equal(n, 3); // no further calls after the error
+  const r2 = await run(prod(t, d, { maxImages: 10 }));
+  assert.ok(r2.summary.blocked >= 1);
+  const failedFile = Object.keys(loadManifest(t.manifestPath).entries).find(
+    (k) => loadManifest(t.manifestPath).entries[k].status === 'failed',
+  );
+  assert.equal(loadManifest(t.manifestPath).entries[failedFile].attempts, 1); // never re-requested
+  const m = loadManifest(t.manifestPath);
+  assert.equal(Object.values(m.entries).filter((e) => e.status === 'failed').length, 1);
+});
+test('production: reports actual usage cost when provider returns usage', async () => {
+  const t = setup();
+  const d = big(12);
+  await seedStored(t, d, 10);
+  t.provider.generate = async function () {
+    t.provider.lastUsage = { input_tokens: 1000, output_tokens: 2000 };
+    return Buffer.from('raw');
+  };
+  const r = await run(prod(t, d, { rates: { inputUsdPerM: 5, outputUsdPerM: 30 } }));
+  assert.equal(r.summary.generated, 2);
+  assert.ok(Math.abs(r.summary.actualUsdReported - 2 * 0.065) < 1e-9);
+});
