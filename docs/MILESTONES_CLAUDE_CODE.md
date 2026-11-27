@@ -91,7 +91,9 @@ Device smoke on real phones/desktops is reported as **not verified** until the o
 4. Phát/tạm dừng/phát lại/Trước/Sau; điều hướng timeline bằng phím mũi tên/Home/End; `prefers-reduced-motion` tắt chuyển mờ.
 5. Mã hoạt ảnh + dữ liệu ở chunk riêng, chỉ tải khi chi tiết từ chứa chữ có lịch sử.
 6. Không đổi schema/auth/RLS/cấu hình cloud/API trả phí; test M3 giữ nguyên.
-**Không thuộc phạm vi:** thứ tự nét, nhận dạng chữ viết tay, mở rộng bộ chữ, M4.
+7. **Phạm vi bộ chữ (chủ dự án quyết định 2026-11-27, thay mục tiêu 1.000):** giới hạn **200 chữ giản thể người mới học** (200 chữ duy nhất, không phải 200 từ), ưu tiên dùng cá nhân. Đây là lựa chọn gốc, tạm thời — **không phải danh sách HSK chính thức**; không ghi cấp HSK cho từng chữ cho đến khi đối chiếu riêng với giáo trình chính thức (`H_DG_1110.pdf`, chinesetest.cn/HSK). Dataset: `apps/web/src/hanzi/beginner200.json` (nghĩa tiếng Việt, pinyin, từ ví dụ, nhóm, brief + tên file tranh) có test xác thực `beginner200.test.ts`; 10 chữ pilot giữ nguyên, 魚/鳥 là bí danh phồn thể của 鱼/鸟 (không tính riêng).
+8. **Tranh gợi nhớ:** cả 200 chữ cần tranh AI minh họa (chủ dự án duyệt) — hiện **0/200 đã có**, tất cả `pending-artwork`; không có ảnh giả, không duyệt tự động; không API trả phí nếu chưa được duyệt. Dạng lịch sử chỉ khi có nguồn/giấy phép đã xác minh, không bịa giai đoạn. Mở rộng cấp cao hơn chỉ sau khi hoàn thành app lõi; không có hạ tầng M3.6 (worker/queue/admin).
+**Không thuộc phạm vi:** thứ tự nét, nhận dạng chữ viết tay, mở rộng ngoài 200 chữ, M4.
 
 ## M4 — PDF import pipeline
 
