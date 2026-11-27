@@ -69,3 +69,20 @@ describe('visual mnemonic manifest (D3)', () => {
     expect(candidateSrc(MNEMONICS[0]!)).toBe('/mnemonic-candidates/shan-mountain.webp');
   });
 });
+
+describe('artwork integration manifest doc', () => {
+  it('lists every manifest asset with candidate and approved paths, and claims none approved', async () => {
+    const { readFileSync } = await import('node:fs');
+    const doc = readFileSync(
+      new URL('../../../../docs/VISUAL_MNEMONIC_INTEGRATION.md', import.meta.url),
+      'utf8',
+    );
+    for (const m of MNEMONICS) {
+      expect(doc).toContain(`| ${m.glyph} | \`${m.assetFile}\``);
+      expect(doc).toContain(`apps/web/public${candidateSrc(m)}`);
+      expect(doc).toContain(`apps/web/public/mnemonic/${m.assetFile}`);
+    }
+    expect(doc).toContain('ALL 10 PENDING');
+    expect(new Set(MNEMONICS.map((m) => m.assetFile)).size).toBe(MNEMONICS.length);
+  });
+});
