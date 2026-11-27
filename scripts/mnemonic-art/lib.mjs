@@ -23,13 +23,22 @@ export function loadDataset(path) {
   return data;
 }
 
+/**
+ * Prompt versions. 'v1' is FROZEN: it is byte-for-byte the prompt used for the owner-accepted pilot images, so the
+ * stored promptHash of those images stays valid (no accidental regeneration/spend). Any character without
+ * artwork.promptVersion === 'v1' gets the v2 prompt, which appends the thumbnail-legibility guidance.
+ */
+export const THUMBNAIL_GUIDANCE =
+  'Thumbnail legibility: the main subject must stay unmistakable when the image is shrunk to about 160 px wide: one dominant subject filling at least half of the frame height, a simple strong silhouette, high value contrast against a calmer, subordinate background, minimal clutter.';
 export function buildPrompt(char, meta) {
-  return [
+  const lines = [
     meta.artworkStyle,
     `Scene: ${char.artwork.brief}`,
     'Absolutely no text, letters, Chinese characters, logos or watermarks anywhere in the image.',
     'Landscape 4:3 composition, subject clearly readable, safe margins.',
-  ].join('\n');
+  ];
+  if (char.artwork.promptVersion !== 'v1') lines.push(THUMBNAIL_GUIDANCE);
+  return lines.join('\n');
 }
 export const promptHash = (prompt) => sha256(Buffer.from(prompt, 'utf8'));
 
@@ -327,6 +336,7 @@ export async function run({
   unitPriceUsd = 0,
   maxRetries = 2,
   production = false,
+  revise = false,
   maxImages = PILOT_MAX_IMAGES,
   rates,
   sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
@@ -334,6 +344,8 @@ export async function run({
 }) {
   if (!Number.isInteger(maxRetries) || maxRetries < 0 || maxRetries > MAX_RETRIES_CAP)
     throw new Error(`maxRetries must be 0..${MAX_RETRIES_CAP}`);
+  if (revise && production)
+    throw new Error('revise is not allowed in production mode: run QC revisions separately first');
   const manifest = loadManifest(manifestPath);
   const plan = [];
   for (const c of selection) {
@@ -348,8 +360,10 @@ export async function run({
       const body = await storage.get(e.path);
       action = body && sha256(body) === e.sha256 ? 'skip-verified' : 'repair-needs-force';
       if (action === 'repair-needs-force' && !force) action = 'blocked-file-mismatch';
-    }
-    plan.push({ char: c, prompt, ph, action });
+    } else if (e?.status === 'stored' && e.promptHash !== ph && !revise && !force)
+      // A changed prompt over an accepted image is a deliberate revision: never a silent paid overwrite.
+      action = 'blocked-revision-needs-flag';
+    plan.push({ char: c, prompt, ph, action, prev: e?.status === 'stored' ? e : undefined });
   }
   const allTodo = plan.filter((p) => p.action === 'generate');
   if (production) {
@@ -410,6 +424,28 @@ export async function run({
     const file = p.char.artwork.file;
     const path = `mnemonic/${file}`;
     let attempt = 0;
+    // Revision of an accepted image: keep the previous bytes + metadata (never lose an approved/rejected candidate).
+    let history = manifest.entries[file]?.history ?? [];
+    if (p.prev) {
+      const old = await storage.get(p.prev.path);
+      if (!old || sha256(old) !== p.prev.sha256)
+        throw new Error(
+          `revision of ${file}: previous stored file missing or checksum mismatch; refusing`,
+        );
+      const archive = `mnemonic/superseded/${p.prev.sha256.slice(0, 12)}-${file}`;
+      await storage.put(archive, old, 'image/webp');
+      history = [
+        ...history,
+        {
+          archivedAt: archive,
+          sha256: p.prev.sha256,
+          promptHash: p.prev.promptHash,
+          storedAt: p.prev.storedAt,
+          priceUsdEstimated: p.prev.priceUsdEstimated,
+          usageCostUsd: p.prev.usageCostUsd,
+        },
+      ];
+    }
     for (;;) {
       if (manifest.spentUsdEstimated + unitPriceUsd > maxSpendUsd) {
         log(`spend cap reached before ${file}`);
@@ -421,6 +457,7 @@ export async function run({
       summary.spentUsd = round6(summary.spentUsd + unitPriceUsd);
       manifest.entries[file] = {
         status: 'requested',
+        ...(history.length ? { history } : {}),
         hanzi: p.char.hanzi,
         promptHash: p.ph,
         attempts: attempt + 1,

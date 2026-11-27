@@ -11,7 +11,8 @@
     "contentOrigin": "Vietnamese meanings, example words and art briefs are original text written for this project. No third-party dictionary data copied.",
     "artworkStyle": "Premium editorial digital painting / gouache, 4:3 (1600x1200 webp), detailed natural textures, depth, soft directional lighting, coherent muted palette; no text or characters inside the artwork.",
     "artworkStatusNote": "All artwork pending. No image exists; the brief is a modern memory aid, never historical evidence.",
-    "historyNote": "No historical forms are claimed here; history lives in the sourced history manifest only."
+    "historyNote": "No historical forms are claimed here; history lives in the sourced history manifest only.",
+    "thumbnailGuidance": "Applied to every character not marked promptVersion v1 (the 8 owner-accepted pilot images keep the frozen v1 prompt so their hashes stay valid): dominant subject >= half of frame height, simple silhouette, strong value contrast, subordinate calm background, legible at ~160 px."
   },
   "characters": [
     {
@@ -401,7 +402,8 @@
       "artwork": {
         "file": "shan-mountain.webp",
         "brief": "Three layered mountain peaks in morning mist, the centre peak tallest, ridges receding in atmospheric perspective, pine foliage and rock strata in the foreground.",
-        "status": "pending-artwork"
+        "status": "pending-artwork",
+        "promptVersion": "v1"
       }
     },
     {
@@ -427,7 +429,8 @@
       "artwork": {
         "file": "shui-water.webp",
         "brief": "A mountain stream flowing down the centre with splashes arcing left and right, wet stones, light refracting through water, mossy banks.",
-        "status": "pending-artwork"
+        "status": "pending-artwork",
+        "promptVersion": "v1"
       }
     },
     {
@@ -453,7 +456,8 @@
       "artwork": {
         "file": "mu-tree.webp",
         "brief": "A single old tree seen whole: a straight trunk, branches spreading above, exposed roots below, bark texture and dappled light.",
-        "status": "pending-artwork"
+        "status": "pending-artwork",
+        "promptVersion": "v1"
       }
     },
     {
@@ -479,7 +483,8 @@
       "artwork": {
         "file": "huo-fire.webp",
         "brief": "A campfire with a tall central flame and sparks flying left and right, glowing embers, warm light falling on nearby stones in the dark.",
-        "status": "pending-artwork"
+        "status": "pending-artwork",
+        "promptVersion": "v1"
       }
     },
     {
@@ -505,7 +510,8 @@
       "artwork": {
         "file": "ri-sun.webp",
         "brief": "A low sun over a calm horizon, bold disc with a horizontal band of cloud across it, warm gradient sky, reflections on still water.",
-        "status": "pending-artwork"
+        "status": "pending-artwork",
+        "promptVersion": "v1"
       }
     },
     {
@@ -531,7 +537,8 @@
       "artwork": {
         "file": "yue-moon.webp",
         "brief": "A crescent moon in a night sky with two thin horizontal cloud streaks, cool silver light over a quiet landscape, fine stars.",
-        "status": "pending-artwork"
+        "status": "pending-artwork",
+        "promptVersion": "v1"
       }
     },
     {
@@ -556,8 +563,9 @@
       "pilot": true,
       "artwork": {
         "file": "yu-rain.webp",
-        "brief": "A heavy cloud canopy above with drops falling inside a window-like frame of light, wet glass, glistening street, soft reflections.",
-        "status": "pending-artwork"
+        "brief": "Steady rain made clearly visible: dense, long, bright diagonal streaks of falling rain across the whole frame, backlit against a dark slate-grey overcast sky, drops splashing and rippling on glistening wet stone paving in the foreground, a few wet bamboo leaves bending under the water; soft cool light, no lightning, no dramatic thunderstorm.",
+        "status": "pending-artwork",
+        "promptVersion": "v2"
       }
     },
     {
@@ -946,8 +954,9 @@
       "pilot": true,
       "artwork": {
         "file": "ren-person.webp",
-        "brief": "A lone figure seen from the side or behind, walking on two legs along a path, long shadow, strong silhouette in editorial composition.",
-        "status": "pending-artwork"
+        "brief": "One large, unmistakable human figure in profile striding on two legs in the foreground, filling about two thirds of the frame height, head, torso, arms and both legs clearly readable in a bold dark wool coat silhouette; a low golden backlight rims the figure, while a softly blurred misty lane with linen-pale walls and stone paving stays small and subordinate behind.",
+        "status": "pending-artwork",
+        "promptVersion": "v2"
       }
     },
     {
@@ -2326,7 +2335,8 @@
       "artwork": {
         "file": "yu-fish.webp",
         "brief": "A carp swimming in clear water: head, scaled body, and tail clearly visible, caustic light on the riverbed, detailed scales.",
-        "status": "pending-artwork"
+        "status": "pending-artwork",
+        "promptVersion": "v1"
       }
     },
     {
@@ -2353,7 +2363,8 @@
       "artwork": {
         "file": "niao-bird.webp",
         "brief": "A small bird perched on a branch showing head with beak, body, and legs, detailed feathers, soft backlight, blurred foliage.",
-        "status": "pending-artwork"
+        "status": "pending-artwork",
+        "promptVersion": "v1"
       }
     },
     {

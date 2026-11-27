@@ -304,3 +304,15 @@ test('verify/upload are conditional on setup + manifest existence; secret still 
   assert.equal(code.match(/secrets\./g).length, 1);
   assert.match(code, /--expect-manifest "\$expect"/);
 });
+
+test('revise input: only with first_run=false; passed as a flag array, never interpolated', () => {
+  assert.match(code, /IN_REVISE: \$\{\{ inputs\.revise \}\}/);
+  assert.equal(
+    runValidate({ IN_ONLY: '人,雨', IN_FIRST: 'false', PREV_RUN: '5', IN_REVISE: 'true' }).status,
+    0,
+  );
+  assert.notEqual(runValidate({ IN_REVISE: 'true' }).status, 0); // first_run=true + revise
+  const gen = code.slice(code.indexOf('- name: Generate'), code.indexOf('- name: Detect'));
+  assert.match(gen, /extra\+=\(--revise\)/);
+  assert.match(gen, /"\$\{extra\[@\]\}"/);
+});

@@ -23,7 +23,7 @@ test('production draft: dispatch only, read-only, owner-only, environment approv
   assert.doesNotMatch(code, /: write/);
   assert.match(code, /github\.actor == 'dorai4vn'/);
   assert.match(code, /github\.triggering_actor == 'dorai4vn'/);
-  assert.match(code, /environment: mnemonic-art-production/);
+  assert.match(code, /environment: mnemonic-art-pilot/);
   assert.match(code, /group: mnemonic-art-pilot/);
 });
 test('production draft: pinned actions, one secret use in Generate, exact SHA, hidden artifact on failure', () => {

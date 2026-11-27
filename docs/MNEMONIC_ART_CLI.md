@@ -148,8 +148,9 @@ CLI: `generate --all --production --live --expect-manifest existing --batch-size
 - Quality is fixed `low` in the workflow and the model must equal the model recorded in the carried manifest (checked offline before the secret step).
 
 Draft launcher: `docs/workflow-drafts/mnemonic-art-production.yml` (not in `.github/workflows`; owner copies it after approval). Same guards as the pilot launcher (dispatch only, owner-only, read-only
-token, pinned actions, exact reviewed SHA, secret in Generate only, hidden-file artifact uploaded also on failure) plus environment `mnemonic-art-production` (owner as required reviewer),
-shared concurrency group and artifact name with the pilot (one ledger chain; `previous_run_id` must be the latest run across both launchers), timeout 340 min. Never run live from CI of this repo.
+token, pinned actions, exact reviewed SHA, secret in Generate only, hidden-file artifact uploaded also on failure) plus the reused protected environment `mnemonic-art-pilot` (owner as required reviewer),
+shared concurrency group and artifact name with the pilot (one ledger chain; `previous_run_id` must be the latest run across both launchers), timeout 340 min.
+Environment: the production draft now REUSES `mnemonic-art-pilot` (see "QC revision" below for why that is safe and what differs). Never run live from CI of this repo.
 Tests: `pnpm test:mnemonic-art` (49 offline tests; the workflow has never run on GitHub).
 
 ## Node24 action pins (draft launchers)
@@ -164,3 +165,42 @@ Verified 2026-11-27 via `git ls-remote` + upstream `action.yml` `runs.using`:
 | actions/upload-artifact | b7c566a772e6b6bfb58ed0dc250532a479d7789f   | v6  | node24 (v5 is still node20)        |
 
 Application Node stays 22 (`node-version: 22`). Covered by `node24-pins.test.mjs`.
+
+## QC revision of 人 and 雨 (owner decision 2026-11-27)
+
+Owner accepted 8 pilot images (山 水 木 火 日 月 魚→鱼 鳥→鸟) and asked to revise **人** (large unmistakable human subject, scenery subordinate)
+and **雨** (clearly visible falling rain, not primarily a thunderstorm). No live call was made in this checkpoint.
+
+**Prompt versions (accepted hashes are not invalidated)**
+- `artwork.promptVersion: "v1"` = frozen legacy prompt, byte-identical to what produced the accepted images. Their `promptHash` values are pinned by a golden test
+  (`lib.test.mjs`), so a rerun skips them (`skip-verified`) and never re-bills them.
+- Everything else (人, 雨 and the 190 not yet generated) uses **v2** = v1 + one extra line, *thumbnail legibility*: main subject unmistakable at ~160 px wide, dominant (>= half of frame height),
+  simple silhouette, strong value contrast, calm subordinate background, minimal clutter. v2 applies to all remaining production images.
+- New briefs: 人 = one large profile figure striding in a dark wool coat, rim backlight, blurred subordinate lane; 雨 = dense long bright backlit rain streaks on dark slate sky, splashing on wet stone, no lightning.
+  Original text; no Hanzi inside the artwork; the pilot's 山 style/model/quality (`low`) are unchanged.
+
+**Explicit revise flag**: a stored image whose prompt hash changed is now `blocked-revision-needs-flag` (previously it silently regenerated = silent spend).
+`--revise` (pilot launcher input `revise=true`, needs `first_run=false`) regenerates only the *selected* changed entries, first copies the old bytes to
+`mnemonic/superseded/<sha12>-<file>` (inside the artifact) and records them in `entry.history` (sha256, promptHash, storedAt, estimated/usage cost), then stores the new image under the
+same filename. It refuses if the stored file is missing/tampered. `--revise` is rejected with `--production`. Cumulative `spentUsdEstimated` carries over; a rerun skips (no duplicate spend).
+Expected extra spend: 2 x ~$0.0195 estimated (ledger estimate, actual billing not independently verified); cumulative pilot cap stays <= $1.
+
+**Exact dispatch steps (owner; nothing runs until you do these)**
+1. Review the tip SHA of this branch (it contains `scripts/mnemonic-art` + new briefs). Copy `docs/workflow-drafts/mnemonic-art-pilot.yml` (updated: `revise` input) to `.github/workflows/mnemonic-art-pilot.yml` on `main` (a launcher-only commit; no app code, PR30 not merged).
+2. Actions -> "Mnemonic artwork pilot (manual)" -> Run workflow on `main` with: `reviewed_sha` = that tip SHA, `only` = `人,雨`, `quality` = `low`, `first_run` = false,
+   `previous_run_id` = **latest** run (46058598242 unless a later pilot run (e.g. the other 7 pilot images) exists - the run-chain check rejects any other id), `recover_run_id` blank, `revise` = **true**, `confirm_spend_cap` = 1.
+3. Approve the `mnemonic-art-pilot` environment after reading the shown inputs. Download artifact `mnemonic-art-pilot`: new `ren-person.webp`, `yu-rain.webp`, old versions under `store/mnemonic/superseded/`, manifest with `history`. QC visually.
+4. Only after QC passes and the final budget is approved: production dispatch (below). If a revision is rejected again, adjust the brief, commit, and repeat step 2 with the new SHA and the new latest run id.
+
+**Can the two revisions be combined with the final production dispatch? Not recommended; the tooling prevents it.** `--revise` is refused in `--production`, and production `plan --all` would show 人/雨 as
+`blocked-revision-needs-flag` until they are revised. Reason: QC of the revisions before bulk spend (owner preference), a failed/rejected revision would otherwise be mixed into a 190-image batch, and production
+stops on the first error. Order: revision run (2 images) -> QC -> production batches (25/50/100/200) with `previous_run_id` = latest.
+
+**Environment reuse (`mnemonic-art-pilot` for both launchers) - safe, with differences**
+- Safe because: both launchers are `workflow_dispatch` only, `main` + owner-only guard, read-only token, secret in the Generate step only, shared concurrency group and artifact chain; the same owner is the required reviewer, and the
+  API key / pricing vars are scoped once. Approval shows the dispatch inputs (batch size, cumulative budget) either way. No second environment to configure.
+- What differs / residual risk: the environment name no longer signals "bigger spend" at the approval prompt (read `Mnemonic artwork production (manual)` and `batch_size`/`confirm_budget_usd` there); the environment cannot enforce the $1 vs
+  <= $10 caps - those live in the workflow code at the reviewed SHA; a protection rule or environment secret change affects both launchers. If you prefer a visible separation, create `mnemonic-art-production` and revert that one line.
+
+**Remaining limitations**: workflow never executed on GitHub; golden hashes assume the briefs of the 8 accepted images are unchanged since the pilot run (verify with `plan --only 山,水,木,火,日,月,鱼,鸟` after carrying the manifest: all must say `skip-verified`);
+image quality of the revisions is unverified until the owner reviews them; the 188 reviewer warnings (no lighting/texture word in briefs) are unchanged and do not block.

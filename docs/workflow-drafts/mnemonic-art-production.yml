@@ -36,7 +36,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.actor == 'dorai4vn' && github.triggering_actor == 'dorai4vn'
     runs-on: ubuntu-latest
     timeout-minutes: 340
-    environment: mnemonic-art-production # required reviewer = owner; shows inputs before approval
+    environment: mnemonic-art-pilot # REUSED protected environment (same owner reviewer, same secret/vars scope); shows inputs before approval. See docs/MNEMONIC_ART_CLI.md
     env:
       IN_SHA: ${{ inputs.reviewed_sha }}
       IN_BATCH: ${{ inputs.batch_size }}

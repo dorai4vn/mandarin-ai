@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   run,
   select,
@@ -14,6 +15,7 @@ import {
   saveManifest,
   sha256,
   buildPrompt,
+  promptHash,
   openaiProvider,
   imageRequestBody,
   tokenCostBound,
@@ -101,7 +103,7 @@ test('explicit regenerate only with force, only selected', async () => {
   await run(base(t, d, { live: true, force: true, selection: [d.characters[1]] }));
   assert.equal(t.calls(), 4);
 });
-test('changed brief regenerates; tampered file is blocked until forced', async () => {
+test('tampered file is blocked until forced', async () => {
   const t = setup();
   const d = mk(1);
   await run(base(t, d, { live: true }));
@@ -515,4 +517,98 @@ test('production: reports actual usage cost when provider returns usage', async 
   const r = await run(prod(t, d, { rates: { inputUsdPerM: 5, outputUsdPerM: 30 } }));
   assert.equal(r.summary.generated, 2);
   assert.ok(Math.abs(r.summary.actualUsdReported - 2 * 0.065) < 1e-9);
+});
+
+// ---- QC revision (人 / 雨): frozen v1 prompt keeps accepted hashes; v2 adds thumbnail guidance; revise is explicit ----
+const GOLDEN_V1 = {
+  'shan-mountain.webp': 'd990f391d0e77600e19a91c5f263440c529e1efd23f4872edadf874426312f80',
+  'shui-water.webp': 'c1ab023d11d2f8de1d0562c6a3304a3bdcf82d6a3ca9ec7528bfd7f0d42f60de',
+  'mu-tree.webp': '4269139ad4c210f668be6844ea56347b5e1de5ff96d4698351d6b8487305163a',
+  'huo-fire.webp': '4772fca257dc227bcf7e4f5285d47f1497255602c0704a9f4ef4b89085c70fc1',
+  'ri-sun.webp': '0032cf30af9e63b9c80369cf49533fcc623a7f9de00cd31cef14c77cfcda8c20',
+  'yue-moon.webp': '31e9952bdcf6acae131fb2b33768a1cb19d974e61b7b048dec759ef088048c8e',
+  'yu-fish.webp': 'bcbf68fb11e75db5a3ace3dc716f8b59c572c6c05fcd6e71464c5e12b361aa67',
+  'niao-bird.webp': '51697d219a520c018fc6a9849f54e0b9ea7eb72c284180473737c8bfafcdbf25',
+};
+const real = JSON.parse(
+  readFileSync(
+    fileURLToPath(new URL('../../apps/web/src/hanzi/beginner200.json', import.meta.url)),
+    'utf8',
+  ),
+);
+test('the 8 accepted pilot images keep their exact prompt hashes (not invalidated)', () => {
+  for (const [file, h] of Object.entries(GOLDEN_V1)) {
+    const c = real.characters.find((x) => x.artwork.file === file);
+    assert.equal(c.artwork.promptVersion, 'v1', file);
+    assert.equal(promptHash(buildPrompt(c, real.meta)), h, file);
+    assert.doesNotMatch(buildPrompt(c, real.meta), /Thumbnail legibility/);
+  }
+});
+test('人/雨 are revised v2 prompts; the remaining 190 get thumbnail guidance; no Hanzi in briefs', () => {
+  const by = (h) => real.characters.find((c) => c.hanzi === h);
+  for (const h of ['人', '雨']) {
+    assert.equal(by(h).artwork.promptVersion, 'v2');
+    assert.match(buildPrompt(by(h), real.meta), /Thumbnail legibility/);
+  }
+  assert.match(by('人').artwork.brief, /large, unmistakable human figure/);
+  assert.match(by('雨').artwork.brief, /rain/i);
+  assert.match(by('雨').artwork.brief, /no lightning/);
+  const rest = real.characters.filter((c) => c.artwork.promptVersion !== 'v1');
+  assert.equal(rest.length, 192); // 190 not-yet-generated + 人 + 雨
+  for (const c of rest) assert.match(buildPrompt(c, real.meta), /Thumbnail legibility/);
+  assert.deepEqual(
+    reviewDataset(real).filter((i) => i.severity === 'error'),
+    [],
+  );
+});
+test('changed prompt over a stored image is blocked without --revise (no silent paid overwrite)', async () => {
+  const t = setup();
+  const d = mk(2);
+  await run(base(t, d, { live: true }));
+  d.characters[0].artwork.brief += ' Revised with a much larger subject.';
+  const r = await run(base(t, d, { live: true }));
+  assert.equal(r.summary.blocked, 1);
+  assert.equal(t.calls(), 2);
+});
+test('--revise regenerates only the selected changed entry, archives the old image, keeps cumulative spend', async () => {
+  const t = setup();
+  const d = mk(2);
+  await run(base(t, d, { live: true }));
+  const m1 = loadManifest(t.manifestPath);
+  const old = m1.entries['f1.webp'];
+  const untouched = JSON.stringify(m1.entries['f2.webp']);
+  d.characters[0].artwork.brief += ' Revised with a much larger subject.';
+  const r = await run(
+    base(t, d, { live: true, revise: true, selection: [d.characters[0]], maxSpendUsd: 1 }),
+  );
+  assert.equal(r.summary.generated, 1);
+  assert.equal(t.calls(), 3);
+  const m2 = loadManifest(t.manifestPath);
+  assert.equal(JSON.stringify(m2.entries['f2.webp']), untouched);
+  assert.equal(m2.spentUsdEstimated, 0.3);
+  const e = m2.entries['f1.webp'];
+  assert.equal(e.status, 'stored');
+  assert.notEqual(e.promptHash, old.promptHash);
+  assert.equal(e.history.length, 1);
+  assert.equal(e.history[0].sha256, old.sha256);
+  const archived = await t.storage.get(e.history[0].archivedAt);
+  assert.equal(sha256(archived), old.sha256);
+  assert.deepEqual(await verify({ manifestPath: t.manifestPath, storage: t.storage }), []);
+  // rerun: skip, no further spend
+  const r3 = await run(base(t, d, { live: true, revise: true }));
+  assert.equal(r3.summary.skipped, 2);
+  assert.equal(t.calls(), 3);
+});
+test('--revise refuses when the stored file is tampered, and is not allowed in production', async () => {
+  const t = setup();
+  const d = mk(1);
+  await run(base(t, d, { live: true }));
+  d.characters[0].artwork.brief += ' Revised.';
+  await t.storage.put('mnemonic/f1.webp', Buffer.from('tampered'));
+  await assert.rejects(run(base(t, d, { live: true, revise: true })), /checksum mismatch/);
+  assert.equal(t.calls(), 1);
+  await assert.rejects(
+    run(base(t, d, { live: true, revise: true, production: true, maxRetries: 0 })),
+    /not allowed in production/,
+  );
 });

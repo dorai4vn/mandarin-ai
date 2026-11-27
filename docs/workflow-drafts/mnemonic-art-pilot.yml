@@ -30,6 +30,10 @@ on:
       recover_run_id:
         description: 'ONLY 46057258136 (run that failed input validation before Generate). Needs first_run=true; proven via jobs API.'
         required: false
+      revise:
+        description: 'true ONLY to regenerate already-stored characters whose brief was revised in the reviewed SHA (QC revision, e.g. 人,雨). Needs first_run=false; old image is archived in the artifact.'
+        type: boolean
+        default: false
       confirm_spend_cap:
         description: 'Max USD for ALL pilot runs combined (<= 1)'
         default: '1'
@@ -59,6 +63,7 @@ jobs:
       IN_QUALITY: ${{ inputs.quality }}
       IN_CAP: ${{ inputs.confirm_spend_cap }}
       IN_FIRST: ${{ inputs.first_run }}
+      IN_REVISE: ${{ inputs.revise }}
       PREV_RUN: ${{ inputs.previous_run_id }}
       RECOVER_RUN: ${{ inputs.recover_run_id }}
       RECOVERABLE_RUN: '46057258136'
@@ -101,6 +106,8 @@ jobs:
           if rec and rec != env("RECOVERABLE_RUN"):
               fail("recover_run_id may only be the single hardcoded run " + env("RECOVERABLE_RUN"))
           first = env("IN_FIRST")
+          if env("IN_REVISE") == "true" and first == "true":
+              fail("revise=true needs an existing manifest: first_run must be false")
           if first == "true":
               if prev:
                   fail("first_run=true must not have previous_run_id")
@@ -181,7 +188,9 @@ jobs:
         run: |
           pnpm test:mnemonic-art
           pnpm mnemonic-art review
-          pnpm mnemonic-art plan --only "$IN_ONLY"
+          extra=()
+          if [ "$IN_REVISE" = "true" ]; then extra+=(--revise); fi
+          pnpm mnemonic-art plan --only "$IN_ONLY" "${extra[@]}"
 
       - name: Generate (the ONLY step with the secret; retries 0)
         env:
@@ -197,7 +206,9 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$IN_FIRST" = "true" ]; then expect=none; else expect=existing; fi
-          pnpm mnemonic-art generate --only "$IN_ONLY" --live --storage local --max-retries 0 \
+          extra=()
+          if [ "$IN_REVISE" = "true" ]; then extra+=(--revise); fi
+          pnpm mnemonic-art generate --only "$IN_ONLY" "${extra[@]}" --live --storage local --max-retries 0 \
             --max-spend-usd "$IN_CAP" --expect-manifest "$expect" --run-id "$THIS_RUN" --commit "$IN_SHA"
 
       - name: Detect candidate artifacts
