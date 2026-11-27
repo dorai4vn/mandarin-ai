@@ -79,6 +79,7 @@ test.describe('M3.5 visual mnemonic lab (D4)', () => {
             footerBottom: number;
             artTop: number;
             artH: number;
+            artW: number;
             clipped: boolean;
             cueLines: number;
           }[] = [];
