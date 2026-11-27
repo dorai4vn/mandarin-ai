@@ -72,6 +72,18 @@ export const MNEMONICS: readonly MnemonicEntry[] = [
     'A small bird perched on a branch showing head with beak, body, and legs, detailed feathers, soft backlight, blurred foliage.'),
 ];
 
+/** Only local, approved mnemonic assets are allowed: no protocol-relative, absolute-URL or traversal paths. */
+const APPROVED_SRC = /^\/mnemonic\/[a-z0-9-]+\.webp$/;
+export const isSafeMnemonicSrc = (src: string): boolean => APPROVED_SRC.test(src);
+
+/** Owner-review preview path: candidate images live apart from approved assets and are never evidence. */
+export const candidateSrc = (m: MnemonicEntry): string => `/mnemonic-candidates/${m.assetFile}`;
+
+export function mnemonicSummary(list: readonly MnemonicEntry[] = MNEMONICS) {
+  const approved = list.filter((m) => m.status === 'artwork-approved').length;
+  return { total: list.length, approved, pending: list.length - approved };
+}
+
 export function findMnemonic(glyph: string): MnemonicEntry | undefined {
   return MNEMONICS.find((m) => m.glyph === glyph || m.aliases.includes(glyph));
 }
@@ -90,7 +102,7 @@ export function validateMnemonics(list: readonly MnemonicEntry[] = MNEMONICS): s
     if (m.isHistoricalEvidence !== false) errs.push(`${m.glyph}: evidence flag`);
     if (m.image) {
       const i = m.image;
-      if (!i.src.startsWith('/') || !i.alt || !i.provenance || !i.licence || !i.author)
+      if (!isSafeMnemonicSrc(i.src) || !i.alt || !i.provenance || !i.licence || !i.author)
         errs.push(`${m.glyph}: image provenance`);
       if (!i.licenceUrl.startsWith('https://')) errs.push(`${m.glyph}: licenceUrl`);
       if (m.status !== 'artwork-approved') errs.push(`${m.glyph}: image without approval`);

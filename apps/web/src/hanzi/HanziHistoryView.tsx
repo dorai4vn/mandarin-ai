@@ -355,7 +355,9 @@ function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
         </div>
       )}
 
-      <MnemonicCard glyph={glyph} />
+      <div className="mt-3">
+        <MnemonicCard glyph={glyph} />
+      </div>
 
       <p className="mt-3 text-xs text-fg-muted" data-testid="hanzi-strokeorder-note">
         Thứ tự nét: chưa có trong bản này. {history.strokeOrder.note}

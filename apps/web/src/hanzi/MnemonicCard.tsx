@@ -1,43 +1,69 @@
 'use client';
 import { useState } from 'react';
 import { Badge } from '@/components/ui';
-import { findMnemonic } from './mnemonic';
+import { candidateSrc, findMnemonic, isSafeMnemonicSrc } from './mnemonic';
 
 /**
  * Modern memory aid (NOT historical evidence), kept visually and semantically separate from the
  * history timeline. Renders a 4:3 artwork slot; with no approved image it shows a text-only
  * fallback and says the artwork is pending. Never draws substitute clipart.
+ *
+ * `preview` (owner review only): tries the separate /mnemonic-candidates/ path and labels the result
+ * as an unapproved candidate. It never changes manifest status or grants approval.
  */
-export function MnemonicCard({ glyph }: { glyph: string }) {
+export function MnemonicCard({ glyph, preview = false }: { glyph: string; preview?: boolean }) {
   const m = findMnemonic(glyph);
-  const [broken, setBroken] = useState(false);
+  // Track the src that failed (not a boolean) so the state resets automatically on glyph/mode change.
+  const [brokenSrc, setBrokenSrc] = useState<string | null>(null);
   if (!m) return null;
-  const img = m.image && m.status === 'artwork-approved' && !broken ? m.image : null;
+
+  const approved =
+    m.image && m.status === 'artwork-approved' && isSafeMnemonicSrc(m.image.src) ? m.image : null;
+  const src = preview ? candidateSrc(m) : (approved?.src ?? null);
+  const failed = src !== null && brokenSrc === src;
+  const showImg = src !== null && !failed;
+  const alt = preview ? `Ảnh ứng viên chưa duyệt cho ${m.glyph}` : (approved?.alt ?? '');
+
+  let slotText = 'Ảnh minh họa đang chờ bổ sung.';
+  if (failed)
+    slotText = preview
+      ? 'Chưa có file ảnh ứng viên.'
+      : 'Không tải được ảnh minh họa (lỗi tải, không phải thiếu nguồn).';
+
+  let provenance: string;
+  if (preview) provenance = 'ỨNG VIÊN — chưa được chủ dự án duyệt; chưa có nguồn/giấy phép được xác minh.';
+  else if (approved && !failed)
+    provenance = `Tác giả: ${approved.author} · ${approved.licence} · ${approved.provenance}`;
+  else if (approved) provenance = `Nguồn: ${approved.author} · ${approved.licence} · ${approved.provenance}`;
+  else provenance = 'Chưa có tác phẩm được duyệt; chưa có nguồn/giấy phép ảnh.';
+
   return (
     <aside
-      className="mt-3 overflow-hidden rounded-control border border-line text-sm"
+      className="overflow-hidden rounded-control border border-line text-sm"
       data-testid="hanzi-mnemonic"
+      data-art-state={preview ? 'preview' : approved ? (failed ? 'load-failed' : 'approved') : 'pending'}
       aria-label="Minh họa gợi nhớ"
     >
       <div className="aspect-[4/3] w-full bg-surface-muted" data-testid="mnemonic-art-slot">
-        {img ? (
+        {showImg ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={img.src}
-            alt={img.alt}
-            width={img.width}
-            height={img.height}
+            key={src}
+            src={src}
+            alt={alt}
+            width={1600}
+            height={1200}
             loading="lazy"
             decoding="async"
             className="h-full w-full object-cover"
-            onError={() => setBroken(true)}
+            onError={() => setBrokenSrc(src)}
           />
         ) : (
           <p
             className="flex h-full items-center justify-center p-4 text-center text-fg-muted"
             data-testid="mnemonic-art-pending"
           >
-            {broken ? 'Không tải được ảnh minh họa.' : 'Ảnh minh họa đang chờ bổ sung.'}
+            {slotText}
           </p>
         )}
       </div>
@@ -47,9 +73,7 @@ export function MnemonicCard({ glyph }: { glyph: string }) {
           {m.cueVi}
         </p>
         <p className="mt-1 text-xs text-fg-muted" data-testid="mnemonic-provenance">
-          {img
-            ? `Tác giả: ${img.author} · ${img.licence} · ${img.provenance}`
-            : 'Chưa có tác phẩm được duyệt; chưa có nguồn/giấy phép ảnh.'}
+          {provenance}
         </p>
       </div>
     </aside>

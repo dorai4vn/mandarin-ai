@@ -19,3 +19,9 @@ Ngày: 2026-11-26 · Nhánh `claude/issue-27-20261126-1747` · PR nháp, **khôn
 - Hình là bản vẽ lại của Commons, chưa đối chiếu nguyên bản; nhãn PD chưa có tư vấn pháp lý. Mọi giai đoạn `pending_owner_review`.
 - Chỉ 山. Thứ tự nét chưa làm (khoảng trống được ghi trong UI và tài liệu). Không có nhận dạng viết tay, không migration/schema/auth/RLS/cloud/API trả phí, không bắt đầu M4.
 - Chưa có dữ liệu để kiểm trên production đã đăng nhập.
+
+## D4 — Visual Mnemonic QC lab
+- `/lab/visual-mnemonic`: all 10 cards, independent of history data; summary shows 10/10 pending, 0 approved, no owner approval yet.
+- Preview mechanism: toggle "ảnh ứng viên" loads `/mnemonic-candidates/<assetFile>` (separate from approved `/mnemonic/`), labelled unapproved; never changes manifest status. No candidate files exist.
+- D3 fixes: image src restricted to `/mnemonic/<name>.webp`; broken-image state keyed by src (resets on glyph change); failed load vs missing provenance have distinct messages.
+- Not run locally: Playwright E2E (browsers not installed in this runner).
