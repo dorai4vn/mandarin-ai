@@ -14,6 +14,10 @@
     "./server": {
       "types": "./dist/server.d.ts",
       "default": "./dist/server.js"
+    },
+    "./artwork": {
+      "types": "./dist/artwork/index.d.ts",
+      "default": "./dist/artwork/index.js"
     }
   },
   "files": [

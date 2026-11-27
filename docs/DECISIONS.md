@@ -385,3 +385,8 @@ Quy ước:
   - Tìm kiếm chạy **cục bộ** (Hán tự, pinyin có/không dấu/số, tiếng Việt không dấu) trên danh sách cá nhân và snapshot.
 - **Hoãn (thêm khi có nhu cầu thật):** `course_versions`, `content_admins`, bảng `tags`/`topics` riêng, khóa học riêng tư của người dùng (M4, PDF import), xem lại từ trùng ở phía server.
 - **Hệ quả:** Lịch sử học (M3) cũng có thể dùng mô hình log thao tác này. Nếu sau này cần truy vấn phía server (thống kê, nhiều người dùng), có thể dựng bảng projection từ `sync_operations` mà không đổi app.
+
+## D-044 — M3.6 artwork pipeline: mock-first, bằng chứng lịch sử tách biệt
+- **Ngày:** 2026-11-27 · **Trạng thái:** Đề xuất (chủ dự án duyệt hướng mock-first ở issue #31; xem lại trong PR)
+- **Lựa chọn:** Hợp đồng provider/queue/storage + worker mock xác định trong `@mandarin/adapters/artwork`; không API thật, migration, cấu hình cloud hay secret. Ảnh mock luôn gắn nhãn placeholder, không bao giờ là minh họa thật hoặc bằng chứng lịch sử.
+- **Chi tiết & khoảng trống:** `docs/ARTWORK_PIPELINE.md`.
