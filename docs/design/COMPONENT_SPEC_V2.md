@@ -258,6 +258,7 @@ Quy tắc cho mọi lưới thẻ có nội dung dài ngắn khác nhau (ví d�
 Đã đạt: toàn bộ token có biến thể `[data-theme=dark]` + `prefers-color-scheme`; quét mã nguồn `app/` và `src/` (trừ tokens) không còn màu hex/`bg-white`/`text-gray` cứng — ngoại lệ hợp lệ: `theme-color` meta và màu dự phòng của `HandwritingCanvas`; `ui6-dark.spec.ts` đã kiểm axe tương phản AA và không tràn ngang trên các màn hình thật.
 
 Chưa đạt / còn lại (chưa sửa trong checkpoint này, không tuyên bố đã đủ):
+
 1. Bộ chọn giao diện chỉ có ở Hồ sơ và lab mnemonic; chưa có điều khiển trong AppShell (header/menu).
 2. Chưa chạy E2E hai theme cho từng route (login, dictionary, practice, history, dialogs, menu, loading/empty/error) — hiện chỉ các màn hình trong `ui6-dark.spec.ts` + lab mnemonic.
 3. Chưa kiểm contrast AA tự động cho `/lab/*` và trang lịch sử chữ Hán ở theme tối.
