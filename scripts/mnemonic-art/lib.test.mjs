@@ -23,6 +23,7 @@ import {
   supabaseStorage,
   sharpOptimizer,
   isWebp,
+  isActive,
   IMAGE_WIDTH,
   IMAGE_HEIGHT,
 } from './lib.mjs';
@@ -544,7 +545,7 @@ test('the 8 accepted pilot images keep their exact prompt hashes (not invalidate
     assert.doesNotMatch(buildPrompt(c, real.meta), /Thumbnail legibility/);
   }
 });
-test('人/雨 are revised v2 prompts; the remaining 190 get thumbnail guidance; no Hanzi in briefs', () => {
+test('人/雨 are revised v2 prompts; every non-frozen prompt gets thumbnail guidance; no Hanzi in briefs', () => {
   const by = (h) => real.characters.find((c) => c.hanzi === h);
   for (const h of ['人', '雨']) {
     assert.equal(by(h).artwork.promptVersion, 'v2');
@@ -554,7 +555,7 @@ test('人/雨 are revised v2 prompts; the remaining 190 get thumbnail guidance; 
   assert.match(by('雨').artwork.brief, /rain/i);
   assert.match(by('雨').artwork.brief, /no lightning/);
   const rest = real.characters.filter((c) => c.artwork.promptVersion !== 'v1');
-  assert.equal(rest.length, 192); // 190 not-yet-generated + 人 + 雨
+  assert.equal(rest.length, 278); // 276 not-yet-generated (240 active new + 36 archive never generated) + 人 + 雨
   for (const c of rest) assert.match(buildPrompt(c, real.meta), /Thumbnail legibility/);
   assert.deepEqual(
     reviewDataset(real).filter((i) => i.severity === 'error'),
@@ -611,4 +612,140 @@ test('--revise refuses when the stored file is tampered, and is not allowed in p
     run(base(t, d, { live: true, revise: true, production: true, maxRetries: 0 })),
     /not allowed in production/,
   );
+});
+
+// ---- Scope migration: 246 active (syllabus L1) + 40 archive; carried ledger of the 10 retained images ----
+const ACTIVE_OLD = ['水', '火', '日', '月', '人', '雨']; // retained pilot images that are inside the Level 1 list
+const ARCHIVE_OLD = ['山', '木', '鱼', '鸟']; // retained pilot images outside it
+const by = (h) => real.characters.find((c) => c.hanzi === h);
+/** Synthetic carried manifest for the 10 retained files (bytes are fake fixtures, NOT artwork). */
+const carried = async (t, { price = 0.0195 } = {}) => {
+  const m = { version: 1, spentUsdEstimated: 0, entries: {} };
+  for (const h of [...ACTIVE_OLD, ...ARCHIVE_OLD]) {
+    const c = by(h);
+    const body = Buffer.concat([Buffer.from('RIFF....WEBP'), Buffer.from(`fixture-${h}`)]);
+    await t.storage.put(`mnemonic/${c.artwork.file}`, body);
+    m.entries[c.artwork.file] = {
+      status: 'stored',
+      hanzi: h,
+      path: `mnemonic/${c.artwork.file}`,
+      sha256: sha256(body),
+      promptHash: promptHash(buildPrompt(c, real.meta)),
+      priceUsdEstimated: price,
+      ...(h === '人' || h === '雨'
+        ? { history: [{ archivedAt: 'x', sha256: 'a'.repeat(64), priceUsdEstimated: price }] }
+        : {}),
+    };
+    m.spentUsdEstimated =
+      Math.round((m.spentUsdEstimated + price * (c.artwork.promptVersion === 'v2' ? 2 : 1)) * 1e6) /
+      1e6;
+  }
+  saveManifest(t.manifestPath, m);
+  return m;
+};
+const realProd = (t, extra = {}) =>
+  base(t, real, {
+    selection: select(real, { all: true }),
+    live: true,
+    production: true,
+    maxRetries: 0,
+    maxImages: 200,
+    maxSpendUsd: 6,
+    unitPriceUsd: 0.0195,
+    ...extra,
+  });
+
+test('dataset migration: --all selects exactly the 246 active; archive only by explicit selection', () => {
+  const all = select(real, { all: true });
+  assert.equal(real.characters.length, 286);
+  assert.equal(all.length, 246);
+  assert.ok(all.every(isActive));
+  assert.equal(real.characters.filter((c) => !isActive(c)).length, 40);
+  for (const h of ARCHIVE_OLD) assert.ok(!all.includes(by(h)), h);
+  for (const h of ACTIVE_OLD) assert.ok(all.includes(by(h)), h);
+  assert.equal(select(real, { only: '山' })[0].set, 'extension'); // explicit only
+  // stable ids and frozen/revised prompt hashes survive the migration
+  assert.deepEqual(
+    real.characters.map((c) => c.id),
+    Array.from({ length: 286 }, (_, i) => i + 1),
+  );
+  for (const [file, h] of Object.entries(GOLDEN_V1))
+    assert.equal(
+      promptHash(
+        buildPrompt(
+          real.characters.find((c) => c.artwork.file === file),
+          real.meta,
+        ),
+      ),
+      h,
+    );
+  assert.deepEqual(
+    reviewDataset(real).filter((i) => i.severity === 'error'),
+    [],
+  );
+  assert.equal(new Set(real.characters.map((c) => c.artwork.file)).size, 286);
+});
+test('production dry-run on real dataset with verified carried ledger plans exactly 240 new images', async () => {
+  const t = setup();
+  await carried(t);
+  const r = await run(realProd(t, { live: false }));
+  assert.equal(r.summary.skipped, 6); // 水火日月人雨 retained
+  assert.equal(r.summary.toGenerate + r.summary.deferred, 240);
+  assert.equal(r.summary.blocked, 0);
+  assert.equal(t.calls(), 0);
+});
+test('production live (mock provider): only new active images are generated, carried spend/entries preserved', async () => {
+  const t = setup();
+  const before = await carried(t);
+  const r = await run(realProd(t, { maxImages: 3 }));
+  assert.equal(r.summary.generated, 3);
+  assert.equal(t.calls(), 3);
+  const after = loadManifest(t.manifestPath);
+  assert.ok(Math.abs(after.spentUsdEstimated - (before.spentUsdEstimated + 3 * 0.0195)) < 1e-9);
+  for (const [f, e] of Object.entries(before.entries)) assert.deepEqual(after.entries[f], e, f);
+  const fresh = Object.keys(after.entries).filter((f) => !before.entries[f]);
+  assert.equal(fresh.length, 3);
+  for (const f of fresh) assert.ok(isActive(real.characters.find((c) => c.artwork.file === f)));
+});
+test('production: archive selection is rejected; fail-closed on missing/tampered ledger', async () => {
+  const t = setup();
+  await carried(t);
+  await assert.rejects(
+    run(realProd(t, { selection: [by('山')] })),
+    /archive records are never generated/,
+  );
+  assert.equal(t.calls(), 0);
+  const tamper = async (mutate, re) => {
+    const u = setup();
+    const m = await carried(u);
+    await mutate(m, u);
+    saveManifest(u.manifestPath, m);
+    await assert.rejects(run(realProd(u)), re);
+    assert.equal(u.calls(), 0);
+  };
+  const f = (h) => by(h).artwork.file;
+  await tamper((m) => delete m.entries[f('山')], /山|shan-mountain.*not stored/);
+  await tamper((m) => (m.entries[f('木')].status = 'failed'), /mu-tree.*not stored/);
+  await tamper((m) => (m.spentUsdEstimated = 0.01), /lower than .*tampered ledger/);
+  await tamper((m) => delete m.entries[f('人')].history, /prior requests/);
+  await tamper((m) => (m.entries[f('水')].promptHash = 'b'.repeat(64)), /promptHash differs/);
+  await tamper((m) => (m.entries['zzz.webp'] = { status: 'stored' }), /orphan/);
+  await tamper((m) => (m.entries[f('火')].sha256 = 'c'.repeat(64)), /checksum mismatch/);
+  await tamper(
+    async (m, u) => await u.storage.put(`mnemonic/${f('日')}`, Buffer.from('changed')),
+    /checksum mismatch/,
+  );
+  await tamper((m) => (m.entries['new.webp'] = { status: 'requested' }), /orphan/);
+  // missing ledger entirely
+  const u = setup();
+  await assert.rejects(run(realProd(u)), /carried ledger rejected/);
+  assert.equal(u.calls(), 0);
+});
+test('production sanity ceiling is the owner-approved $6 cumulative estimate; spend guard counts carried spend', async () => {
+  const t = setup();
+  await carried(t);
+  await assert.rejects(run(realProd(t, { maxSpendUsd: 6.5 })), /sanity ceiling/);
+  // carried ~0.2145 + 240 x 0.0195 = 4.89 < 6 is fine; a $1 cap must refuse up-front
+  await assert.rejects(run(realProd(t, { maxSpendUsd: 1 })), /spend guard/);
+  assert.equal(t.calls(), 0);
 });

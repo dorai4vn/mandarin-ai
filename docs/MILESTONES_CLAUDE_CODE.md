@@ -91,9 +91,9 @@ Device smoke on real phones/desktops is reported as **not verified** until the o
 4. Phát/tạm dừng/phát lại/Trước/Sau; điều hướng timeline bằng phím mũi tên/Home/End; `prefers-reduced-motion` tắt chuyển mờ.
 5. Mã hoạt ảnh + dữ liệu ở chunk riêng, chỉ tải khi chi tiết từ chứa chữ có lịch sử.
 6. Không đổi schema/auth/RLS/cấu hình cloud/API trả phí; test M3 giữ nguyên.
-7. **Phạm vi bộ chữ (chủ dự án quyết định 2026-11-27, thay mục tiêu 1.000):** giới hạn **200 chữ giản thể người mới học** (200 chữ duy nhất, không phải 200 từ), ưu tiên dùng cá nhân. Đây là lựa chọn gốc, tạm thời — **không phải danh sách HSK chính thức**; không ghi cấp HSK cho từng chữ cho đến khi đối chiếu riêng với giáo trình chính thức (`H_DG_1110.pdf`, chinesetest.cn/HSK). Dataset: `apps/web/src/hanzi/beginner200.json` (nghĩa tiếng Việt, pinyin, từ ví dụ, nhóm, brief + tên file tranh) có test xác thực `beginner200.test.ts`; 10 chữ pilot giữ nguyên, 魚/鳥 là bí danh phồn thể của 鱼/鸟 (không tính riêng).
-8. **Tranh gợi nhớ:** cả 200 chữ cần tranh AI minh họa (chủ dự án duyệt) — hiện **0/200 đã có**, tất cả `pending-artwork`; không có ảnh giả, không duyệt tự động; không API trả phí nếu chưa được duyệt. Dạng lịch sử chỉ khi có nguồn/giấy phép đã xác minh, không bịa giai đoạn. Mở rộng cấp cao hơn chỉ sau khi hoàn thành app lõi; không có hạ tầng M3.6 (worker/queue/admin).
-**Không thuộc phạm vi:** thứ tự nét, nhận dạng chữ viết tay, mở rộng ngoài 200 chữ, M4.
+7. **Phạm vi bộ chữ (chủ dự án quyết định 2026-11-27, thay quyết định 200 chữ):** tập **active = 246 chữ nhận đọc HSK 3.0 cấp 1** (thứ tự nguồn `sourceOrder`, nguồn `H_DG_1110.pdf` tr. in 353–354, bản chép do chủ dự án cung cấp — chưa được tự tải/đối chiếu lại PDF) + **40 chữ lưu trữ** (`set: extension`, không gán cấp HSK) từ lựa chọn trước. Tổng 286 bản ghi, id ổn định. Dataset `apps/web/src/hanzi/beginner200.json`, test `beginner200.test.ts`; 魚/鳥 là bí danh phồn thể của 鱼/鸟.
+8. **Tranh gợi nhớ:** 246 chữ active cần tranh AI minh họa (chủ dự án duyệt); 10 ảnh pilot giữ lại (6 active + 4 lưu trữ) → còn **240** ảnh mới, ngân sách ước tính tích lũy tối đa $6 (không phải giới hạn của nhà cung cấp). Trong repo mọi mục vẫn `pending-artwork`; không ảnh giả, không duyệt tự động. Dạng lịch sử chỉ khi có nguồn/giấy phép đã xác minh. Mở rộng cấp cao hơn chỉ sau khi hoàn thành app lõi; không có hạ tầng M3.6.
+**Không thuộc phạm vi:** thứ tự nét, nhận dạng chữ viết tay, mở rộng ngoài 246 chữ cấp 1 (+40 lưu trữ), M4.
 
 ## M4 — PDF import pipeline
 

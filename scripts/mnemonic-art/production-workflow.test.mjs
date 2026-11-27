@@ -127,5 +127,5 @@ test('CLI: production mock run refuses a manifest without the 10 stored pilot im
     out,
   ]);
   assert.notEqual(r.status, 0);
-  assert.match(r.stderr, /carried manifest has 1 stored/);
+  assert.match(r.stderr, /carried ledger rejected \(fail closed\).*not stored in carried manifest/);
 });

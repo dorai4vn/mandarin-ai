@@ -1,10 +1,12 @@
 /**
- * Beginner-200 content dataset (M3.5, owner decision 2026-11-27): 200 unique simplified characters,
- * personal-use-first. Provisional original selection, NOT the official HSK list. Artwork is pending
- * for every entry; briefs are modern memory aids and never historical evidence.
+ * M3.5 Hanzi dataset (owner scope migration 2026-11-27): 246 ACTIVE characters = HSK 3.0 Level 1 recognition list
+ * (set 'syllabus-l1', exact source order in `sourceOrder`) + 40 ARCHIVE records (set 'extension') kept from the earlier
+ * original selection (no level claimed). File name is historical (beginner200.json); record ids are stable.
+ * Briefs are modern memory aids and never historical evidence.
  */
 import raw from './beginner200.json';
 import { MNEMONICS } from './mnemonic';
+import { SYLLABUS_L1, SYLLABUS_L1_COUNT, EXTENSION_COUNT } from './syllabusL1';
 
 export type BeginnerCategory =
   | 'number'
@@ -56,6 +58,10 @@ export interface BeginnerChar {
   mnemonicKind: 'concrete' | 'contextual';
   examples: BeginnerExample[];
   pilot: boolean;
+  /** 'syllabus-l1' = active (in the official Level 1 recognition list); 'extension' = archive, not in that list. */
+  set: 'syllabus-l1' | 'extension';
+  /** 1..246 position in the source list; only for set 'syllabus-l1'. */
+  sourceOrder?: number;
   traditionalAlias?: string;
   artwork: { file: string; brief: string; status: 'pending-artwork' | 'artwork-approved' };
 }
@@ -68,11 +74,16 @@ export interface BeginnerDataset {
   characters: BeginnerChar[];
 }
 
-export const BEGINNER_TARGET = 200;
+export const BEGINNER_TARGET = SYLLABUS_L1_COUNT + EXTENSION_COUNT;
 export const BEGINNER: BeginnerDataset = raw as unknown as BeginnerDataset;
 
 const HAN = /^\p{Script=Han}$/u;
 const PINYIN = /^[a-zA-Zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜüńňǹḿɡɑŉəɛŋ' ]+$/u;
+
+export const activeChars = (d: BeginnerDataset = BEGINNER) =>
+  d.characters.filter((c) => c.set === 'syllabus-l1');
+export const archiveChars = (d: BeginnerDataset = BEGINNER) =>
+  d.characters.filter((c) => c.set === 'extension');
 
 export function beginnerSummary(d: BeginnerDataset = BEGINNER) {
   const byCategory: Record<string, number> = {};
@@ -80,6 +91,8 @@ export function beginnerSummary(d: BeginnerDataset = BEGINNER) {
   const approved = d.characters.filter((c) => c.artwork.status === 'artwork-approved').length;
   return {
     total: d.characters.length,
+    active: activeChars(d).length,
+    archive: archiveChars(d).length,
     target: BEGINNER_TARGET,
     pilot: d.characters.filter((c) => c.pilot).length,
     artworkApproved: approved,
@@ -97,10 +110,26 @@ export function validateBeginner(d: BeginnerDataset = BEGINNER): string[] {
   if (d.characters.length !== BEGINNER_TARGET)
     errs.push(`count ${d.characters.length} != ${BEGINNER_TARGET}`);
   if (/\bHSK\s*[1-9]\b/i.test(JSON.stringify(d.characters)))
-    errs.push('unverified HSK level claim');
+    errs.push('per-character HSK level claim (membership is the set field only)');
+  const active = activeChars(d);
+  if (active.length !== SYLLABUS_L1_COUNT)
+    errs.push(`active ${active.length} != ${SYLLABUS_L1_COUNT}`);
+  if (archiveChars(d).length !== EXTENSION_COUNT)
+    errs.push(`archive ${archiveChars(d).length} != ${EXTENSION_COUNT}`);
+  const bySource = [...active].sort((a, b) => (a.sourceOrder ?? 0) - (b.sourceOrder ?? 0));
+  if (bySource.map((c) => c.hanzi).join('') !== SYLLABUS_L1)
+    errs.push('active set/order differs from the Level 1 source list');
+  bySource.forEach((c, i) => {
+    if (c.sourceOrder !== i + 1) errs.push(`${c.hanzi}: sourceOrder`);
+  });
   d.characters.forEach((c, i) => {
     const k = `${c.hanzi}(#${c.id})`;
     if (c.id !== i + 1 || ids.has(c.id)) errs.push(`${k}: id`);
+    if (c.set !== 'syllabus-l1' && c.set !== 'extension') errs.push(`${k}: set`);
+    if (c.set === 'extension' && c.sourceOrder !== undefined)
+      errs.push(`${k}: archive record must not carry a source order`);
+    if (SYLLABUS_L1.includes(c.hanzi) !== (c.set === 'syllabus-l1'))
+      errs.push(`${k}: set disagrees with the Level 1 list`);
     ids.add(c.id);
     if (!HAN.test(c.hanzi)) errs.push(`${k}: hanzi must be exactly one Han character`);
     if (hanzi.has(c.hanzi)) errs.push(`${k}: duplicate hanzi`);

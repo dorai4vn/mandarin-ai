@@ -134,7 +134,18 @@ Not verified on GitHub: the workflow has still never completed a real dispatch; 
 
 No real API call has been made.
 
-## Production mode for the remaining ~190 images (DRAFT, no live calls made)
+## Scope migration (2026-11-27): production = the 246 active syllabus-L1 characters
+
+- `--all` selects only **active** records (`set: syllabus-l1`, 246). Archive records (`set: extension`, 40) are never part of production and `--production` rejects any archive selection.
+- Retained images: 10 (`meta.retainedPilot.files`): 水火日月人雨 (active) + 山木鱼鸟 (archive). New images needed: 246 - 6 = **240**.
+- **Carried-ledger guard** (`verifyCarriedLedger`, runs for production incl. dry-run, fails closed, no network): all 10 retained entries must be `stored`, checksum-valid in storage, with `promptHash` equal to the dataset's current prompt
+  (v1 frozen for 山水木火日月鱼鸟; v2 for 人 and 雨, unchanged); no `requested`/`failed` entries; no orphan entries; at least 12 prior requests (stored + archived revisions); and `spentUsdEstimated` not lower than the sum of
+  prices the entries themselves prove. A missing or tampered manifest stops the run before any call. The manifest format is unchanged (keyed by file name), so no data migration exists to get wrong: spend and entries carry over byte-for-byte (tested).
+- Budget: sanity ceiling lowered to **$6 cumulative ESTIMATED** (owner-approved). It is a typo guard and ledger bound, **not** a provider-enforced cap; set a provider-side project limit.
+- Not verified here: the actual artifact of run 46063520659 and actual provider billing (tests use synthetic fixtures only). The first dispatch will verify the real artifact through this guard.
+- Minimal owner steps: (1) review/merge the draft; (2) copy the production launcher draft per its header; (3) dispatch with `previous_run_id` = latest run, `first_run=false`; (4) first run a `plan --all --production` dry-run (no spend) and expect `toGenerate+deferred = 240`.
+
+## Production mode for the remaining images (DRAFT, no live calls made)
 
 Prerequisites: owner has QC'd the nine-image pilot and given a **separate final budget approval**. Pilot #3 stays on the pilot launcher with `previous_run_id=46058598242`.
 
@@ -142,7 +153,7 @@ CLI: `generate --all --production --live --expect-manifest existing --batch-size
 - Requires the carried manifest with >= 10 stored images (the pilot); verified entries are skipped (same prompt hash + checksum), so reruns never repeat paid calls.
 - Serial, **retries forced to 0**, batch of at most `N` (1-200) new images per run; `deferred` in the summary = still missing, continue by re-dispatching with the latest run id.
 - **Stops on the first error**; the failed entry (possibly billed) and any `requested` entry are `blocked` on rerun until the owner uses `--force --only X`.
-- Budget `B` is cumulative across all runs (carried `spentUsdEstimated`) and is checked before every call. `B <= 10` is only a typo guard. It is **not** a provider-enforced cap
+- Budget `B` is cumulative across all runs (carried `spentUsdEstimated`) and is checked before every call. `B <= 6` is only a typo guard. It is **not** a provider-enforced cap
   (do not assume $5 is a hard cap; set the provider-side project limit). The estimate uses the token ceiling bound; when the response has `usage`, actual cost at the same owner-verified rates
   is stored per entry (`usageCostUsd`) and summed in `spentUsdActualReported` / summary `actualUsdReported`. Actual billing is still not independently verified.
 - Quality is fixed `low` in the workflow and the model must equal the model recorded in the carried manifest (checked offline before the secret step).

@@ -1,23 +1,48 @@
 {
   "meta": {
-    "version": 1,
-    "scope": "M3.5 beginner set: 200 unique simplified characters (not 200 words). Personal-use-first.",
-    "selectionNote": "Original, provisional selection for common beginner communication plus foundational components. It is NOT the official HSK 3.0 list and makes no claim of exact HSK membership. Per-character HSK level is intentionally absent until individually verified against the official syllabus.",
+    "version": 2,
+    "scope": "M3.5 Hanzi set (owner decision 2026-11-27, scope migration): the 246 HSK 3.0 Level 1 recognition characters (set 'syllabus-l1', active) plus 40 retained earlier-selection characters (set 'extension', archive, no HSK level claimed). Personal-use-first. Total records 286 unique simplified characters (not words).",
+    "selectionNote": "Active set = HSK 3.0 Level 1 recognition characters (246) in exact source order (field sourceOrder 1..246), taken from the owner-supplied transcription of the official syllabus. The 40 'extension' records come from the earlier original beginner selection; they are NOT in that list and carry no HSK level. Per-character level is not stored; membership is the set field only.",
     "officialReferences": [
       "https://download.chinesetest.cn/newhsk-site/Syllabus/H_DG_1110.pdf",
-      "https://www.chinesetest.cn/HSK",
-      "https://www.mandarin.ac.cn/textbook/ (topic progression reference only)"
+      "https://www.chinesetest.cn/HSK"
     ],
     "contentOrigin": "Vietnamese meanings, example words and art briefs are original text written for this project. No third-party dictionary data copied.",
     "artworkStyle": "Premium editorial digital painting / gouache, 4:3 (1600x1200 webp), detailed natural textures, depth, soft directional lighting, coherent muted palette; no text or characters inside the artwork.",
-    "artworkStatusNote": "All artwork pending. No image exists; the brief is a modern memory aid, never historical evidence.",
+    "artworkStatusNote": "Artwork status in this file stays 'pending-artwork' until the owner records approval here. The owner reports 10 pilot candidate images in the generation artifact ledger; this repository does not contain or verify them. The brief is a modern memory aid, never historical evidence.",
     "historyNote": "No historical forms are claimed here; history lives in the sourced history manifest only.",
-    "thumbnailGuidance": "Applied to every character not marked promptVersion v1 (the 8 owner-accepted pilot images keep the frozen v1 prompt so their hashes stay valid): dominant subject >= half of frame height, simple silhouette, strong value contrast, subordinate calm background, legible at ~160 px."
+    "thumbnailGuidance": "Applied to every character not marked promptVersion v1 (the owner-accepted pilot images keep the frozen v1 prompt so their hashes stay valid): dominant subject >= half of frame height, simple silhouette, strong value contrast, subordinate calm background, legible at ~160 px.",
+    "hsk3L1Source": {
+      "document": "HSK Syllabus (H_DG_1110.pdf), published 2025-11, effective 2026-07",
+      "section": "HSK (Level 1) recognition characters",
+      "printedPages": "353-354",
+      "entries": 246,
+      "provenance": "Owner-supplied transcription (extracted by GPT with pdftotext -layout from the owner-uploaded PDF). This project did NOT download or independently verify the PDF.",
+      "diffReportRun": "46067508854"
+    },
+    "retainedPilot": {
+      "files": [
+        "shan-mountain.webp",
+        "shui-water.webp",
+        "mu-tree.webp",
+        "huo-fire.webp",
+        "ri-sun.webp",
+        "yue-moon.webp",
+        "ren-person.webp",
+        "yu-rain.webp",
+        "yu-fish.webp",
+        "niao-bird.webp"
+      ],
+      "priorRequestsAtLeast": 12,
+      "note": "10 retained images = 6 active (水火日月人雨) + 4 archive (山木鱼鸟). Production must find all 10 stored and checksum-valid in the carried manifest."
+    }
   },
   "characters": [
     {
       "id": 1,
       "hanzi": "一",
+      "set": "syllabus-l1",
+      "sourceOrder": 212,
       "pinyin": "yī",
       "meaningVi": "một",
       "category": "number",
@@ -44,6 +69,8 @@
     {
       "id": 2,
       "hanzi": "二",
+      "set": "syllabus-l1",
+      "sourceOrder": 43,
       "pinyin": "èr",
       "meaningVi": "hai",
       "category": "number",
@@ -70,6 +97,8 @@
     {
       "id": 3,
       "hanzi": "三",
+      "set": "syllabus-l1",
+      "sourceOrder": 147,
       "pinyin": "sān",
       "meaningVi": "ba",
       "category": "number",
@@ -96,6 +125,8 @@
     {
       "id": 4,
       "hanzi": "四",
+      "set": "syllabus-l1",
+      "sourceOrder": 169,
       "pinyin": "sì",
       "meaningVi": "bốn",
       "category": "number",
@@ -122,6 +153,8 @@
     {
       "id": 5,
       "hanzi": "五",
+      "set": "syllabus-l1",
+      "sourceOrder": 187,
       "pinyin": "wǔ",
       "meaningVi": "năm",
       "category": "number",
@@ -148,6 +181,8 @@
     {
       "id": 6,
       "hanzi": "六",
+      "set": "syllabus-l1",
+      "sourceOrder": 104,
       "pinyin": "liù",
       "meaningVi": "sáu",
       "category": "number",
@@ -174,6 +209,8 @@
     {
       "id": 7,
       "hanzi": "七",
+      "set": "syllabus-l1",
+      "sourceOrder": 134,
       "pinyin": "qī",
       "meaningVi": "bảy",
       "category": "number",
@@ -200,6 +237,8 @@
     {
       "id": 8,
       "hanzi": "八",
+      "set": "syllabus-l1",
+      "sourceOrder": 2,
       "pinyin": "bā",
       "meaningVi": "tám",
       "category": "number",
@@ -226,6 +265,8 @@
     {
       "id": 9,
       "hanzi": "九",
+      "set": "syllabus-l1",
+      "sourceOrder": 87,
       "pinyin": "jiǔ",
       "meaningVi": "chín",
       "category": "number",
@@ -252,6 +293,8 @@
     {
       "id": 10,
       "hanzi": "十",
+      "set": "syllabus-l1",
+      "sourceOrder": 155,
       "pinyin": "shí",
       "meaningVi": "mười",
       "category": "number",
@@ -278,6 +321,8 @@
     {
       "id": 11,
       "hanzi": "百",
+      "set": "syllabus-l1",
+      "sourceOrder": 6,
       "pinyin": "bǎi",
       "meaningVi": "trăm",
       "category": "number",
@@ -304,6 +349,8 @@
     {
       "id": 12,
       "hanzi": "千",
+      "set": "syllabus-l1",
+      "sourceOrder": 138,
       "pinyin": "qiān",
       "meaningVi": "nghìn",
       "category": "number",
@@ -330,6 +377,7 @@
     {
       "id": 13,
       "hanzi": "万",
+      "set": "extension",
       "pinyin": "wàn",
       "meaningVi": "vạn, mười nghìn",
       "category": "number",
@@ -356,6 +404,8 @@
     {
       "id": 14,
       "hanzi": "两",
+      "set": "syllabus-l1",
+      "sourceOrder": 101,
       "pinyin": "liǎng",
       "meaningVi": "hai (đếm đồ vật)",
       "category": "number",
@@ -382,6 +432,7 @@
     {
       "id": 15,
       "hanzi": "山",
+      "set": "extension",
       "pinyin": "shān",
       "meaningVi": "núi",
       "category": "nature",
@@ -409,6 +460,8 @@
     {
       "id": 16,
       "hanzi": "水",
+      "set": "syllabus-l1",
+      "sourceOrder": 165,
       "pinyin": "shuǐ",
       "meaningVi": "nước",
       "category": "nature",
@@ -436,6 +489,7 @@
     {
       "id": 17,
       "hanzi": "木",
+      "set": "extension",
       "pinyin": "mù",
       "meaningVi": "cây, gỗ",
       "category": "nature",
@@ -463,6 +517,8 @@
     {
       "id": 18,
       "hanzi": "火",
+      "set": "syllabus-l1",
+      "sourceOrder": 76,
       "pinyin": "huǒ",
       "meaningVi": "lửa",
       "category": "nature",
@@ -490,6 +546,8 @@
     {
       "id": 19,
       "hanzi": "日",
+      "set": "syllabus-l1",
+      "sourceOrder": 146,
       "pinyin": "rì",
       "meaningVi": "mặt trời, ngày",
       "category": "nature",
@@ -517,6 +575,8 @@
     {
       "id": 20,
       "hanzi": "月",
+      "set": "syllabus-l1",
+      "sourceOrder": 225,
       "pinyin": "yuè",
       "meaningVi": "mặt trăng, tháng",
       "category": "nature",
@@ -544,6 +604,8 @@
     {
       "id": 21,
       "hanzi": "雨",
+      "set": "syllabus-l1",
+      "sourceOrder": 221,
       "pinyin": "yǔ",
       "meaningVi": "mưa",
       "category": "nature",
@@ -571,6 +633,8 @@
     {
       "id": 22,
       "hanzi": "雪",
+      "set": "syllabus-l1",
+      "sourceOrder": 208,
       "pinyin": "xuě",
       "meaningVi": "tuyết",
       "category": "nature",
@@ -597,6 +661,7 @@
     {
       "id": 23,
       "hanzi": "风",
+      "set": "extension",
       "pinyin": "fēng",
       "meaningVi": "gió",
       "category": "nature",
@@ -623,6 +688,7 @@
     {
       "id": 24,
       "hanzi": "云",
+      "set": "extension",
       "pinyin": "yún",
       "meaningVi": "mây",
       "category": "nature",
@@ -649,6 +715,8 @@
     {
       "id": 25,
       "hanzi": "天",
+      "set": "syllabus-l1",
+      "sourceOrder": 176,
       "pinyin": "tiān",
       "meaningVi": "trời, ngày",
       "category": "nature",
@@ -675,6 +743,7 @@
     {
       "id": 26,
       "hanzi": "地",
+      "set": "extension",
       "pinyin": "dì",
       "meaningVi": "đất",
       "category": "nature",
@@ -701,6 +770,7 @@
     {
       "id": 27,
       "hanzi": "土",
+      "set": "extension",
       "pinyin": "tǔ",
       "meaningVi": "đất, thổ",
       "category": "nature",
@@ -727,6 +797,7 @@
     {
       "id": 28,
       "hanzi": "石",
+      "set": "extension",
       "pinyin": "shí",
       "meaningVi": "đá",
       "category": "nature",
@@ -753,6 +824,7 @@
     {
       "id": 29,
       "hanzi": "花",
+      "set": "extension",
       "pinyin": "huā",
       "meaningVi": "hoa",
       "category": "nature",
@@ -779,6 +851,7 @@
     {
       "id": 30,
       "hanzi": "草",
+      "set": "extension",
       "pinyin": "cǎo",
       "meaningVi": "cỏ",
       "category": "nature",
@@ -805,6 +878,7 @@
     {
       "id": 31,
       "hanzi": "树",
+      "set": "extension",
       "pinyin": "shù",
       "meaningVi": "cây (to)",
       "category": "nature",
@@ -831,6 +905,8 @@
     {
       "id": 32,
       "hanzi": "星",
+      "set": "syllabus-l1",
+      "sourceOrder": 204,
       "pinyin": "xīng",
       "meaningVi": "ngôi sao",
       "category": "nature",
@@ -857,6 +933,7 @@
     {
       "id": 33,
       "hanzi": "河",
+      "set": "extension",
       "pinyin": "hé",
       "meaningVi": "sông",
       "category": "nature",
@@ -883,6 +960,7 @@
     {
       "id": 34,
       "hanzi": "海",
+      "set": "extension",
       "pinyin": "hǎi",
       "meaningVi": "biển",
       "category": "nature",
@@ -909,6 +987,8 @@
     {
       "id": 35,
       "hanzi": "电",
+      "set": "syllabus-l1",
+      "sourceOrder": 36,
       "pinyin": "diàn",
       "meaningVi": "điện",
       "category": "nature",
@@ -935,6 +1015,8 @@
     {
       "id": 36,
       "hanzi": "人",
+      "set": "syllabus-l1",
+      "sourceOrder": 144,
       "pinyin": "rén",
       "meaningVi": "người",
       "category": "person",
@@ -962,6 +1044,8 @@
     {
       "id": 37,
       "hanzi": "女",
+      "set": "syllabus-l1",
+      "sourceOrder": 130,
       "pinyin": "nǚ",
       "meaningVi": "nữ, con gái",
       "category": "person",
@@ -988,6 +1072,8 @@
     {
       "id": 38,
       "hanzi": "男",
+      "set": "syllabus-l1",
+      "sourceOrder": 122,
       "pinyin": "nán",
       "meaningVi": "nam, con trai",
       "category": "person",
@@ -1014,6 +1100,8 @@
     {
       "id": 39,
       "hanzi": "子",
+      "set": "syllabus-l1",
+      "sourceOrder": 240,
       "pinyin": "zǐ",
       "meaningVi": "con, đứa trẻ",
       "category": "person",
@@ -1040,6 +1128,8 @@
     {
       "id": 40,
       "hanzi": "孩",
+      "set": "syllabus-l1",
+      "sourceOrder": 63,
       "pinyin": "hái",
       "meaningVi": "trẻ con",
       "category": "person",
@@ -1066,6 +1156,8 @@
     {
       "id": 41,
       "hanzi": "爸",
+      "set": "syllabus-l1",
+      "sourceOrder": 3,
       "pinyin": "bà",
       "meaningVi": "bố",
       "category": "person",
@@ -1092,6 +1184,8 @@
     {
       "id": 42,
       "hanzi": "妈",
+      "set": "syllabus-l1",
+      "sourceOrder": 105,
       "pinyin": "mā",
       "meaningVi": "mẹ",
       "category": "person",
@@ -1118,6 +1212,8 @@
     {
       "id": 43,
       "hanzi": "哥",
+      "set": "syllabus-l1",
+      "sourceOrder": 51,
       "pinyin": "gē",
       "meaningVi": "anh trai",
       "category": "person",
@@ -1144,6 +1240,8 @@
     {
       "id": 44,
       "hanzi": "姐",
+      "set": "syllabus-l1",
+      "sourceOrder": 85,
       "pinyin": "jiě",
       "meaningVi": "chị gái",
       "category": "person",
@@ -1170,6 +1268,8 @@
     {
       "id": 45,
       "hanzi": "弟",
+      "set": "syllabus-l1",
+      "sourceOrder": 33,
       "pinyin": "dì",
       "meaningVi": "em trai",
       "category": "person",
@@ -1196,6 +1296,8 @@
     {
       "id": 46,
       "hanzi": "妹",
+      "set": "syllabus-l1",
+      "sourceOrder": 113,
       "pinyin": "mèi",
       "meaningVi": "em gái",
       "category": "person",
@@ -1222,6 +1324,8 @@
     {
       "id": 47,
       "hanzi": "家",
+      "set": "syllabus-l1",
+      "sourceOrder": 80,
       "pinyin": "jiā",
       "meaningVi": "nhà, gia đình",
       "category": "person",
@@ -1248,6 +1352,8 @@
     {
       "id": 48,
       "hanzi": "朋",
+      "set": "syllabus-l1",
+      "sourceOrder": 131,
       "pinyin": "péng",
       "meaningVi": "bạn",
       "category": "person",
@@ -1274,6 +1380,8 @@
     {
       "id": 49,
       "hanzi": "友",
+      "set": "syllabus-l1",
+      "sourceOrder": 219,
       "pinyin": "yǒu",
       "meaningVi": "bạn bè",
       "category": "person",
@@ -1300,6 +1408,8 @@
     {
       "id": 50,
       "hanzi": "老",
+      "set": "syllabus-l1",
+      "sourceOrder": 97,
       "pinyin": "lǎo",
       "meaningVi": "già, cũ",
       "category": "person",
@@ -1326,6 +1436,8 @@
     {
       "id": 51,
       "hanzi": "师",
+      "set": "syllabus-l1",
+      "sourceOrder": 154,
       "pinyin": "shī",
       "meaningVi": "thầy, sư phạm",
       "category": "person",
@@ -1352,6 +1464,8 @@
     {
       "id": 52,
       "hanzi": "学",
+      "set": "syllabus-l1",
+      "sourceOrder": 207,
       "pinyin": "xué",
       "meaningVi": "học",
       "category": "education",
@@ -1378,6 +1492,8 @@
     {
       "id": 53,
       "hanzi": "生",
+      "set": "syllabus-l1",
+      "sourceOrder": 153,
       "pinyin": "shēng",
       "meaningVi": "sinh, sống",
       "category": "person",
@@ -1404,6 +1520,8 @@
     {
       "id": 54,
       "hanzi": "医",
+      "set": "syllabus-l1",
+      "sourceOrder": 214,
       "pinyin": "yī",
       "meaningVi": "y học, bác sĩ",
       "category": "person",
@@ -1430,6 +1548,8 @@
     {
       "id": 55,
       "hanzi": "我",
+      "set": "syllabus-l1",
+      "sourceOrder": 186,
       "pinyin": "wǒ",
       "meaningVi": "tôi, tớ",
       "category": "pronoun",
@@ -1456,6 +1576,8 @@
     {
       "id": 56,
       "hanzi": "你",
+      "set": "syllabus-l1",
+      "sourceOrder": 126,
       "pinyin": "nǐ",
       "meaningVi": "bạn, anh/chị",
       "category": "pronoun",
@@ -1482,6 +1604,8 @@
     {
       "id": 57,
       "hanzi": "他",
+      "set": "syllabus-l1",
+      "sourceOrder": 171,
       "pinyin": "tā",
       "meaningVi": "anh ấy, ông ấy",
       "category": "pronoun",
@@ -1508,6 +1632,8 @@
     {
       "id": 58,
       "hanzi": "她",
+      "set": "syllabus-l1",
+      "sourceOrder": 173,
       "pinyin": "tā",
       "meaningVi": "cô ấy, bà ấy",
       "category": "pronoun",
@@ -1534,6 +1660,8 @@
     {
       "id": 59,
       "hanzi": "们",
+      "set": "syllabus-l1",
+      "sourceOrder": 114,
       "pinyin": "men",
       "meaningVi": "(hậu tố số nhiều)",
       "category": "function",
@@ -1560,6 +1688,8 @@
     {
       "id": 60,
       "hanzi": "的",
+      "set": "syllabus-l1",
+      "sourceOrder": 32,
       "pinyin": "de",
       "meaningVi": "của (trợ từ)",
       "category": "function",
@@ -1586,6 +1716,8 @@
     {
       "id": 61,
       "hanzi": "了",
+      "set": "syllabus-l1",
+      "sourceOrder": 98,
       "pinyin": "le",
       "meaningVi": "rồi (trợ từ)",
       "category": "function",
@@ -1612,6 +1744,8 @@
     {
       "id": 62,
       "hanzi": "不",
+      "set": "syllabus-l1",
+      "sourceOrder": 15,
       "pinyin": "bù",
       "meaningVi": "không",
       "category": "function",
@@ -1638,6 +1772,8 @@
     {
       "id": 63,
       "hanzi": "是",
+      "set": "syllabus-l1",
+      "sourceOrder": 162,
       "pinyin": "shì",
       "meaningVi": "là, vâng",
       "category": "function",
@@ -1664,6 +1800,8 @@
     {
       "id": 64,
       "hanzi": "有",
+      "set": "syllabus-l1",
+      "sourceOrder": 220,
       "pinyin": "yǒu",
       "meaningVi": "có",
       "category": "function",
@@ -1690,6 +1828,8 @@
     {
       "id": 65,
       "hanzi": "在",
+      "set": "syllabus-l1",
+      "sourceOrder": 227,
       "pinyin": "zài",
       "meaningVi": "ở, đang",
       "category": "function",
@@ -1716,6 +1856,8 @@
     {
       "id": 66,
       "hanzi": "和",
+      "set": "syllabus-l1",
+      "sourceOrder": 68,
       "pinyin": "hé",
       "meaningVi": "và, với",
       "category": "function",
@@ -1742,6 +1884,8 @@
     {
       "id": 67,
       "hanzi": "吗",
+      "set": "syllabus-l1",
+      "sourceOrder": 106,
       "pinyin": "ma",
       "meaningVi": "không? (hỏi)",
       "category": "function",
@@ -1768,6 +1912,8 @@
     {
       "id": 68,
       "hanzi": "呢",
+      "set": "syllabus-l1",
+      "sourceOrder": 124,
       "pinyin": "ne",
       "meaningVi": "thế? (hỏi lại)",
       "category": "function",
@@ -1794,6 +1940,8 @@
     {
       "id": 69,
       "hanzi": "这",
+      "set": "syllabus-l1",
+      "sourceOrder": 231,
       "pinyin": "zhè",
       "meaningVi": "này, đây",
       "category": "function",
@@ -1820,6 +1968,8 @@
     {
       "id": 70,
       "hanzi": "那",
+      "set": "syllabus-l1",
+      "sourceOrder": 120,
       "pinyin": "nà",
       "meaningVi": "kia, đó",
       "category": "function",
@@ -1846,6 +1996,8 @@
     {
       "id": 71,
       "hanzi": "谁",
+      "set": "syllabus-l1",
+      "sourceOrder": 151,
       "pinyin": "shéi",
       "meaningVi": "ai",
       "category": "function",
@@ -1872,6 +2024,8 @@
     {
       "id": 72,
       "hanzi": "什",
+      "set": "syllabus-l1",
+      "sourceOrder": 152,
       "pinyin": "shén",
       "meaningVi": "gì (trong 什么)",
       "category": "function",
@@ -1898,6 +2052,8 @@
     {
       "id": 73,
       "hanzi": "么",
+      "set": "syllabus-l1",
+      "sourceOrder": 111,
       "pinyin": "me",
       "meaningVi": "(hậu tố trong 什么)",
       "category": "function",
@@ -1924,6 +2080,8 @@
     {
       "id": 74,
       "hanzi": "哪",
+      "set": "syllabus-l1",
+      "sourceOrder": 119,
       "pinyin": "nǎ",
       "meaningVi": "nào, đâu",
       "category": "function",
@@ -1950,6 +2108,8 @@
     {
       "id": 75,
       "hanzi": "几",
+      "set": "syllabus-l1",
+      "sourceOrder": 79,
       "pinyin": "jǐ",
       "meaningVi": "mấy",
       "category": "function",
@@ -1976,6 +2136,8 @@
     {
       "id": 76,
       "hanzi": "都",
+      "set": "syllabus-l1",
+      "sourceOrder": 38,
       "pinyin": "dōu",
       "meaningVi": "đều",
       "category": "function",
@@ -2002,6 +2164,8 @@
     {
       "id": 77,
       "hanzi": "也",
+      "set": "syllabus-l1",
+      "sourceOrder": 211,
       "pinyin": "yě",
       "meaningVi": "cũng",
       "category": "function",
@@ -2028,6 +2192,8 @@
     {
       "id": 78,
       "hanzi": "很",
+      "set": "syllabus-l1",
+      "sourceOrder": 69,
       "pinyin": "hěn",
       "meaningVi": "rất",
       "category": "function",
@@ -2054,6 +2220,8 @@
     {
       "id": 79,
       "hanzi": "太",
+      "set": "syllabus-l1",
+      "sourceOrder": 174,
       "pinyin": "tài",
       "meaningVi": "quá",
       "category": "function",
@@ -2080,6 +2248,8 @@
     {
       "id": 80,
       "hanzi": "没",
+      "set": "syllabus-l1",
+      "sourceOrder": 112,
       "pinyin": "méi",
       "meaningVi": "không có, chưa",
       "category": "function",
@@ -2106,6 +2276,8 @@
     {
       "id": 81,
       "hanzi": "口",
+      "set": "syllabus-l1",
+      "sourceOrder": 94,
       "pinyin": "kǒu",
       "meaningVi": "miệng",
       "category": "body",
@@ -2132,6 +2304,8 @@
     {
       "id": 82,
       "hanzi": "手",
+      "set": "syllabus-l1",
+      "sourceOrder": 163,
       "pinyin": "shǒu",
       "meaningVi": "tay",
       "category": "body",
@@ -2158,6 +2332,7 @@
     {
       "id": 83,
       "hanzi": "头",
+      "set": "extension",
       "pinyin": "tóu",
       "meaningVi": "đầu",
       "category": "body",
@@ -2184,6 +2359,7 @@
     {
       "id": 84,
       "hanzi": "心",
+      "set": "extension",
       "pinyin": "xīn",
       "meaningVi": "tim, lòng",
       "category": "body",
@@ -2210,6 +2386,7 @@
     {
       "id": 85,
       "hanzi": "耳",
+      "set": "extension",
       "pinyin": "ěr",
       "meaningVi": "tai",
       "category": "body",
@@ -2236,6 +2413,7 @@
     {
       "id": 86,
       "hanzi": "眼",
+      "set": "extension",
       "pinyin": "yǎn",
       "meaningVi": "mắt",
       "category": "body",
@@ -2262,6 +2440,7 @@
     {
       "id": 87,
       "hanzi": "脚",
+      "set": "extension",
       "pinyin": "jiǎo",
       "meaningVi": "chân (bàn chân)",
       "category": "body",
@@ -2288,6 +2467,7 @@
     {
       "id": 88,
       "hanzi": "身",
+      "set": "extension",
       "pinyin": "shēn",
       "meaningVi": "thân người, cơ thể",
       "category": "body",
@@ -2314,6 +2494,7 @@
     {
       "id": 89,
       "hanzi": "鱼",
+      "set": "extension",
       "pinyin": "yú",
       "meaningVi": "cá",
       "category": "animal",
@@ -2342,6 +2523,7 @@
     {
       "id": 90,
       "hanzi": "鸟",
+      "set": "extension",
       "pinyin": "niǎo",
       "meaningVi": "chim",
       "category": "animal",
@@ -2370,6 +2552,7 @@
     {
       "id": 91,
       "hanzi": "马",
+      "set": "extension",
       "pinyin": "mǎ",
       "meaningVi": "ngựa",
       "category": "animal",
@@ -2396,6 +2579,8 @@
     {
       "id": 92,
       "hanzi": "牛",
+      "set": "syllabus-l1",
+      "sourceOrder": 129,
       "pinyin": "niú",
       "meaningVi": "bò, trâu",
       "category": "animal",
@@ -2422,6 +2607,7 @@
     {
       "id": 93,
       "hanzi": "羊",
+      "set": "extension",
       "pinyin": "yáng",
       "meaningVi": "cừu, dê",
       "category": "animal",
@@ -2448,6 +2634,8 @@
     {
       "id": 94,
       "hanzi": "狗",
+      "set": "syllabus-l1",
+      "sourceOrder": 57,
       "pinyin": "gǒu",
       "meaningVi": "chó",
       "category": "animal",
@@ -2474,6 +2662,8 @@
     {
       "id": 95,
       "hanzi": "猫",
+      "set": "syllabus-l1",
+      "sourceOrder": 110,
       "pinyin": "māo",
       "meaningVi": "mèo",
       "category": "animal",
@@ -2500,6 +2690,8 @@
     {
       "id": 96,
       "hanzi": "鸡",
+      "set": "syllabus-l1",
+      "sourceOrder": 78,
       "pinyin": "jī",
       "meaningVi": "gà",
       "category": "animal",
@@ -2526,6 +2718,8 @@
     {
       "id": 97,
       "hanzi": "去",
+      "set": "syllabus-l1",
+      "sourceOrder": 142,
       "pinyin": "qù",
       "meaningVi": "đi",
       "category": "verb",
@@ -2552,6 +2746,8 @@
     {
       "id": 98,
       "hanzi": "来",
+      "set": "syllabus-l1",
+      "sourceOrder": 96,
       "pinyin": "lái",
       "meaningVi": "đến",
       "category": "verb",
@@ -2578,6 +2774,8 @@
     {
       "id": 99,
       "hanzi": "看",
+      "set": "syllabus-l1",
+      "sourceOrder": 90,
       "pinyin": "kàn",
       "meaningVi": "nhìn, xem",
       "category": "verb",
@@ -2604,6 +2802,8 @@
     {
       "id": 100,
       "hanzi": "听",
+      "set": "syllabus-l1",
+      "sourceOrder": 178,
       "pinyin": "tīng",
       "meaningVi": "nghe",
       "category": "verb",
@@ -2630,6 +2830,8 @@
     {
       "id": 101,
       "hanzi": "说",
+      "set": "syllabus-l1",
+      "sourceOrder": 167,
       "pinyin": "shuō",
       "meaningVi": "nói",
       "category": "verb",
@@ -2656,6 +2858,8 @@
     {
       "id": 102,
       "hanzi": "读",
+      "set": "syllabus-l1",
+      "sourceOrder": 39,
       "pinyin": "dú",
       "meaningVi": "đọc",
       "category": "verb",
@@ -2682,6 +2886,8 @@
     {
       "id": 103,
       "hanzi": "写",
+      "set": "syllabus-l1",
+      "sourceOrder": 201,
       "pinyin": "xiě",
       "meaningVi": "viết",
       "category": "verb",
@@ -2708,6 +2914,8 @@
     {
       "id": 104,
       "hanzi": "吃",
+      "set": "syllabus-l1",
+      "sourceOrder": 22,
       "pinyin": "chī",
       "meaningVi": "ăn",
       "category": "verb",
@@ -2734,6 +2942,8 @@
     {
       "id": 105,
       "hanzi": "喝",
+      "set": "syllabus-l1",
+      "sourceOrder": 67,
       "pinyin": "hē",
       "meaningVi": "uống",
       "category": "verb",
@@ -2760,6 +2970,8 @@
     {
       "id": 106,
       "hanzi": "买",
+      "set": "syllabus-l1",
+      "sourceOrder": 107,
       "pinyin": "mǎi",
       "meaningVi": "mua",
       "category": "verb",
@@ -2786,6 +2998,8 @@
     {
       "id": 107,
       "hanzi": "卖",
+      "set": "syllabus-l1",
+      "sourceOrder": 108,
       "pinyin": "mài",
       "meaningVi": "bán",
       "category": "verb",
@@ -2812,6 +3026,8 @@
     {
       "id": 108,
       "hanzi": "做",
+      "set": "syllabus-l1",
+      "sourceOrder": 246,
       "pinyin": "zuò",
       "meaningVi": "làm",
       "category": "verb",
@@ -2838,6 +3054,7 @@
     {
       "id": 109,
       "hanzi": "走",
+      "set": "extension",
       "pinyin": "zǒu",
       "meaningVi": "đi bộ",
       "category": "verb",
@@ -2864,6 +3081,8 @@
     {
       "id": 110,
       "hanzi": "坐",
+      "set": "syllabus-l1",
+      "sourceOrder": 245,
       "pinyin": "zuò",
       "meaningVi": "ngồi",
       "category": "verb",
@@ -2890,6 +3109,8 @@
     {
       "id": 111,
       "hanzi": "住",
+      "set": "syllabus-l1",
+      "sourceOrder": 238,
       "pinyin": "zhù",
       "meaningVi": "ở, sống",
       "category": "verb",
@@ -2916,6 +3137,8 @@
     {
       "id": 112,
       "hanzi": "睡",
+      "set": "syllabus-l1",
+      "sourceOrder": 166,
       "pinyin": "shuì",
       "meaningVi": "ngủ",
       "category": "verb",
@@ -2942,6 +3165,8 @@
     {
       "id": 113,
       "hanzi": "爱",
+      "set": "syllabus-l1",
+      "sourceOrder": 1,
       "pinyin": "ài",
       "meaningVi": "yêu",
       "category": "verb",
@@ -2968,6 +3193,8 @@
     {
       "id": 114,
       "hanzi": "想",
+      "set": "syllabus-l1",
+      "sourceOrder": 197,
       "pinyin": "xiǎng",
       "meaningVi": "nghĩ, muốn, nhớ",
       "category": "verb",
@@ -2994,6 +3221,8 @@
     {
       "id": 115,
       "hanzi": "叫",
+      "set": "syllabus-l1",
+      "sourceOrder": 84,
       "pinyin": "jiào",
       "meaningVi": "gọi, tên là",
       "category": "verb",
@@ -3020,6 +3249,8 @@
     {
       "id": 116,
       "hanzi": "问",
+      "set": "syllabus-l1",
+      "sourceOrder": 185,
       "pinyin": "wèn",
       "meaningVi": "hỏi",
       "category": "verb",
@@ -3046,6 +3277,8 @@
     {
       "id": 117,
       "hanzi": "给",
+      "set": "syllabus-l1",
+      "sourceOrder": 54,
       "pinyin": "gěi",
       "meaningVi": "cho, đưa",
       "category": "verb",
@@ -3072,6 +3305,8 @@
     {
       "id": 118,
       "hanzi": "开",
+      "set": "syllabus-l1",
+      "sourceOrder": 89,
       "pinyin": "kāi",
       "meaningVi": "mở",
       "category": "verb",
@@ -3098,6 +3333,8 @@
     {
       "id": 119,
       "hanzi": "关",
+      "set": "syllabus-l1",
+      "sourceOrder": 58,
       "pinyin": "guān",
       "meaningVi": "đóng",
       "category": "verb",
@@ -3124,6 +3361,8 @@
     {
       "id": 120,
       "hanzi": "工",
+      "set": "syllabus-l1",
+      "sourceOrder": 55,
       "pinyin": "gōng",
       "meaningVi": "công việc, thợ",
       "category": "verb",
@@ -3150,6 +3389,8 @@
     {
       "id": 121,
       "hanzi": "作",
+      "set": "syllabus-l1",
+      "sourceOrder": 244,
       "pinyin": "zuò",
       "meaningVi": "làm, tác phẩm",
       "category": "verb",
@@ -3176,6 +3417,7 @@
     {
       "id": 122,
       "hanzi": "用",
+      "set": "extension",
       "pinyin": "yòng",
       "meaningVi": "dùng",
       "category": "verb",
@@ -3202,6 +3444,8 @@
     {
       "id": 123,
       "hanzi": "会",
+      "set": "syllabus-l1",
+      "sourceOrder": 75,
       "pinyin": "huì",
       "meaningVi": "biết, sẽ",
       "category": "verb",
@@ -3228,6 +3472,8 @@
     {
       "id": 124,
       "hanzi": "能",
+      "set": "syllabus-l1",
+      "sourceOrder": 125,
       "pinyin": "néng",
       "meaningVi": "có thể",
       "category": "verb",
@@ -3254,6 +3500,8 @@
     {
       "id": 125,
       "hanzi": "要",
+      "set": "syllabus-l1",
+      "sourceOrder": 210,
       "pinyin": "yào",
       "meaningVi": "muốn, cần",
       "category": "verb",
@@ -3280,6 +3528,8 @@
     {
       "id": 126,
       "hanzi": "请",
+      "set": "syllabus-l1",
+      "sourceOrder": 141,
       "pinyin": "qǐng",
       "meaningVi": "mời, xin",
       "category": "verb",
@@ -3306,6 +3556,8 @@
     {
       "id": 127,
       "hanzi": "谢",
+      "set": "syllabus-l1",
+      "sourceOrder": 202,
       "pinyin": "xiè",
       "meaningVi": "cảm ơn",
       "category": "verb",
@@ -3332,6 +3584,8 @@
     {
       "id": 128,
       "hanzi": "见",
+      "set": "syllabus-l1",
+      "sourceOrder": 82,
       "pinyin": "jiàn",
       "meaningVi": "thấy, gặp",
       "category": "verb",
@@ -3358,6 +3612,8 @@
     {
       "id": 129,
       "hanzi": "对",
+      "set": "syllabus-l1",
+      "sourceOrder": 40,
       "pinyin": "duì",
       "meaningVi": "đúng, đối diện",
       "category": "adjective",
@@ -3384,6 +3640,8 @@
     {
       "id": 130,
       "hanzi": "大",
+      "set": "syllabus-l1",
+      "sourceOrder": 27,
       "pinyin": "dà",
       "meaningVi": "to, lớn",
       "category": "adjective",
@@ -3410,6 +3668,8 @@
     {
       "id": 131,
       "hanzi": "小",
+      "set": "syllabus-l1",
+      "sourceOrder": 198,
       "pinyin": "xiǎo",
       "meaningVi": "nhỏ",
       "category": "adjective",
@@ -3436,6 +3696,8 @@
     {
       "id": 132,
       "hanzi": "多",
+      "set": "syllabus-l1",
+      "sourceOrder": 41,
       "pinyin": "duō",
       "meaningVi": "nhiều",
       "category": "adjective",
@@ -3462,6 +3724,8 @@
     {
       "id": 133,
       "hanzi": "少",
+      "set": "syllabus-l1",
+      "sourceOrder": 150,
       "pinyin": "shǎo",
       "meaningVi": "ít",
       "category": "adjective",
@@ -3488,6 +3752,8 @@
     {
       "id": 134,
       "hanzi": "好",
+      "set": "syllabus-l1",
+      "sourceOrder": 65,
       "pinyin": "hǎo",
       "meaningVi": "tốt, ngon",
       "category": "adjective",
@@ -3514,6 +3780,7 @@
     {
       "id": 135,
       "hanzi": "长",
+      "set": "extension",
       "pinyin": "cháng",
       "meaningVi": "dài",
       "category": "adjective",
@@ -3540,6 +3807,8 @@
     {
       "id": 136,
       "hanzi": "高",
+      "set": "syllabus-l1",
+      "sourceOrder": 50,
       "pinyin": "gāo",
       "meaningVi": "cao",
       "category": "adjective",
@@ -3566,6 +3835,8 @@
     {
       "id": 137,
       "hanzi": "新",
+      "set": "syllabus-l1",
+      "sourceOrder": 203,
       "pinyin": "xīn",
       "meaningVi": "mới",
       "category": "adjective",
@@ -3592,6 +3863,7 @@
     {
       "id": 138,
       "hanzi": "快",
+      "set": "extension",
       "pinyin": "kuài",
       "meaningVi": "nhanh",
       "category": "adjective",
@@ -3618,6 +3890,8 @@
     {
       "id": 139,
       "hanzi": "冷",
+      "set": "syllabus-l1",
+      "sourceOrder": 99,
       "pinyin": "lěng",
       "meaningVi": "lạnh",
       "category": "adjective",
@@ -3644,6 +3918,8 @@
     {
       "id": 140,
       "hanzi": "热",
+      "set": "syllabus-l1",
+      "sourceOrder": 143,
       "pinyin": "rè",
       "meaningVi": "nóng",
       "category": "adjective",
@@ -3670,6 +3946,7 @@
     {
       "id": 141,
       "hanzi": "红",
+      "set": "extension",
       "pinyin": "hóng",
       "meaningVi": "đỏ",
       "category": "adjective",
@@ -3696,6 +3973,8 @@
     {
       "id": 142,
       "hanzi": "白",
+      "set": "syllabus-l1",
+      "sourceOrder": 5,
       "pinyin": "bái",
       "meaningVi": "trắng",
       "category": "adjective",
@@ -3722,6 +4001,7 @@
     {
       "id": 143,
       "hanzi": "黑",
+      "set": "extension",
       "pinyin": "hēi",
       "meaningVi": "đen",
       "category": "adjective",
@@ -3748,6 +4028,8 @@
     {
       "id": 144,
       "hanzi": "上",
+      "set": "syllabus-l1",
+      "sourceOrder": 149,
       "pinyin": "shàng",
       "meaningVi": "trên, lên",
       "category": "direction",
@@ -3774,6 +4056,8 @@
     {
       "id": 145,
       "hanzi": "下",
+      "set": "syllabus-l1",
+      "sourceOrder": 194,
       "pinyin": "xià",
       "meaningVi": "dưới, xuống",
       "category": "direction",
@@ -3800,6 +4084,8 @@
     {
       "id": 146,
       "hanzi": "中",
+      "set": "syllabus-l1",
+      "sourceOrder": 236,
       "pinyin": "zhōng",
       "meaningVi": "giữa, trung",
       "category": "direction",
@@ -3826,6 +4112,7 @@
     {
       "id": 147,
       "hanzi": "左",
+      "set": "extension",
       "pinyin": "zuǒ",
       "meaningVi": "trái",
       "category": "direction",
@@ -3852,6 +4139,7 @@
     {
       "id": 148,
       "hanzi": "右",
+      "set": "extension",
       "pinyin": "yòu",
       "meaningVi": "phải",
       "category": "direction",
@@ -3878,6 +4166,8 @@
     {
       "id": 149,
       "hanzi": "前",
+      "set": "syllabus-l1",
+      "sourceOrder": 139,
       "pinyin": "qián",
       "meaningVi": "phía trước",
       "category": "direction",
@@ -3904,6 +4194,8 @@
     {
       "id": 150,
       "hanzi": "后",
+      "set": "syllabus-l1",
+      "sourceOrder": 70,
       "pinyin": "hòu",
       "meaningVi": "phía sau",
       "category": "direction",
@@ -3930,6 +4222,8 @@
     {
       "id": 151,
       "hanzi": "里",
+      "set": "syllabus-l1",
+      "sourceOrder": 100,
       "pinyin": "lǐ",
       "meaningVi": "trong",
       "category": "direction",
@@ -3956,6 +4250,8 @@
     {
       "id": 152,
       "hanzi": "外",
+      "set": "syllabus-l1",
+      "sourceOrder": 180,
       "pinyin": "wài",
       "meaningVi": "ngoài",
       "category": "direction",
@@ -3982,6 +4278,8 @@
     {
       "id": 153,
       "hanzi": "年",
+      "set": "syllabus-l1",
+      "sourceOrder": 127,
       "pinyin": "nián",
       "meaningVi": "năm, tuổi",
       "category": "time",
@@ -4008,6 +4306,8 @@
     {
       "id": 154,
       "hanzi": "今",
+      "set": "syllabus-l1",
+      "sourceOrder": 86,
       "pinyin": "jīn",
       "meaningVi": "nay, hôm nay",
       "category": "time",
@@ -4034,6 +4334,8 @@
     {
       "id": 155,
       "hanzi": "明",
+      "set": "syllabus-l1",
+      "sourceOrder": 118,
       "pinyin": "míng",
       "meaningVi": "sáng, ngày mai",
       "category": "time",
@@ -4060,6 +4362,8 @@
     {
       "id": 156,
       "hanzi": "昨",
+      "set": "syllabus-l1",
+      "sourceOrder": 243,
       "pinyin": "zuó",
       "meaningVi": "hôm qua",
       "category": "time",
@@ -4086,6 +4390,8 @@
     {
       "id": 157,
       "hanzi": "早",
+      "set": "syllabus-l1",
+      "sourceOrder": 228,
       "pinyin": "zǎo",
       "meaningVi": "sớm",
       "category": "time",
@@ -4112,6 +4418,8 @@
     {
       "id": 158,
       "hanzi": "晚",
+      "set": "syllabus-l1",
+      "sourceOrder": 182,
       "pinyin": "wǎn",
       "meaningVi": "tối, muộn",
       "category": "time",
@@ -4138,6 +4446,8 @@
     {
       "id": 159,
       "hanzi": "午",
+      "set": "syllabus-l1",
+      "sourceOrder": 188,
       "pinyin": "wǔ",
       "meaningVi": "trưa",
       "category": "time",
@@ -4164,6 +4474,8 @@
     {
       "id": 160,
       "hanzi": "时",
+      "set": "syllabus-l1",
+      "sourceOrder": 156,
       "pinyin": "shí",
       "meaningVi": "giờ, lúc",
       "category": "time",
@@ -4190,6 +4502,8 @@
     {
       "id": 161,
       "hanzi": "分",
+      "set": "syllabus-l1",
+      "sourceOrder": 48,
       "pinyin": "fēn",
       "meaningVi": "phút, chia",
       "category": "time",
@@ -4216,6 +4530,8 @@
     {
       "id": 162,
       "hanzi": "点",
+      "set": "syllabus-l1",
+      "sourceOrder": 35,
       "pinyin": "diǎn",
       "meaningVi": "điểm, giờ, chấm",
       "category": "time",
@@ -4242,6 +4558,8 @@
     {
       "id": 163,
       "hanzi": "米",
+      "set": "syllabus-l1",
+      "sourceOrder": 115,
       "pinyin": "mǐ",
       "meaningVi": "gạo",
       "category": "food",
@@ -4268,6 +4586,8 @@
     {
       "id": 164,
       "hanzi": "饭",
+      "set": "syllabus-l1",
+      "sourceOrder": 44,
       "pinyin": "fàn",
       "meaningVi": "cơm, bữa ăn",
       "category": "food",
@@ -4294,6 +4614,8 @@
     {
       "id": 165,
       "hanzi": "茶",
+      "set": "syllabus-l1",
+      "sourceOrder": 17,
       "pinyin": "chá",
       "meaningVi": "trà",
       "category": "food",
@@ -4320,6 +4642,8 @@
     {
       "id": 166,
       "hanzi": "菜",
+      "set": "syllabus-l1",
+      "sourceOrder": 16,
       "pinyin": "cài",
       "meaningVi": "rau, món ăn",
       "category": "food",
@@ -4346,6 +4670,7 @@
     {
       "id": 167,
       "hanzi": "肉",
+      "set": "extension",
       "pinyin": "ròu",
       "meaningVi": "thịt",
       "category": "food",
@@ -4372,6 +4697,8 @@
     {
       "id": 168,
       "hanzi": "面",
+      "set": "syllabus-l1",
+      "sourceOrder": 116,
       "pinyin": "miàn",
       "meaningVi": "mì, mặt",
       "category": "food",
@@ -4398,6 +4725,8 @@
     {
       "id": 169,
       "hanzi": "果",
+      "set": "syllabus-l1",
+      "sourceOrder": 61,
       "pinyin": "guǒ",
       "meaningVi": "quả, trái cây",
       "category": "food",
@@ -4424,6 +4753,8 @@
     {
       "id": 170,
       "hanzi": "苹",
+      "set": "syllabus-l1",
+      "sourceOrder": 133,
       "pinyin": "píng",
       "meaningVi": "táo (trong 苹果)",
       "category": "food",
@@ -4450,6 +4781,8 @@
     {
       "id": 171,
       "hanzi": "蛋",
+      "set": "syllabus-l1",
+      "sourceOrder": 28,
       "pinyin": "dàn",
       "meaningVi": "trứng",
       "category": "food",
@@ -4476,6 +4809,8 @@
     {
       "id": 172,
       "hanzi": "国",
+      "set": "syllabus-l1",
+      "sourceOrder": 60,
       "pinyin": "guó",
       "meaningVi": "nước, quốc gia",
       "category": "place",
@@ -4502,6 +4837,7 @@
     {
       "id": 173,
       "hanzi": "门",
+      "set": "extension",
       "pinyin": "mén",
       "meaningVi": "cửa, cổng",
       "category": "place",
@@ -4528,6 +4864,8 @@
     {
       "id": 174,
       "hanzi": "车",
+      "set": "syllabus-l1",
+      "sourceOrder": 21,
       "pinyin": "chē",
       "meaningVi": "xe",
       "category": "place",
@@ -4554,6 +4892,7 @@
     {
       "id": 175,
       "hanzi": "店",
+      "set": "extension",
       "pinyin": "diàn",
       "meaningVi": "cửa hàng",
       "category": "place",
@@ -4580,6 +4919,8 @@
     {
       "id": 176,
       "hanzi": "院",
+      "set": "syllabus-l1",
+      "sourceOrder": 224,
       "pinyin": "yuàn",
       "meaningVi": "sân, viện",
       "category": "place",
@@ -4606,6 +4947,7 @@
     {
       "id": 177,
       "hanzi": "路",
+      "set": "extension",
       "pinyin": "lù",
       "meaningVi": "đường",
       "category": "place",
@@ -4632,6 +4974,8 @@
     {
       "id": 178,
       "hanzi": "校",
+      "set": "syllabus-l1",
+      "sourceOrder": 199,
       "pinyin": "xiào",
       "meaningVi": "trường học",
       "category": "place",
@@ -4658,6 +5002,8 @@
     {
       "id": 179,
       "hanzi": "机",
+      "set": "syllabus-l1",
+      "sourceOrder": 77,
       "pinyin": "jī",
       "meaningVi": "máy",
       "category": "place",
@@ -4684,6 +5030,7 @@
     {
       "id": 180,
       "hanzi": "站",
+      "set": "extension",
       "pinyin": "zhàn",
       "meaningVi": "trạm, đứng",
       "category": "place",
@@ -4710,6 +5057,8 @@
     {
       "id": 181,
       "hanzi": "书",
+      "set": "syllabus-l1",
+      "sourceOrder": 164,
       "pinyin": "shū",
       "meaningVi": "sách",
       "category": "object",
@@ -4736,6 +5085,8 @@
     {
       "id": 182,
       "hanzi": "本",
+      "set": "syllabus-l1",
+      "sourceOrder": 11,
       "pinyin": "běn",
       "meaningVi": "quyển, gốc",
       "category": "object",
@@ -4762,6 +5113,7 @@
     {
       "id": 183,
       "hanzi": "笔",
+      "set": "extension",
       "pinyin": "bǐ",
       "meaningVi": "bút",
       "category": "object",
@@ -4788,6 +5140,8 @@
     {
       "id": 184,
       "hanzi": "衣",
+      "set": "syllabus-l1",
+      "sourceOrder": 213,
       "pinyin": "yī",
       "meaningVi": "áo, quần áo",
       "category": "object",
@@ -4814,6 +5168,8 @@
     {
       "id": 185,
       "hanzi": "钱",
+      "set": "syllabus-l1",
+      "sourceOrder": 140,
       "pinyin": "qián",
       "meaningVi": "tiền",
       "category": "object",
@@ -4840,6 +5196,8 @@
     {
       "id": 186,
       "hanzi": "杯",
+      "set": "syllabus-l1",
+      "sourceOrder": 10,
       "pinyin": "bēi",
       "meaningVi": "cốc, ly",
       "category": "object",
@@ -4866,6 +5224,8 @@
     {
       "id": 187,
       "hanzi": "桌",
+      "set": "syllabus-l1",
+      "sourceOrder": 239,
       "pinyin": "zhuō",
       "meaningVi": "bàn",
       "category": "object",
@@ -4892,6 +5252,7 @@
     {
       "id": 188,
       "hanzi": "纸",
+      "set": "extension",
       "pinyin": "zhǐ",
       "meaningVi": "giấy",
       "category": "object",
@@ -4918,6 +5279,8 @@
     {
       "id": 189,
       "hanzi": "话",
+      "set": "syllabus-l1",
+      "sourceOrder": 72,
       "pinyin": "huà",
       "meaningVi": "lời nói",
       "category": "object",
@@ -4944,6 +5307,8 @@
     {
       "id": 190,
       "hanzi": "字",
+      "set": "syllabus-l1",
+      "sourceOrder": 241,
       "pinyin": "zì",
       "meaningVi": "chữ",
       "category": "education",
@@ -4970,6 +5335,8 @@
     {
       "id": 191,
       "hanzi": "文",
+      "set": "syllabus-l1",
+      "sourceOrder": 184,
       "pinyin": "wén",
       "meaningVi": "văn, chữ viết",
       "category": "education",
@@ -4996,6 +5363,8 @@
     {
       "id": 192,
       "hanzi": "汉",
+      "set": "syllabus-l1",
+      "sourceOrder": 64,
       "pinyin": "hàn",
       "meaningVi": "Hán, người Hán",
       "category": "education",
@@ -5022,6 +5391,8 @@
     {
       "id": 193,
       "hanzi": "语",
+      "set": "syllabus-l1",
+      "sourceOrder": 222,
       "pinyin": "yǔ",
       "meaningVi": "ngôn ngữ",
       "category": "education",
@@ -5048,6 +5419,8 @@
     {
       "id": 194,
       "hanzi": "东",
+      "set": "syllabus-l1",
+      "sourceOrder": 37,
       "pinyin": "dōng",
       "meaningVi": "phía đông",
       "category": "direction",
@@ -5074,6 +5447,8 @@
     {
       "id": 195,
       "hanzi": "西",
+      "set": "syllabus-l1",
+      "sourceOrder": 189,
       "pinyin": "xī",
       "meaningVi": "phía tây",
       "category": "direction",
@@ -5100,6 +5475,7 @@
     {
       "id": 196,
       "hanzi": "南",
+      "set": "extension",
       "pinyin": "nán",
       "meaningVi": "phía nam",
       "category": "direction",
@@ -5126,6 +5502,7 @@
     {
       "id": 197,
       "hanzi": "北",
+      "set": "extension",
       "pinyin": "běi",
       "meaningVi": "phía bắc",
       "category": "direction",
@@ -5152,6 +5529,8 @@
     {
       "id": 198,
       "hanzi": "名",
+      "set": "syllabus-l1",
+      "sourceOrder": 117,
       "pinyin": "míng",
       "meaningVi": "tên",
       "category": "person",
@@ -5178,6 +5557,8 @@
     {
       "id": 199,
       "hanzi": "岁",
+      "set": "syllabus-l1",
+      "sourceOrder": 170,
       "pinyin": "suì",
       "meaningVi": "tuổi",
       "category": "time",
@@ -5204,6 +5585,8 @@
     {
       "id": 200,
       "hanzi": "同",
+      "set": "syllabus-l1",
+      "sourceOrder": 179,
       "pinyin": "tóng",
       "meaningVi": "cùng, giống",
       "category": "function",
@@ -5224,6 +5607,2414 @@
       "artwork": {
         "file": "tong-same.webp",
         "brief": "Several students in identical uniforms sitting under one shared window frame, equal posture.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 201,
+      "hanzi": "吧",
+      "set": "syllabus-l1",
+      "sourceOrder": 4,
+      "pinyin": "ba",
+      "meaningVi": "trợ từ gợi ý, đề nghị (thôi, nhé)",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "好吧",
+          "pinyin": "hǎo ba",
+          "vi": "thôi được"
+        },
+        {
+          "zh": "走吧",
+          "pinyin": "zǒu ba",
+          "vi": "đi thôi"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "ba-suggest.webp",
+        "brief": "Two friends at a tea-house table, one offering a steaming clay teapot with an open palm in a gentle invitation, warm lantern light on varnished wood.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 202,
+      "hanzi": "班",
+      "set": "syllabus-l1",
+      "sourceOrder": 7,
+      "pinyin": "bān",
+      "meaningVi": "lớp học, ca làm",
+      "category": "education",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "班长",
+          "pinyin": "bānzhǎng",
+          "vi": "lớp trưởng"
+        },
+        {
+          "zh": "上班",
+          "pinyin": "shàngbān",
+          "vi": "đi làm"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "ban-class.webp",
+        "brief": "A classroom with rows of worn wooden desks and canvas satchels hanging on the chair backs, morning light streaming through a tall window.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 203,
+      "hanzi": "半",
+      "set": "syllabus-l1",
+      "sourceOrder": 8,
+      "pinyin": "bàn",
+      "meaningVi": "một nửa, rưỡi",
+      "category": "number",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "一半",
+          "pinyin": "yí bàn",
+          "vi": "một nửa"
+        },
+        {
+          "zh": "半个",
+          "pinyin": "bàn gè",
+          "vi": "nửa cái"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "ban-half.webp",
+        "brief": "A round loaf of bread cut cleanly in half on a linen cloth, the two halves facing the viewer, crumb texture, soft window light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 204,
+      "hanzi": "包",
+      "set": "syllabus-l1",
+      "sourceOrder": 9,
+      "pinyin": "bāo",
+      "meaningVi": "túi, bọc, bánh bao",
+      "category": "object",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "书包",
+          "pinyin": "shūbāo",
+          "vi": "cặp sách"
+        },
+        {
+          "zh": "包子",
+          "pinyin": "bāozi",
+          "vi": "bánh bao"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "bao-bag.webp",
+        "brief": "A canvas satchel stuffed with books and a steaming bamboo basket of buns beside it on a wooden bench, warm morning light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 205,
+      "hanzi": "边",
+      "set": "syllabus-l1",
+      "sourceOrder": 12,
+      "pinyin": "biān",
+      "meaningVi": "bên, cạnh",
+      "category": "direction",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "旁边",
+          "pinyin": "pángbiān",
+          "vi": "bên cạnh"
+        },
+        {
+          "zh": "里边",
+          "pinyin": "lǐbian",
+          "vi": "bên trong"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "bian-side.webp",
+        "brief": "A single small wooden boat moored at the very edge of a mossy stone riverbank, still water, soft mist and low golden light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 206,
+      "hanzi": "便",
+      "set": "syllabus-l1",
+      "sourceOrder": 13,
+      "pinyin": "biàn",
+      "meaningVi": "tiện, thuận tiện",
+      "category": "adjective",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "方便",
+          "pinyin": "fāngbiàn",
+          "vi": "tiện lợi"
+        },
+        {
+          "zh": "便宜",
+          "pinyin": "piányi",
+          "vi": "rẻ"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "bian-handy.webp",
+        "brief": "A tidy corner shop counter with tea tins, ceramic jars and cloth bundles all within arm's reach, polished wood, warm lantern light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 207,
+      "hanzi": "病",
+      "set": "syllabus-l1",
+      "sourceOrder": 14,
+      "pinyin": "bìng",
+      "meaningVi": "bệnh, ốm",
+      "category": "body",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "生病",
+          "pinyin": "shēngbìng",
+          "vi": "bị bệnh"
+        },
+        {
+          "zh": "病人",
+          "pinyin": "bìngrén",
+          "vi": "bệnh nhân"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "bing-sick.webp",
+        "brief": "A sick person wrapped in a cotton quilt in bed with a steaming herbal bowl on a wooden stool, pale morning light through paper windows.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 208,
+      "hanzi": "常",
+      "set": "syllabus-l1",
+      "sourceOrder": 18,
+      "pinyin": "cháng",
+      "meaningVi": "thường, hay",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "常常",
+          "pinyin": "chángcháng",
+          "vi": "thường xuyên"
+        },
+        {
+          "zh": "常去",
+          "pinyin": "cháng qù",
+          "vi": "hay đi"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "chang-often.webp",
+        "brief": "A well-worn earth path through a bamboo grove with many overlapping footprints pressed into the damp soil, soft morning light and mist.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 209,
+      "hanzi": "唱",
+      "set": "syllabus-l1",
+      "sourceOrder": 19,
+      "pinyin": "chàng",
+      "meaningVi": "hát",
+      "category": "verb",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "唱歌",
+          "pinyin": "chànggē",
+          "vi": "hát"
+        },
+        {
+          "zh": "唱戏",
+          "pinyin": "chàngxì",
+          "vi": "hát tuồng"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "chang-sing.webp",
+        "brief": "A singer in a silk robe with mouth open mid-note on a small wooden stage, paper lanterns glowing behind, warm dusk light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 210,
+      "hanzi": "超",
+      "set": "syllabus-l1",
+      "sourceOrder": 20,
+      "pinyin": "chāo",
+      "meaningVi": "vượt, siêu",
+      "category": "verb",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "超市",
+          "pinyin": "chāoshì",
+          "vi": "siêu thị"
+        },
+        {
+          "zh": "超过",
+          "pinyin": "chāoguò",
+          "vi": "vượt qua"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "chao-overtake.webp",
+        "brief": "A runner in cotton sportswear overtaking another runner on a stone track, dust and motion blur, low golden light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 211,
+      "hanzi": "出",
+      "set": "syllabus-l1",
+      "sourceOrder": 23,
+      "pinyin": "chū",
+      "meaningVi": "ra, xuất",
+      "category": "verb",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "出门",
+          "pinyin": "chūmén",
+          "vi": "ra ngoài"
+        },
+        {
+          "zh": "出口",
+          "pinyin": "chūkǒu",
+          "vi": "lối ra"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "chu-exit.webp",
+        "brief": "A figure stepping out of a dark wooden doorway over a stone threshold into bright daylight, strong backlight, silhouette and warm dust.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 212,
+      "hanzi": "穿",
+      "set": "syllabus-l1",
+      "sourceOrder": 24,
+      "pinyin": "chuān",
+      "meaningVi": "mặc, xuyên qua",
+      "category": "verb",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "穿衣服",
+          "pinyin": "chuān yīfu",
+          "vi": "mặc quần áo"
+        },
+        {
+          "zh": "穿过",
+          "pinyin": "chuānguò",
+          "vi": "đi xuyên qua"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "chuan-wear.webp",
+        "brief": "A person pulling a blue cotton jacket over one arm, other sleeve still empty, folded scarves on a shelf, soft window light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 213,
+      "hanzi": "床",
+      "set": "syllabus-l1",
+      "sourceOrder": 25,
+      "pinyin": "chuáng",
+      "meaningVi": "giường",
+      "category": "object",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "起床",
+          "pinyin": "qǐchuáng",
+          "vi": "thức dậy"
+        },
+        {
+          "zh": "床上",
+          "pinyin": "chuáng shang",
+          "vi": "trên giường"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "chuang-bed.webp",
+        "brief": "A wooden bed with a rumpled linen quilt and pillow, a beam of morning sunlight crossing the sheets, dust motes in the air.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 214,
+      "hanzi": "打",
+      "set": "syllabus-l1",
+      "sourceOrder": 26,
+      "pinyin": "dǎ",
+      "meaningVi": "đánh, chơi, gọi",
+      "category": "verb",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "打球",
+          "pinyin": "dǎqiú",
+          "vi": "chơi bóng"
+        },
+        {
+          "zh": "打电话",
+          "pinyin": "dǎ diànhuà",
+          "vi": "gọi điện thoại"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "da-hit.webp",
+        "brief": "A hand striking a taut drum skin with a wooden stick, ripples of vibration, lacquered drum body, warm lantern light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 215,
+      "hanzi": "到",
+      "set": "syllabus-l1",
+      "sourceOrder": 29,
+      "pinyin": "dào",
+      "meaningVi": "đến, tới",
+      "category": "verb",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "到家",
+          "pinyin": "dào jiā",
+          "vi": "về đến nhà"
+        },
+        {
+          "zh": "到了",
+          "pinyin": "dào le",
+          "vi": "đến rồi"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "dao-arrive.webp",
+        "brief": "A tired traveller with a bundle reaching a wooden village gate at dusk, stone steps, a lit lantern welcoming above.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 216,
+      "hanzi": "道",
+      "set": "syllabus-l1",
+      "sourceOrder": 30,
+      "pinyin": "dào",
+      "meaningVi": "đường, đạo",
+      "category": "place",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "知道",
+          "pinyin": "zhīdào",
+          "vi": "biết"
+        },
+        {
+          "zh": "道路",
+          "pinyin": "dàolù",
+          "vi": "con đường"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "dao-road.webp",
+        "brief": "A winding gravel road climbing through green terraced fields toward distant hills, golden hour light, stone walls and grass.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 217,
+      "hanzi": "得",
+      "set": "syllabus-l1",
+      "sourceOrder": 31,
+      "pinyin": "de",
+      "meaningVi": "trợ từ bổ ngữ (đạt được)",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "跑得快",
+          "pinyin": "pǎo de kuài",
+          "vi": "chạy nhanh"
+        },
+        {
+          "zh": "说得好",
+          "pinyin": "shuō de hǎo",
+          "vi": "nói hay"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "de-gain.webp",
+        "brief": "A runner far ahead of two others breaking a torn silk finish ribbon, bright sunlight, dust on a packed earth track.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 218,
+      "hanzi": "第",
+      "set": "syllabus-l1",
+      "sourceOrder": 34,
+      "pinyin": "dì",
+      "meaningVi": "thứ (số thứ tự)",
+      "category": "number",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "第一",
+          "pinyin": "dì yī",
+          "vi": "thứ nhất"
+        },
+        {
+          "zh": "第二天",
+          "pinyin": "dì èr tiān",
+          "vi": "ngày thứ hai"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "di-ordinal.webp",
+        "brief": "A wooden three-step podium with a bronze medal hung on the tallest middle step, a soft spotlight and dark curtain behind.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 219,
+      "hanzi": "儿",
+      "set": "syllabus-l1",
+      "sourceOrder": 42,
+      "pinyin": "ér",
+      "meaningVi": "con, hậu tố nhỏ",
+      "category": "person",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "儿子",
+          "pinyin": "érzi",
+          "vi": "con trai"
+        },
+        {
+          "zh": "花儿",
+          "pinyin": "huār",
+          "vi": "bông hoa"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "er-child.webp",
+        "brief": "A small boy in a padded cotton jacket holding a paper kite string, standing in a snowy courtyard, soft winter sunlight.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 220,
+      "hanzi": "房",
+      "set": "syllabus-l1",
+      "sourceOrder": 45,
+      "pinyin": "fáng",
+      "meaningVi": "nhà, phòng",
+      "category": "place",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "房子",
+          "pinyin": "fángzi",
+          "vi": "ngôi nhà"
+        },
+        {
+          "zh": "房间",
+          "pinyin": "fángjiān",
+          "vi": "căn phòng"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "fang-house.webp",
+        "brief": "A small tiled-roof house with wooden shutters and one lit window at dusk, moss on the tiles, a stone path in front.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 221,
+      "hanzi": "飞",
+      "set": "syllabus-l1",
+      "sourceOrder": 46,
+      "pinyin": "fēi",
+      "meaningVi": "bay",
+      "category": "verb",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "飞机",
+          "pinyin": "fēijī",
+          "vi": "máy bay"
+        },
+        {
+          "zh": "飞鸟",
+          "pinyin": "fēiniǎo",
+          "vi": "chim bay"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "fei-fly.webp",
+        "brief": "A crane with wings fully spread soaring over misty mountain ridges, backlit by golden sun, detailed feathers.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 222,
+      "hanzi": "非",
+      "set": "syllabus-l1",
+      "sourceOrder": 47,
+      "pinyin": "fēi",
+      "meaningVi": "không phải, phi",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "非常",
+          "pinyin": "fēicháng",
+          "vi": "rất, vô cùng"
+        },
+        {
+          "zh": "非洲",
+          "pinyin": "Fēizhōu",
+          "vi": "châu Phi"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "fei-not.webp",
+        "brief": "Two cranes standing back to back on a mossy rock with wings spread in opposite directions, calm lake light, mist.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 223,
+      "hanzi": "服",
+      "set": "syllabus-l1",
+      "sourceOrder": 49,
+      "pinyin": "fú",
+      "meaningVi": "quần áo, phục",
+      "category": "object",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "衣服",
+          "pinyin": "yīfu",
+          "vi": "quần áo"
+        },
+        {
+          "zh": "服务",
+          "pinyin": "fúwù",
+          "vi": "phục vụ"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "fu-clothes.webp",
+        "brief": "Folded silk and cotton garments stacked on a carved wooden chest with a jade hairpin on top, soft window light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 224,
+      "hanzi": "歌",
+      "set": "syllabus-l1",
+      "sourceOrder": 52,
+      "pinyin": "gē",
+      "meaningVi": "bài hát",
+      "category": "verb",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "唱歌",
+          "pinyin": "chànggē",
+          "vi": "hát"
+        },
+        {
+          "zh": "歌手",
+          "pinyin": "gēshǒu",
+          "vi": "ca sĩ"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "ge-song.webp",
+        "brief": "A folk musician playing a wooden pipa on a courtyard bench under a full moon, lantern light on lacquered strings.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 225,
+      "hanzi": "个",
+      "set": "syllabus-l1",
+      "sourceOrder": 53,
+      "pinyin": "gè",
+      "meaningVi": "cái (lượng từ chung)",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "一个",
+          "pinyin": "yí gè",
+          "vi": "một cái"
+        },
+        {
+          "zh": "个子",
+          "pinyin": "gèzi",
+          "vi": "dáng người"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "ge-piece.webp",
+        "brief": "One ripe persimmon sitting alone on a blue-glazed ceramic plate, soft side light, wood grain table.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 226,
+      "hanzi": "公",
+      "set": "syllabus-l1",
+      "sourceOrder": 56,
+      "pinyin": "gōng",
+      "meaningVi": "công, chung, ông",
+      "category": "place",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "公园",
+          "pinyin": "gōngyuán",
+          "vi": "công viên"
+        },
+        {
+          "zh": "公共",
+          "pinyin": "gōnggòng",
+          "vi": "công cộng"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "gong-public.webp",
+        "brief": "A public park with a stone gate, a pond and willow trees, strollers on the path, morning mist and soft light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 227,
+      "hanzi": "贵",
+      "set": "syllabus-l1",
+      "sourceOrder": 59,
+      "pinyin": "guì",
+      "meaningVi": "đắt, quý",
+      "category": "adjective",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "很贵",
+          "pinyin": "hěn guì",
+          "vi": "rất đắt"
+        },
+        {
+          "zh": "贵姓",
+          "pinyin": "guìxìng",
+          "vi": "quý danh (hỏi họ)"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "gui-costly.webp",
+        "brief": "A jade bracelet and a gold ingot on red silk inside a glass display case, spotlight and reflections, dark lacquer shelf.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 228,
+      "hanzi": "还",
+      "set": "syllabus-l1",
+      "sourceOrder": 62,
+      "pinyin": "hái",
+      "meaningVi": "vẫn, còn",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "还是",
+          "pinyin": "háishi",
+          "vi": "hay là, vẫn là"
+        },
+        {
+          "zh": "还有",
+          "pinyin": "hái yǒu",
+          "vi": "còn có"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "hai-still.webp",
+        "brief": "A single candle still burning at dawn beside a cooling teacup on a wooden table, pale blue window light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 229,
+      "hanzi": "号",
+      "set": "syllabus-l1",
+      "sourceOrder": 66,
+      "pinyin": "hào",
+      "meaningVi": "số, ngày, kèn",
+      "category": "time",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "号码",
+          "pinyin": "hàomǎ",
+          "vi": "số"
+        },
+        {
+          "zh": "几号",
+          "pinyin": "jǐ hào",
+          "vi": "ngày mấy"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "hao-number.webp",
+        "brief": "A brass horn resting on a wooden table beside a pocket watch, polished metal reflections, warm window light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 230,
+      "hanzi": "候",
+      "set": "syllabus-l1",
+      "sourceOrder": 71,
+      "pinyin": "hòu",
+      "meaningVi": "chờ, lúc",
+      "category": "time",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "时候",
+          "pinyin": "shíhou",
+          "vi": "lúc, khi"
+        },
+        {
+          "zh": "等候",
+          "pinyin": "děnghòu",
+          "vi": "chờ đợi"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "hou-wait.webp",
+        "brief": "A person waiting on a mossy wooden bench at a rural bus stop holding a pocket watch, soft overcast light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 231,
+      "hanzi": "欢",
+      "set": "syllabus-l1",
+      "sourceOrder": 73,
+      "pinyin": "huān",
+      "meaningVi": "vui",
+      "category": "adjective",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "欢迎",
+          "pinyin": "huānyíng",
+          "vi": "hoan nghênh"
+        },
+        {
+          "zh": "喜欢",
+          "pinyin": "xǐhuan",
+          "vi": "thích"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "huan-joy.webp",
+        "brief": "A family laughing around a round wooden table with paper lanterns overhead, steaming dishes, warm golden light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 232,
+      "hanzi": "回",
+      "set": "syllabus-l1",
+      "sourceOrder": 74,
+      "pinyin": "huí",
+      "meaningVi": "về, quay lại",
+      "category": "verb",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "回家",
+          "pinyin": "huí jiā",
+          "vi": "về nhà"
+        },
+        {
+          "zh": "回来",
+          "pinyin": "huílái",
+          "vi": "trở về"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "hui-return.webp",
+        "brief": "A wooden boat returning to a lantern-lit harbour at dusk, ripples on the water, a stone pier ahead.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 233,
+      "hanzi": "间",
+      "set": "syllabus-l1",
+      "sourceOrder": 81,
+      "pinyin": "jiān",
+      "meaningVi": "gian, giữa, khoảng",
+      "category": "place",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "时间",
+          "pinyin": "shíjiān",
+          "vi": "thời gian"
+        },
+        {
+          "zh": "中间",
+          "pinyin": "zhōngjiān",
+          "vi": "ở giữa"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "jian-between.webp",
+        "brief": "A sliver of golden sunlight passing through the gap between two wooden door panels, dust motes in the beam, dark room.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 234,
+      "hanzi": "件",
+      "set": "syllabus-l1",
+      "sourceOrder": 83,
+      "pinyin": "jiàn",
+      "meaningVi": "cái, món (lượng từ)",
+      "category": "function",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "一件衣服",
+          "pinyin": "yí jiàn yīfu",
+          "vi": "một cái áo"
+        },
+        {
+          "zh": "文件",
+          "pinyin": "wénjiàn",
+          "vi": "tài liệu"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "jian-item.webp",
+        "brief": "One folded blue cotton shirt placed alone on a bamboo shelf, woven texture, soft window light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 235,
+      "hanzi": "觉",
+      "set": "syllabus-l1",
+      "sourceOrder": 88,
+      "pinyin": "jué",
+      "meaningVi": "cảm thấy, ngủ",
+      "category": "verb",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "觉得",
+          "pinyin": "juéde",
+          "vi": "cảm thấy"
+        },
+        {
+          "zh": "睡觉",
+          "pinyin": "shuìjiào",
+          "vi": "đi ngủ"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "jue-feel.webp",
+        "brief": "A person touching a warm porcelain teacup with fingertips, eyes closed, steam rising, linen sleeve, soft window light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 236,
+      "hanzi": "可",
+      "set": "syllabus-l1",
+      "sourceOrder": 91,
+      "pinyin": "kě",
+      "meaningVi": "có thể, khả",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "可以",
+          "pinyin": "kěyǐ",
+          "vi": "có thể"
+        },
+        {
+          "zh": "可爱",
+          "pinyin": "kě'ài",
+          "vi": "đáng yêu"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "ke-can.webp",
+        "brief": "An open wooden gate with its latch lifted and a path continuing beyond it into green fields, soft morning light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 237,
+      "hanzi": "客",
+      "set": "syllabus-l1",
+      "sourceOrder": 92,
+      "pinyin": "kè",
+      "meaningVi": "khách",
+      "category": "person",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "客人",
+          "pinyin": "kèrén",
+          "vi": "khách"
+        },
+        {
+          "zh": "客气",
+          "pinyin": "kèqi",
+          "vi": "khách sáo"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "ke-guest.webp",
+        "brief": "A host bowing in a doorway to welcome a guest, tea tray in both hands, silk sleeves, warm lantern light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 238,
+      "hanzi": "课",
+      "set": "syllabus-l1",
+      "sourceOrder": 93,
+      "pinyin": "kè",
+      "meaningVi": "bài học, tiết học",
+      "category": "education",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "上课",
+          "pinyin": "shàngkè",
+          "vi": "vào học"
+        },
+        {
+          "zh": "课本",
+          "pinyin": "kèběn",
+          "vi": "sách giáo khoa"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "ke-lesson.webp",
+        "brief": "A teacher's hand holding chalk at a slate blackboard with students' wooden desks in front, chalk dust in morning light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 239,
+      "hanzi": "块",
+      "set": "syllabus-l1",
+      "sourceOrder": 95,
+      "pinyin": "kuài",
+      "meaningVi": "miếng, cục, đồng",
+      "category": "function",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "一块钱",
+          "pinyin": "yí kuài qián",
+          "vi": "một đồng"
+        },
+        {
+          "zh": "一块",
+          "pinyin": "yí kuài",
+          "vi": "một miếng"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "kuai-chunk.webp",
+        "brief": "A thick chunk of watermelon on a ceramic plate, glistening juice and black seeds, bright side light, wooden table.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 240,
+      "hanzi": "亮",
+      "set": "syllabus-l1",
+      "sourceOrder": 102,
+      "pinyin": "liàng",
+      "meaningVi": "sáng",
+      "category": "adjective",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "明亮",
+          "pinyin": "míngliàng",
+          "vi": "sáng sủa"
+        },
+        {
+          "zh": "漂亮",
+          "pinyin": "piàoliang",
+          "vi": "đẹp"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "liang-bright.webp",
+        "brief": "A glowing paper lantern in a dark stone lane, its warm light reflecting on wet cobblestones, soft mist.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 241,
+      "hanzi": "零",
+      "set": "syllabus-l1",
+      "sourceOrder": 103,
+      "pinyin": "líng",
+      "meaningVi": "số không",
+      "category": "number",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "零下",
+          "pinyin": "língxià",
+          "vi": "dưới không độ"
+        },
+        {
+          "zh": "零钱",
+          "pinyin": "língqián",
+          "vi": "tiền lẻ"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "ling-zero.webp",
+        "brief": "A single empty round porcelain bowl centred on a dark lacquer table, its rim catching a thin line of light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 242,
+      "hanzi": "忙",
+      "set": "syllabus-l1",
+      "sourceOrder": 109,
+      "pinyin": "máng",
+      "meaningVi": "bận",
+      "category": "adjective",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "很忙",
+          "pinyin": "hěn máng",
+          "vi": "rất bận"
+        },
+        {
+          "zh": "忙碌",
+          "pinyin": "mánglù",
+          "vi": "bận rộn"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "mang-busy.webp",
+        "brief": "A cook with flour on forearms handling stacked steaming bamboo steamers in a crowded kitchen, rising steam, warm light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 243,
+      "hanzi": "奶",
+      "set": "syllabus-l1",
+      "sourceOrder": 121,
+      "pinyin": "nǎi",
+      "meaningVi": "sữa, bà",
+      "category": "food",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "牛奶",
+          "pinyin": "niúnǎi",
+          "vi": "sữa bò"
+        },
+        {
+          "zh": "奶奶",
+          "pinyin": "nǎinai",
+          "vi": "bà nội"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "nai-milk.webp",
+        "brief": "A glass bottle of milk and a ceramic cup on a wooden tray, a splash of milk caught mid-air, soft morning light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 244,
+      "hanzi": "脑",
+      "set": "syllabus-l1",
+      "sourceOrder": 123,
+      "pinyin": "nǎo",
+      "meaningVi": "não, đầu óc",
+      "category": "body",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "电脑",
+          "pinyin": "diànnǎo",
+          "vi": "máy tính"
+        },
+        {
+          "zh": "头脑",
+          "pinyin": "tóunǎo",
+          "vi": "đầu óc"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "nao-brain.webp",
+        "brief": "A scholar in profile with a hand at his temple at a desk, warm lamp light, ink brushes and paper scrolls beside him.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 245,
+      "hanzi": "您",
+      "set": "syllabus-l1",
+      "sourceOrder": 128,
+      "pinyin": "nín",
+      "meaningVi": "ngài, ông/bà (kính ngữ)",
+      "category": "pronoun",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "您好",
+          "pinyin": "nín hǎo",
+          "vi": "chào ngài"
+        },
+        {
+          "zh": "您请",
+          "pinyin": "nín qǐng",
+          "vi": "mời ngài"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "nin-polite.webp",
+        "brief": "A young person bowing and offering a tea cup with both hands to a seated elder, silk robes, warm soft light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 246,
+      "hanzi": "漂",
+      "set": "syllabus-l1",
+      "sourceOrder": 132,
+      "pinyin": "piào",
+      "meaningVi": "đẹp (trong 漂亮)",
+      "category": "adjective",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "漂亮",
+          "pinyin": "piàoliang",
+          "vi": "đẹp"
+        },
+        {
+          "zh": "很漂亮",
+          "pinyin": "hěn piàoliang",
+          "vi": "rất đẹp"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "piao-pretty.webp",
+        "brief": "A woman in an embroidered silk dress smiling beside blossoming pink peonies in a garden, soft diffused light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 247,
+      "hanzi": "期",
+      "set": "syllabus-l1",
+      "sourceOrder": 135,
+      "pinyin": "qī",
+      "meaningVi": "kỳ, thời kỳ",
+      "category": "time",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "星期",
+          "pinyin": "xīngqī",
+          "vi": "tuần"
+        },
+        {
+          "zh": "日期",
+          "pinyin": "rìqī",
+          "vi": "ngày tháng"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "qi-period.webp",
+        "brief": "Seven small coloured river stones in a row on a stone windowsill, a hand setting down the last one, soft light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 248,
+      "hanzi": "起",
+      "set": "syllabus-l1",
+      "sourceOrder": 136,
+      "pinyin": "qǐ",
+      "meaningVi": "dậy, lên",
+      "category": "verb",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "起床",
+          "pinyin": "qǐchuáng",
+          "vi": "thức dậy"
+        },
+        {
+          "zh": "起来",
+          "pinyin": "qǐlái",
+          "vi": "đứng lên"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "qi-rise.webp",
+        "brief": "A person sitting up in bed stretching both arms upward, linen sheets, morning sunlight streaming in.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 249,
+      "hanzi": "气",
+      "set": "syllabus-l1",
+      "sourceOrder": 137,
+      "pinyin": "qì",
+      "meaningVi": "khí, hơi",
+      "category": "nature",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "天气",
+          "pinyin": "tiānqì",
+          "vi": "thời tiết"
+        },
+        {
+          "zh": "生气",
+          "pinyin": "shēngqì",
+          "vi": "tức giận"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "qi-air.webp",
+        "brief": "Visible steam rising from a copper kettle on a stove in cold morning air, strong backlight, swirling vapour.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 250,
+      "hanzi": "认",
+      "set": "syllabus-l1",
+      "sourceOrder": 145,
+      "pinyin": "rèn",
+      "meaningVi": "nhận ra, quen",
+      "category": "verb",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "认识",
+          "pinyin": "rènshi",
+          "vi": "quen biết"
+        },
+        {
+          "zh": "认真",
+          "pinyin": "rènzhēn",
+          "vi": "nghiêm túc"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "ren-recognise.webp",
+        "brief": "Two travellers recognising each other across a stone bridge with hands raised in greeting, lantern light at dusk.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 251,
+      "hanzi": "商",
+      "set": "syllabus-l1",
+      "sourceOrder": 148,
+      "pinyin": "shāng",
+      "meaningVi": "thương mại, buôn bán",
+      "category": "person",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "商店",
+          "pinyin": "shāngdiàn",
+          "vi": "cửa hàng"
+        },
+        {
+          "zh": "商人",
+          "pinyin": "shāngrén",
+          "vi": "thương nhân"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "shang-trade.webp",
+        "brief": "A merchant's wooden stall with rolls of cloth and a brass balance scale, warm lantern light, wood and fabric textures.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 252,
+      "hanzi": "识",
+      "set": "syllabus-l1",
+      "sourceOrder": 157,
+      "pinyin": "shí",
+      "meaningVi": "biết, nhận biết",
+      "category": "education",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "认识",
+          "pinyin": "rènshi",
+          "vi": "quen biết"
+        },
+        {
+          "zh": "知识",
+          "pinyin": "zhīshi",
+          "vi": "kiến thức"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "shi-know.webp",
+        "brief": "An open old book on a desk beside a lit candle and reading spectacles, dust motes, paper texture, warm light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 253,
+      "hanzi": "士",
+      "set": "syllabus-l1",
+      "sourceOrder": 158,
+      "pinyin": "shì",
+      "meaningVi": "sĩ, chiến sĩ, binh",
+      "category": "person",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "战士",
+          "pinyin": "zhànshì",
+          "vi": "chiến sĩ"
+        },
+        {
+          "zh": "护士",
+          "pinyin": "hùshi",
+          "vi": "y tá"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "shi-soldier.webp",
+        "brief": "A soldier in plain padded armour standing guard at a stone city gate, torchlight on his helmet and spear, dusk.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 254,
+      "hanzi": "市",
+      "set": "syllabus-l1",
+      "sourceOrder": 159,
+      "pinyin": "shì",
+      "meaningVi": "chợ, thành phố",
+      "category": "place",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "城市",
+          "pinyin": "chéngshì",
+          "vi": "thành phố"
+        },
+        {
+          "zh": "市场",
+          "pinyin": "shìchǎng",
+          "vi": "chợ"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "shi-market.webp",
+        "brief": "A busy open-air market with fruit stalls and canvas awnings, baskets of produce, sunlit morning crowd.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 255,
+      "hanzi": "事",
+      "set": "syllabus-l1",
+      "sourceOrder": 160,
+      "pinyin": "shì",
+      "meaningVi": "việc, sự việc",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "事情",
+          "pinyin": "shìqing",
+          "vi": "sự việc"
+        },
+        {
+          "zh": "没事",
+          "pinyin": "méi shì",
+          "vi": "không sao"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "shi-matter.webp",
+        "brief": "A craftsman's hands carving a small wooden bird at a workbench, wood shavings, warm lamp light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 256,
+      "hanzi": "视",
+      "set": "syllabus-l1",
+      "sourceOrder": 161,
+      "pinyin": "shì",
+      "meaningVi": "nhìn, thị",
+      "category": "verb",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "电视",
+          "pinyin": "diànshì",
+          "vi": "tivi"
+        },
+        {
+          "zh": "视频",
+          "pinyin": "shìpín",
+          "vi": "video"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "shi-look.webp",
+        "brief": "A person gazing through a window at a distant mountain with a hand shading the eyes, bright light on the sill.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 257,
+      "hanzi": "司",
+      "set": "syllabus-l1",
+      "sourceOrder": 168,
+      "pinyin": "sī",
+      "meaningVi": "quản lý, tài xế",
+      "category": "person",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "公司",
+          "pinyin": "gōngsī",
+          "vi": "công ty"
+        },
+        {
+          "zh": "司机",
+          "pinyin": "sījī",
+          "vi": "tài xế"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "si-driver.webp",
+        "brief": "A taxi driver's hands on a steering wheel at dusk, rain-lit street reflections in the windshield, warm dashboard glow.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 258,
+      "hanzi": "它",
+      "set": "syllabus-l1",
+      "sourceOrder": 172,
+      "pinyin": "tā",
+      "meaningVi": "nó (vật, con vật)",
+      "category": "pronoun",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "它们",
+          "pinyin": "tāmen",
+          "vi": "chúng nó"
+        },
+        {
+          "zh": "它的",
+          "pinyin": "tā de",
+          "vi": "của nó"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "ta-it.webp",
+        "brief": "A small orange cat curled on a windowsill looking up toward the viewer, soft fur texture, gentle window light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 259,
+      "hanzi": "题",
+      "set": "syllabus-l1",
+      "sourceOrder": 175,
+      "pinyin": "tí",
+      "meaningVi": "đề, câu hỏi",
+      "category": "education",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "问题",
+          "pinyin": "wèntí",
+          "vi": "câu hỏi, vấn đề"
+        },
+        {
+          "zh": "题目",
+          "pinyin": "tímù",
+          "vi": "đề bài"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "ti-question.webp",
+        "brief": "A student at a wooden desk resting chin on hand, brush raised over a blank scroll, thinking, warm lamp light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 260,
+      "hanzi": "条",
+      "set": "syllabus-l1",
+      "sourceOrder": 177,
+      "pinyin": "tiáo",
+      "meaningVi": "cái, con (vật dài)",
+      "category": "function",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "一条鱼",
+          "pinyin": "yì tiáo yú",
+          "vi": "một con cá"
+        },
+        {
+          "zh": "一条路",
+          "pinyin": "yì tiáo lù",
+          "vi": "một con đường"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "tiao-strip.webp",
+        "brief": "A long narrow river winding through green fields seen from above, golden light on the water ribbon.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 261,
+      "hanzi": "玩",
+      "set": "syllabus-l1",
+      "sourceOrder": 181,
+      "pinyin": "wán",
+      "meaningVi": "chơi",
+      "category": "verb",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "玩儿",
+          "pinyin": "wánr",
+          "vi": "chơi"
+        },
+        {
+          "zh": "好玩",
+          "pinyin": "hǎowán",
+          "vi": "vui"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "wan-play.webp",
+        "brief": "Children spinning wooden tops on a courtyard's stone floor, laughing, afternoon light and long shadows.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 262,
+      "hanzi": "喂",
+      "set": "syllabus-l1",
+      "sourceOrder": 183,
+      "pinyin": "wèi",
+      "meaningVi": "alô, cho ăn",
+      "category": "verb",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "喂你好",
+          "pinyin": "wèi nǐ hǎo",
+          "vi": "alô, xin chào"
+        },
+        {
+          "zh": "喂鱼",
+          "pinyin": "wèi yú",
+          "vi": "cho cá ăn"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "wei-feed.webp",
+        "brief": "A hand scattering grain to ducks on a pond, ripples spreading, golden light on the water.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 263,
+      "hanzi": "息",
+      "set": "syllabus-l1",
+      "sourceOrder": 190,
+      "pinyin": "xī",
+      "meaningVi": "nghỉ, hơi thở",
+      "category": "verb",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "休息",
+          "pinyin": "xiūxi",
+          "vi": "nghỉ ngơi"
+        },
+        {
+          "zh": "消息",
+          "pinyin": "xiāoxi",
+          "vi": "tin tức"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "xi-rest.webp",
+        "brief": "A cat sleeping curled on a quilt with a candle burning low beside it, soft breath, warm light, cotton texture.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 264,
+      "hanzi": "习",
+      "set": "syllabus-l1",
+      "sourceOrder": 191,
+      "pinyin": "xí",
+      "meaningVi": "học, tập",
+      "category": "education",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "学习",
+          "pinyin": "xuéxí",
+          "vi": "học tập"
+        },
+        {
+          "zh": "练习",
+          "pinyin": "liànxí",
+          "vi": "luyện tập"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "xi-practise.webp",
+        "brief": "A student practising an ink painting of bamboo leaves on rice paper, ink stone and brush, hand mid-stroke, window light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 265,
+      "hanzi": "喜",
+      "set": "syllabus-l1",
+      "sourceOrder": 192,
+      "pinyin": "xǐ",
+      "meaningVi": "vui, thích",
+      "category": "adjective",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "喜欢",
+          "pinyin": "xǐhuan",
+          "vi": "thích"
+        },
+        {
+          "zh": "喜事",
+          "pinyin": "xǐshì",
+          "vi": "việc vui"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "xi-happy.webp",
+        "brief": "A doorway decorated with red silk ribbons and paper lanterns for a celebration, joyful warm light on wooden doors.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 266,
+      "hanzi": "系",
+      "set": "syllabus-l1",
+      "sourceOrder": 193,
+      "pinyin": "xì",
+      "meaningVi": "hệ, liên hệ, buộc",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "关系",
+          "pinyin": "guānxi",
+          "vi": "quan hệ"
+        },
+        {
+          "zh": "系统",
+          "pinyin": "xìtǒng",
+          "vi": "hệ thống"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "xi-tie.webp",
+        "brief": "Two hands tying a red silk cord into a knot between two wooden posts, rope fibres visible, soft window light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 267,
+      "hanzi": "先",
+      "set": "syllabus-l1",
+      "sourceOrder": 195,
+      "pinyin": "xiān",
+      "meaningVi": "trước, trước tiên",
+      "category": "time",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "先生",
+          "pinyin": "xiānsheng",
+          "vi": "ông, ngài"
+        },
+        {
+          "zh": "先后",
+          "pinyin": "xiānhòu",
+          "vi": "trước sau"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "xian-first.webp",
+        "brief": "A lone walker leading a line of footprints across fresh snow, other walkers far behind, soft dawn light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 268,
+      "hanzi": "现",
+      "set": "syllabus-l1",
+      "sourceOrder": 196,
+      "pinyin": "xiàn",
+      "meaningVi": "hiện, bây giờ",
+      "category": "time",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "现在",
+          "pinyin": "xiànzài",
+          "vi": "bây giờ"
+        },
+        {
+          "zh": "现代",
+          "pinyin": "xiàndài",
+          "vi": "hiện đại"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "xian-now.webp",
+        "brief": "A hand wiping mist off a bronze mirror to reveal a clear reflection, soft light, metallic texture.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 269,
+      "hanzi": "些",
+      "set": "syllabus-l1",
+      "sourceOrder": 200,
+      "pinyin": "xiē",
+      "meaningVi": "một vài, một số",
+      "category": "function",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "一些",
+          "pinyin": "yìxiē",
+          "vi": "một vài"
+        },
+        {
+          "zh": "这些",
+          "pinyin": "zhèxiē",
+          "vi": "những cái này"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "xie-some.webp",
+        "brief": "A small handful of grey and white pebbles in an open palm, fine skin texture, soft side light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 270,
+      "hanzi": "兴",
+      "set": "syllabus-l1",
+      "sourceOrder": 205,
+      "pinyin": "xìng",
+      "meaningVi": "hứng thú, vui",
+      "category": "adjective",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "高兴",
+          "pinyin": "gāoxìng",
+          "vi": "vui"
+        },
+        {
+          "zh": "兴趣",
+          "pinyin": "xìngqù",
+          "vi": "hứng thú"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "xing-delight.webp",
+        "brief": "A child with a wide smile clapping hands at a sparkling firework, face lit by warm glow, night sky.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 271,
+      "hanzi": "休",
+      "set": "syllabus-l1",
+      "sourceOrder": 206,
+      "pinyin": "xiū",
+      "meaningVi": "nghỉ ngơi",
+      "category": "verb",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "休息",
+          "pinyin": "xiūxi",
+          "vi": "nghỉ ngơi"
+        },
+        {
+          "zh": "休假",
+          "pinyin": "xiūjià",
+          "vi": "nghỉ phép"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "xiu-rest.webp",
+        "brief": "A traveller resting with his back against a large tree trunk, walking staff on the ground, dappled light through leaves.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 272,
+      "hanzi": "样",
+      "set": "syllabus-l1",
+      "sourceOrder": 209,
+      "pinyin": "yàng",
+      "meaningVi": "kiểu, dạng",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "怎么样",
+          "pinyin": "zěnmeyàng",
+          "vi": "thế nào"
+        },
+        {
+          "zh": "一样",
+          "pinyin": "yíyàng",
+          "vi": "giống nhau"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "yang-kind.webp",
+        "brief": "Two matching clay jars with the same glaze and shape side by side on a wooden shelf, soft light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 273,
+      "hanzi": "宜",
+      "set": "syllabus-l1",
+      "sourceOrder": 215,
+      "pinyin": "yí",
+      "meaningVi": "thích hợp",
+      "category": "adjective",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "便宜",
+          "pinyin": "piányi",
+          "vi": "rẻ"
+        },
+        {
+          "zh": "适宜",
+          "pinyin": "shìyí",
+          "vi": "thích hợp"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "yi-suitable.webp",
+        "brief": "A shopkeeper's wooden balance scale tipped by a bundle of vegetables against a few copper coins, warm light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 274,
+      "hanzi": "以",
+      "set": "syllabus-l1",
+      "sourceOrder": 216,
+      "pinyin": "yǐ",
+      "meaningVi": "dùng, để, bằng",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "可以",
+          "pinyin": "kěyǐ",
+          "vi": "có thể"
+        },
+        {
+          "zh": "以后",
+          "pinyin": "yǐhòu",
+          "vi": "sau này"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "yi-use.webp",
+        "brief": "A traveller using a long bamboo pole to cross a stream over stepping stones, clear water, soft forest light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 275,
+      "hanzi": "椅",
+      "set": "syllabus-l1",
+      "sourceOrder": 217,
+      "pinyin": "yǐ",
+      "meaningVi": "ghế",
+      "category": "object",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "椅子",
+          "pinyin": "yǐzi",
+          "vi": "cái ghế"
+        },
+        {
+          "zh": "木椅",
+          "pinyin": "mùyǐ",
+          "vi": "ghế gỗ"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "yi-chair.webp",
+        "brief": "A carved wooden chair beside a window with a sunbeam on its seat, wood grain and a woven cushion.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 276,
+      "hanzi": "影",
+      "set": "syllabus-l1",
+      "sourceOrder": 218,
+      "pinyin": "yǐng",
+      "meaningVi": "bóng, phim",
+      "category": "object",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "电影",
+          "pinyin": "diànyǐng",
+          "vi": "phim"
+        },
+        {
+          "zh": "影子",
+          "pinyin": "yǐngzi",
+          "vi": "cái bóng"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "ying-shadow.webp",
+        "brief": "A long shadow of a standing person cast on a whitewashed wall at sunset, lattice window light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 277,
+      "hanzi": "元",
+      "set": "syllabus-l1",
+      "sourceOrder": 223,
+      "pinyin": "yuán",
+      "meaningVi": "đồng (tiền), đầu",
+      "category": "object",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "一元",
+          "pinyin": "yì yuán",
+          "vi": "một đồng"
+        },
+        {
+          "zh": "元旦",
+          "pinyin": "Yuándàn",
+          "vi": "Tết Dương lịch"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "yuan-coin.webp",
+        "brief": "A single round brass coin with a square hole on folded red silk, polished metal sheen, soft window light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 278,
+      "hanzi": "再",
+      "set": "syllabus-l1",
+      "sourceOrder": 226,
+      "pinyin": "zài",
+      "meaningVi": "lại, nữa",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "再见",
+          "pinyin": "zàijiàn",
+          "vi": "tạm biệt"
+        },
+        {
+          "zh": "再来",
+          "pinyin": "zàilái",
+          "vi": "lại đến"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "zai-again.webp",
+        "brief": "A traveller waving from a departing wooden boat to a figure on the pier, dusk glow on the water.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 279,
+      "hanzi": "怎",
+      "set": "syllabus-l1",
+      "sourceOrder": 229,
+      "pinyin": "zěn",
+      "meaningVi": "sao, thế nào",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "怎么",
+          "pinyin": "zěnme",
+          "vi": "thế nào, sao"
+        },
+        {
+          "zh": "怎么样",
+          "pinyin": "zěnmeyàng",
+          "vi": "ra sao"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "zen-how.webp",
+        "brief": "A traveller at a crossroads with a signpost, hand on chin and head tilted, soft mist and golden light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 280,
+      "hanzi": "找",
+      "set": "syllabus-l1",
+      "sourceOrder": 230,
+      "pinyin": "zhǎo",
+      "meaningVi": "tìm",
+      "category": "verb",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "找人",
+          "pinyin": "zhǎo rén",
+          "vi": "tìm người"
+        },
+        {
+          "zh": "找到",
+          "pinyin": "zhǎodào",
+          "vi": "tìm thấy"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "zhao-search.webp",
+        "brief": "A child with a lantern searching under a wooden table, dusty floorboards, warm light on curious face.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 281,
+      "hanzi": "真",
+      "set": "syllabus-l1",
+      "sourceOrder": 232,
+      "pinyin": "zhēn",
+      "meaningVi": "thật",
+      "category": "adjective",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "真好",
+          "pinyin": "zhēn hǎo",
+          "vi": "thật tốt"
+        },
+        {
+          "zh": "真的",
+          "pinyin": "zhēn de",
+          "vi": "thật vậy"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "zhen-real.webp",
+        "brief": "A genuine jade pendant held up to the light by fingertips, showing translucent green veins, soft backlight.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 282,
+      "hanzi": "正",
+      "set": "syllabus-l1",
+      "sourceOrder": 233,
+      "pinyin": "zhèng",
+      "meaningVi": "đúng, chính, đang",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "正在",
+          "pinyin": "zhèngzài",
+          "vi": "đang"
+        },
+        {
+          "zh": "正好",
+          "pinyin": "zhènghǎo",
+          "vi": "vừa đúng"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "zheng-upright.webp",
+        "brief": "A carpenter checking a plumb line against a perfectly upright beam, sawdust in the air, warm lamp light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 283,
+      "hanzi": "知",
+      "set": "syllabus-l1",
+      "sourceOrder": 234,
+      "pinyin": "zhī",
+      "meaningVi": "biết",
+      "category": "verb",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "知道",
+          "pinyin": "zhīdào",
+          "vi": "biết"
+        },
+        {
+          "zh": "知识",
+          "pinyin": "zhīshi",
+          "vi": "kiến thức"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "zhi-know.webp",
+        "brief": "A wise owl perched on a branch at dusk looking calmly at the viewer, detailed feathers, soft backlight.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 284,
+      "hanzi": "只",
+      "set": "syllabus-l1",
+      "sourceOrder": 235,
+      "pinyin": "zhǐ",
+      "meaningVi": "chỉ",
+      "category": "function",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "只有",
+          "pinyin": "zhǐyǒu",
+          "vi": "chỉ có"
+        },
+        {
+          "zh": "只是",
+          "pinyin": "zhǐshì",
+          "vi": "chỉ là"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "zhi-only.webp",
+        "brief": "A lone small boat with a single sail on a vast calm lake, mist and soft pale light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 285,
+      "hanzi": "钟",
+      "set": "syllabus-l1",
+      "sourceOrder": 237,
+      "pinyin": "zhōng",
+      "meaningVi": "chuông, đồng hồ",
+      "category": "time",
+      "mnemonicKind": "concrete",
+      "examples": [
+        {
+          "zh": "分钟",
+          "pinyin": "fēnzhōng",
+          "vi": "phút"
+        },
+        {
+          "zh": "钟表",
+          "pinyin": "zhōngbiǎo",
+          "vi": "đồng hồ"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "zhong-bell.webp",
+        "brief": "A bronze temple bell hanging in a wooden frame, the striker mid-swing, morning mist and soft light.",
+        "status": "pending-artwork"
+      }
+    },
+    {
+      "id": 286,
+      "hanzi": "租",
+      "set": "syllabus-l1",
+      "sourceOrder": 242,
+      "pinyin": "zū",
+      "meaningVi": "thuê",
+      "category": "verb",
+      "mnemonicKind": "contextual",
+      "examples": [
+        {
+          "zh": "租房",
+          "pinyin": "zūfáng",
+          "vi": "thuê nhà"
+        },
+        {
+          "zh": "房租",
+          "pinyin": "fángzū",
+          "vi": "tiền thuê nhà"
+        }
+      ],
+      "pilot": false,
+      "artwork": {
+        "file": "zu-rent.webp",
+        "brief": "A hand giving a brass key to another hand in front of a small timber house door, warm light, wood grain.",
         "status": "pending-artwork"
       }
     }

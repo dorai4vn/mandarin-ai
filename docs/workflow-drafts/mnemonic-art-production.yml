@@ -1,6 +1,6 @@
 # DRAFT - NOT ACTIVE, NOT TO BE COPIED until the owner has QC'd the nine-image pilot AND given separate final budget approval.
 # Minimal launcher like mnemonic-art-pilot.yml (owner copies ONLY this file to .github/workflows/ on main; the Claude app cannot write
-# workflows). Generates the REMAINING characters of beginner200.json (skip-existing, serial, bounded batch) with the approved
+# workflows). Generates the REMAINING ACTIVE characters (246 syllabus L1 set minus the 6 retained pilot; archive records are never generated) of beginner200.json (skip-existing, serial, bounded batch) with the approved
 # style/model/quality. Shares the concurrency group and artifact name with the pilot so the spend ledger is one chain.
 # Trust note: the code at reviewed_sha runs in the job that holds the API key -> the owner must have read that exact commit.
 name: Mnemonic artwork production (manual)
@@ -20,7 +20,7 @@ on:
         options: ['25', '50', '100', '200']
         default: '50'
       confirm_budget_usd:
-        description: 'CUMULATIVE max USD across ALL runs incl. pilot (owner-approved final budget; <= 10 sanity ceiling, not a provider cap)'
+        description: 'CUMULATIVE max USD across ALL runs incl. pilot (owner-approved final budget; <= 6 owner-approved cumulative estimate, not a provider cap)'
         required: true
 
 permissions:

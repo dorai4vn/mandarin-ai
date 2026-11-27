@@ -12,9 +12,11 @@ export const PILOT_MAX_USD = 1;
 export const PILOT_MAX_IMAGES = 10;
 // Production (remaining ~190) mode: explicit owner budget per dispatch. This is a sanity ceiling on a typo, NOT a
 // provider-enforced cap and NOT the approved budget (the owner's --max-spend-usd is). Provider-side limit still advised.
-export const PRODUCTION_SANITY_MAX_USD = 10;
+export const PRODUCTION_SANITY_MAX_USD = 6; // owner-approved cumulative ESTIMATED budget for this scope (2026-11-27)
 export const PRODUCTION_MAX_BATCH = 200;
 export const PRODUCTION_MIN_STORED = 10; // pilot images must already be stored (carried manifest) before bulk spend
+/** Active = in the Level 1 syllabus set. Records without a `set` (synthetic test fixtures, old datasets) count as active. */
+export const isActive = (c) => c.set === undefined || c.set === 'syllabus-l1';
 export const sha256 = (buf) => createHash('sha256').update(buf).digest('hex');
 
 export function loadDataset(path) {
@@ -77,7 +79,8 @@ export function reviewDataset(data) {
 /** Explicit selection only: --only 山,水  or --ids 1-10,15. Returns characters. */
 export function select(data, { only, ids, all }) {
   const chars = data.characters;
-  if (all) return chars;
+  // --all = ACTIVE set only. Archive ('extension') records are reachable only by explicit --only/--ids (never production).
+  if (all) return chars.filter(isActive);
   const picked = new Set();
   if (only)
     for (const h of only
@@ -109,6 +112,67 @@ export function loadManifest(path) {
   if (m.version !== 1 || typeof m.entries !== 'object') throw new Error('manifest: bad shape');
   return m;
 }
+const HEX64 = /^[0-9a-f]{64}$/;
+/**
+ * Production fail-closed guard for datasets that declare `meta.retainedPilot` (files + priorRequestsAtLeast).
+ * The carried manifest must contain ALL retained images (active AND archive) as stored, checksum-valid in storage,
+ * with a promptHash equal to the dataset's current prompt (frozen v1 / revised v2 are therefore stable), no unresolved
+ * 'requested'/'failed' entries, no orphan entries, and a spend ledger that is not lower than what the entries
+ * themselves prove (price of every stored image + every archived revision in history). Throws on any problem.
+ */
+export async function verifyCarriedLedger({ manifest, data, storage }) {
+  const rp = data.meta?.retainedPilot;
+  if (!rp) return;
+  const bad = [];
+  const byFile = new Map(data.characters.map((c) => [c.artwork.file, c]));
+  const spent = manifest.spentUsdEstimated;
+  if (typeof spent !== 'number' || !Number.isFinite(spent) || spent <= 0)
+    bad.push('spentUsdEstimated missing or not a positive number');
+  let proven = 0;
+  let requests = 0;
+  for (const file of rp.files) {
+    const e = manifest.entries[file];
+    const c = byFile.get(file);
+    if (!c) {
+      bad.push(`${file}: not in dataset`);
+      continue;
+    }
+    if (!e || e.status !== 'stored') {
+      bad.push(`${file}: not stored in carried manifest`);
+      continue;
+    }
+    if (!HEX64.test(e.sha256 ?? '') || typeof e.path !== 'string')
+      bad.push(`${file}: no checksum/path`);
+    else {
+      const body = await storage.get(e.path);
+      if (!body || sha256(body) !== e.sha256)
+        bad.push(`${file}: stored file missing or checksum mismatch`);
+    }
+    if (e.promptHash !== promptHash(buildPrompt(c, data.meta)))
+      bad.push(`${file}: promptHash differs from dataset prompt (would force regeneration)`);
+    proven += Number(e.priceUsdEstimated) || 0;
+    requests += 1;
+    for (const h of e.history ?? []) {
+      proven += Number(h.priceUsdEstimated) || 0;
+      requests += 1;
+    }
+  }
+  for (const [file, e] of Object.entries(manifest.entries)) {
+    if (!byFile.has(file)) bad.push(`${file}: orphan manifest entry`);
+    else if (e.status === 'requested' || e.status === 'failed')
+      bad.push(`${file}: unresolved ${e.status} entry (needs owner review, never auto-retried)`);
+  }
+  if (requests < rp.priorRequestsAtLeast)
+    bad.push(
+      `ledger shows ${requests} prior requests, expected at least ${rp.priorRequestsAtLeast}`,
+    );
+  if (Number.isFinite(spent) && spent + 1e-9 < proven)
+    bad.push(
+      `spentUsdEstimated ${spent} is lower than ${proven} proven by stored entries (tampered ledger)`,
+    );
+  if (bad.length) throw new Error(`carried ledger rejected (fail closed): ${bad.join('; ')}`);
+}
+
 /** Atomic write so a crash never leaves a half-written resumable manifest. */
 export function saveManifest(path, m) {
   mkdirSync(dirname(path), { recursive: true });
@@ -347,6 +411,14 @@ export async function run({
   if (revise && production)
     throw new Error('revise is not allowed in production mode: run QC revisions separately first');
   const manifest = loadManifest(manifestPath);
+  if (production) {
+    const archived = selection.filter((c) => !isActive(c));
+    if (archived.length)
+      throw new Error(
+        `production: archive records are never generated (${archived.map((c) => c.hanzi).join('')})`,
+      );
+    await verifyCarriedLedger({ manifest, data, storage });
+  }
   const plan = [];
   for (const c of selection) {
     const prompt = buildPrompt(c, data.meta);
