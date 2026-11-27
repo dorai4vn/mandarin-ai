@@ -30,6 +30,10 @@ on:
       recover_run_id:
         description: 'ONLY 46057258136 (run that failed input validation before Generate). Needs first_run=true; proven via jobs API.'
         required: false
+      revise:
+        description: 'true ONLY to regenerate already-stored characters whose brief was revised in the reviewed SHA (QC revision, e.g. 人,雨). Needs first_run=false; old image is archived in the artifact.'
+        type: boolean
+        default: false
       confirm_spend_cap:
         description: 'Max USD for ALL pilot runs combined (<= 1)'
         default: '1'
@@ -59,6 +63,7 @@ jobs:
       IN_QUALITY: ${{ inputs.quality }}
       IN_CAP: ${{ inputs.confirm_spend_cap }}
       IN_FIRST: ${{ inputs.first_run }}
+      IN_REVISE: ${{ inputs.revise }}
       PREV_RUN: ${{ inputs.previous_run_id }}
       RECOVER_RUN: ${{ inputs.recover_run_id }}
       RECOVERABLE_RUN: '46057258136'
@@ -101,6 +106,8 @@ jobs:
           if rec and rec != env("RECOVERABLE_RUN"):
               fail("recover_run_id may only be the single hardcoded run " + env("RECOVERABLE_RUN"))
           first = env("IN_FIRST")
+          if env("IN_REVISE") == "true" and first == "true":
+              fail("revise=true needs an existing manifest: first_run must be false")
           if first == "true":
               if prev:
                   fail("first_run=true must not have previous_run_id")
@@ -150,7 +157,7 @@ jobs:
           fi
           rm -f runs.json jobs.json
 
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 (node24)
         with:
           ref: ${{ inputs.reviewed_sha }}
           persist-credentials: false
@@ -160,8 +167,8 @@ jobs:
           [ "$(git rev-parse HEAD)" = "$IN_SHA" ] || { echo "checked-out HEAD != reviewed_sha"; exit 1; }
           test -f scripts/mnemonic-art/cli.mjs
           git log -1 --format='reviewing %H %s' | tee -a "$GITHUB_STEP_SUMMARY"
-      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5 (node24, peeled tag commit)
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5 (node24)
         with:
           node-version: 22
           cache: pnpm
@@ -181,7 +188,9 @@ jobs:
         run: |
           pnpm test:mnemonic-art
           pnpm mnemonic-art review
-          pnpm mnemonic-art plan --only "$IN_ONLY"
+          extra=()
+          if [ "$IN_REVISE" = "true" ]; then extra+=(--revise); fi
+          pnpm mnemonic-art plan --only "$IN_ONLY" "${extra[@]}"
 
       - name: Generate (the ONLY step with the secret; retries 0)
         env:
@@ -197,7 +206,9 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$IN_FIRST" = "true" ]; then expect=none; else expect=existing; fi
-          pnpm mnemonic-art generate --only "$IN_ONLY" --live --storage local --max-retries 0 \
+          extra=()
+          if [ "$IN_REVISE" = "true" ]; then extra+=(--revise); fi
+          pnpm mnemonic-art generate --only "$IN_ONLY" "${extra[@]}" --live --storage local --max-retries 0 \
             --max-spend-usd "$IN_CAP" --expect-manifest "$expect" --run-id "$THIS_RUN" --commit "$IN_SHA"
 
       - name: Detect candidate artifacts
@@ -212,7 +223,7 @@ jobs:
 
       - name: Upload candidate artifacts (local only, no cloud write)
         if: ${{ always() && steps.detect.outputs.exists == 'true' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6 (node24; v5 is still node20)
         with:
           name: mnemonic-art-pilot
           path: .mnemonic-art/
