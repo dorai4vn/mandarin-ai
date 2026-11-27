@@ -12,26 +12,30 @@ export interface StageEvidence {
   reviewStatus: ReviewStatus;
 }
 
-export interface AttestedStage {
+interface StageBase {
   id: string;
   label: string;
+  /** Full dating text (Explore). */
   period: string;
+  /** Compact date for the fixed-height thumbnail row (e.g. "~13–11 TCN"). Absent = shown as "chưa rõ". */
+  periodShort?: string;
+  /** Approximate start year (negative = BCE) ONLY when supported by the source/period text; used for chronological order. */
+  sortYear?: number;
+  /** Parallel script tradition/variant group. Absent = main line. Parallel stages are grouped, never linear evolution. */
+  track?: string;
+}
+
+export interface AttestedStage extends StageBase {
   status: 'attested';
   svg: { viewBox: string; d: string };
   evidence: StageEvidence;
 }
-export interface MissingStage {
-  id: string;
-  label: string;
-  period: string;
+export interface MissingStage extends StageBase {
   status: 'missing';
   missingReason: string;
 }
 /** Modern form: rendered with the app font, not a historical image. */
-export interface ModernStage {
-  id: string;
-  label: string;
-  period: string;
+export interface ModernStage extends StageBase {
   status: 'modern';
   note: string;
 }

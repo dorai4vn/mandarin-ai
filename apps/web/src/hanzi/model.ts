@@ -1,8 +1,34 @@
 import type { HanziHistory, HistoryStage } from './types';
 
-/** Stages that animation steps through: attested history first, then the modern form. Missing stages are never played. */
+/**
+ * Stages that animation steps through: sourced main-line forms ordered by supported dating, then the
+ * modern endpoint. Missing stages and parallel-track variants are never played (no fake linear
+ * evolution). Stages without `sortYear` keep their data order relative to each other.
+ */
 export function playableStages(h: HanziHistory): HistoryStage[] {
-  return h.stages.filter((s) => s.status !== 'missing');
+  const main = h.stages.filter((s) => s.status !== 'missing' && !s.track);
+  const modern = main.filter((s) => s.status === 'modern');
+  const dated = main
+    .filter((s) => s.status !== 'modern')
+    .map((s, i) => ({ s, i }))
+    .sort((a, b) => (a.s.sortYear ?? Infinity) - (b.s.sortYear ?? Infinity) || a.i - b.i)
+    .map((x) => x.s);
+  return [...dated, ...modern];
+}
+
+/** Sourced forms from parallel traditions/variants, grouped by track (shown separately, not played). */
+export function parallelGroups(h: HanziHistory): { track: string; stages: HistoryStage[] }[] {
+  const groups = new Map<string, HistoryStage[]>();
+  for (const s of h.stages) {
+    if (s.status === 'missing' || !s.track) continue;
+    groups.set(s.track, [...(groups.get(s.track) ?? []), s]);
+  }
+  return [...groups].map(([track, stages]) => ({ track, stages }));
+}
+
+/** Stages with no usable evidence; listed concisely in Explore only (never as timeline tiles). */
+export function missingStages(h: HanziHistory): HistoryStage[] {
+  return h.stages.filter((s) => s.status === 'missing');
 }
 
 export function nextIndex(current: number, length: number): number | null {

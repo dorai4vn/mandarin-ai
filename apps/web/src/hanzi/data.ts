@@ -12,6 +12,8 @@ export const HANZI_HISTORY: Record<string, HanziHistory> = {
         id: 'oracle',
         label: 'Giáp cốt văn',
         period: 'Thương (~thế kỷ 13–11 TCN)',
+        periodShort: '~13–11 TCN',
+        sortYear: -1300,
         status: 'attested',
         svg: {
           viewBox: '0 0 300 300',
@@ -34,6 +36,8 @@ export const HANZI_HISTORY: Record<string, HanziHistory> = {
         id: 'bronze',
         label: 'Kim văn',
         period: 'Tây Chu – Xuân Thu (~thế kỷ 11–5 TCN)',
+        periodShort: '~11–5 TCN',
+        sortYear: -1100,
         status: 'attested',
         svg: {
           viewBox: '0 0 300 300',
@@ -56,6 +60,8 @@ export const HANZI_HISTORY: Record<string, HanziHistory> = {
         id: 'seal',
         label: 'Tiểu triện (Thuyết văn)',
         period: 'Tần – Hán (~thế kỷ 3 TCN – 2 SCN)',
+        periodShort: '~3 TCN–2 SCN',
+        sortYear: -300,
         status: 'attested',
         svg: {
           viewBox: '0 0 300 300',
@@ -86,6 +92,7 @@ export const HANZI_HISTORY: Record<string, HanziHistory> = {
         id: 'regular',
         label: 'Khải thư (chữ hiện đại)',
         period: 'Hán Ngụy trở đi → nay',
+        periodShort: 'Hiện đại',
         status: 'modern',
         note: 'Hiển thị bằng phông chữ của ứng dụng (Noto Sans SC), không phải hình lịch sử.',
       },

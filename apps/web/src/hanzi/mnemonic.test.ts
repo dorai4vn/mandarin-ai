@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { MNEMONICS, candidateSrc, findMnemonic, isSafeMnemonicSrc, mnemonicSummary, validateMnemonics } from './mnemonic';
+import {
+  MNEMONICS,
+  candidateSrc,
+  findMnemonic,
+  isSafeMnemonicSrc,
+  mnemonicSummary,
+  validateMnemonics,
+} from './mnemonic';
 
 describe('visual mnemonic manifest (D3)', () => {
   it('has the 10 pilot characters, valid, none claiming artwork', () => {
@@ -19,17 +26,43 @@ describe('visual mnemonic manifest (D3)', () => {
   });
   it('rejects an image without provenance/approval and duplicates', () => {
     const base = MNEMONICS[0]!;
-    const img = { src: '/x.webp', alt: 'a', width: 1600, height: 1200, provenance: '', licence: '', licenceUrl: 'http://x', author: '' } as const;
+    const img = {
+      src: '/x.webp',
+      alt: 'a',
+      width: 1600,
+      height: 1200,
+      provenance: '',
+      licence: '',
+      licenceUrl: 'http://x',
+      author: '',
+    } as const;
     expect(validateMnemonics([{ ...base, image: img }]).length).toBeGreaterThan(0);
     expect(validateMnemonics([base, base]).some((e) => e.startsWith('duplicate'))).toBe(true);
   });
   it('restricts image src to local mnemonic assets', () => {
     expect(isSafeMnemonicSrc('/mnemonic/shan-mountain.webp')).toBe(true);
-    for (const bad of ['//evil.com/x.webp', 'https://x/mnemonic/a.webp', '/mnemonic/../a.webp', '/other/a.webp', '/mnemonic/a.png'])
+    for (const bad of [
+      '//evil.com/x.webp',
+      'https://x/mnemonic/a.webp',
+      '/mnemonic/../a.webp',
+      '/other/a.webp',
+      '/mnemonic/a.png',
+    ])
       expect(isSafeMnemonicSrc(bad)).toBe(false);
     const base = MNEMONICS[0]!;
-    const img = { src: '//evil.com/x.webp', alt: 'a', width: 1600, height: 1200, provenance: 'p', licence: 'CC0', licenceUrl: 'https://x', author: 'a' } as const;
-    expect(validateMnemonics([{ ...base, image: img, status: 'artwork-approved' }])).toContain('山: image provenance');
+    const img = {
+      src: '//evil.com/x.webp',
+      alt: 'a',
+      width: 1600,
+      height: 1200,
+      provenance: 'p',
+      licence: 'CC0',
+      licenceUrl: 'https://x',
+      author: 'a',
+    } as const;
+    expect(validateMnemonics([{ ...base, image: img, status: 'artwork-approved' }])).toContain(
+      '山: image provenance',
+    );
   });
   it('summarises pending artwork and keeps candidates apart from approved assets', () => {
     expect(mnemonicSummary()).toEqual({ total: 10, approved: 0, pending: 10 });

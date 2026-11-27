@@ -1,12 +1,13 @@
 'use client';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { HanziText } from '@/components/Hanzi';
-import { Badge, Button } from '@/components/ui';
 import { HANZI_HISTORY } from './data';
 import { MnemonicCard } from './MnemonicCard';
 import {
   clampIndex,
+  missingStages,
   nextIndex,
+  parallelGroups,
   playStartIndex,
   playableStages,
   stageProgress,
@@ -62,7 +63,8 @@ function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
     return () => clearTimeout(t);
   }, [playing, index, stages.length]);
 
-  const all = history.stages;
+  const groups = parallelGroups(history);
+  const missing = missingStages(history);
   const active = stages[index]!;
 
   const select = (i: number) => {
@@ -109,31 +111,35 @@ function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
     </button>
   );
 
+  const icon = 'inline-flex h-10 w-10 items-center justify-center rounded-full border border-line';
+
   return (
     <section
       aria-label={`Lịch sử chữ ${glyph}`}
-      className="mt-5 border-t border-line pt-4"
+      className="mt-5 min-w-0 border-t border-line pt-4"
       data-testid="hanzi-history"
       data-glyph={glyph}
       data-mode={mode}
     >
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-fg-muted">
-          Tiến hóa chữ <HanziText>{glyph}</HanziText> ({history.meaningVi})
+          <HanziText>{glyph}</HanziText> · {history.meaningVi}{' '}
+          <span
+            className="ml-1 rounded-full bg-warning-subtle px-2 py-0.5 text-xs font-medium"
+            data-testid="hanzi-review-indicator"
+          >
+            Chờ duyệt
+          </span>
         </h3>
         <div role="group" aria-label="Chế độ xem" className="flex gap-2" data-testid="hanzi-modes">
           {modeBtn('quick', 'Xem nhanh')}
-          {modeBtn('explore', 'Khám phá lịch sử')}
+          {modeBtn('explore', 'Khám phá')}
         </div>
       </div>
-      <p className="mb-3 text-xs text-fg-muted" data-testid="hanzi-history-disclaimer">
-        Chỉ các giai đoạn có nguồn được hiển thị. Hoạt ảnh chỉ chuyển mờ giữa các hình đã được ghi
-        nhận, không tạo hình trung gian. Mọi hình cổ đang chờ chủ dự án duyệt.
-      </p>
 
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex min-w-0 flex-col items-center gap-2">
         <div
-          className="relative aspect-square w-full max-w-[320px] rounded-card bg-subtle"
+          className="relative aspect-square w-full max-w-[22rem] rounded-card bg-subtle"
           role="img"
           aria-label={`${active.label}: hình chữ ${glyph}`}
           data-testid="hanzi-history-stage"
@@ -144,7 +150,7 @@ function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
             <div
               key={s.id}
               aria-hidden="true"
-              className="absolute inset-0 flex items-center justify-center p-4"
+              className="absolute inset-0 flex items-center justify-center p-6"
               data-testid={`hanzi-layer-${s.id}`}
               style={{
                 opacity: i === index ? 1 : 0,
@@ -156,7 +162,8 @@ function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
           ))}
         </div>
         <p className="text-sm" data-testid="hanzi-stage-caption">
-          <span className="font-medium">{active.label}</span> · {active.period}
+          <span className="font-medium">{active.label}</span>
+          {active.periodShort ? ` · ${active.periodShort}` : ''}
         </p>
 
         <div
@@ -166,7 +173,7 @@ function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
           aria-valuemax={stages.length}
           aria-valuenow={index + 1}
           aria-valuetext={`Giai đoạn ${index + 1}/${stages.length}${atEnd ? ' (cuối)' : ''}`}
-          className="h-1.5 w-full max-w-[320px] overflow-hidden rounded-full bg-subtle"
+          className="h-1 w-full max-w-[22rem] overflow-hidden rounded-full bg-subtle"
           data-testid="hanzi-progress"
           data-progress={stageProgress(index, stages.length)}
         >
@@ -179,102 +186,85 @@ function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
           />
         </div>
 
-        <div className="flex flex-wrap justify-center gap-2" data-testid="hanzi-history-controls">
-          <Button
-            size="sm"
-            onClick={playing ? () => setPlaying(false) : play}
-            data-testid="hanzi-play"
-            aria-pressed={playing}
-            aria-label={playing ? 'Tạm dừng' : 'Phát'}
-          >
-            <span aria-hidden="true">{playing ? '⏸' : '▶'}</span> {playing ? 'Tạm dừng' : 'Phát'}
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={replay}
-            data-testid="hanzi-replay"
-            aria-label="Phát lại"
-          >
-            <span aria-hidden="true">↻</span> Phát lại
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
+        <div className="flex justify-center gap-2" data-testid="hanzi-history-controls">
+          <button
+            type="button"
+            className={icon}
             onClick={() => select(Math.max(index - 1, 0))}
             disabled={index === 0}
             data-testid="hanzi-prev"
             aria-label="Giai đoạn trước"
           >
-            <span aria-hidden="true">◀</span>
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
+            <span aria-hidden="true">‹</span>
+          </button>
+          <button
+            type="button"
+            className={`${icon} border-primary bg-primary text-on-primary`}
+            onClick={playing ? () => setPlaying(false) : play}
+            data-testid="hanzi-play"
+            aria-pressed={playing}
+            aria-label={playing ? 'Tạm dừng' : 'Phát'}
+          >
+            <span aria-hidden="true">{playing ? '⏸' : '▶'}</span>
+          </button>
+          <button
+            type="button"
+            className={icon}
+            onClick={replay}
+            data-testid="hanzi-replay"
+            aria-label="Phát lại"
+          >
+            <span aria-hidden="true">↻</span>
+          </button>
+          <button
+            type="button"
+            className={icon}
             onClick={() => select(Math.min(index + 1, stages.length - 1))}
             disabled={index === stages.length - 1}
             data-testid="hanzi-next"
             aria-label="Giai đoạn sau"
           >
-            <span aria-hidden="true">▶</span>
-          </Button>
+            <span aria-hidden="true">›</span>
+          </button>
         </div>
         {reduced && (
           <p className="text-xs text-fg-muted" data-testid="hanzi-reduced-note">
-            Bạn đã bật giảm chuyển động: các giai đoạn đổi tức thì, không chuyển mờ.
+            Giảm chuyển động: đổi tức thì, không chuyển mờ.
           </p>
         )}
 
+        {/* Equal-geometry thumbnails: fixed width, fixed glyph box, fixed label row and date row. */}
         <ol
-          className="flex w-full flex-wrap justify-center gap-2"
+          className="flex w-full min-w-0 flex-wrap justify-center gap-2"
           data-testid="hanzi-timeline"
           aria-label="Dòng thời gian"
+          data-count={stages.length}
         >
-          {all.map((s) => {
-            const pi = stages.findIndex((x) => x.id === s.id);
-            if (s.status === 'missing') {
-              return (
-                <li
-                  key={s.id}
-                  className="flex w-24 flex-col items-center rounded-control border border-dashed border-line p-2 text-center text-xs text-fg-muted"
-                  data-testid={`hanzi-stage-${s.id}`}
-                  data-status="missing"
-                >
-                  <span className="font-medium">{s.label}</span>
-                  <Badge variant="warning">Chưa có tư liệu</Badge>
-                  {mode === 'explore' && <span className="mt-1">{s.missingReason}</span>}
-                </li>
-              );
-            }
-            return (
-              <li key={s.id}>
-                <button
-                  type="button"
-                  ref={(el) => {
-                    tabs.current[pi] = el;
-                  }}
-                  onClick={() => select(pi)}
-                  onKeyDown={(e) => onKey(e, pi)}
-                  aria-current={pi === index ? 'step' : undefined}
-                  aria-label={`${s.label}, ${s.period}`}
-                  data-testid={`hanzi-stage-${s.id}`}
-                  data-status={s.status}
-                  className={`flex w-24 flex-col items-center rounded-control border p-2 text-center text-xs ${
-                    pi === index ? 'border-primary bg-primary-subtle' : 'border-line'
-                  }`}
-                >
-                  <span className="h-12 w-12" aria-hidden="true">
-                    <StageGlyph stage={s} glyph={glyph} />
-                  </span>
-                  <span className="font-medium">{s.label}</span>
-                  {mode === 'explore' && <span className="text-fg-muted">{s.period}</span>}
-                  <Badge variant={s.status === 'attested' ? 'success' : 'neutral'}>
-                    {s.status === 'attested' ? 'Có nguồn' : 'Chữ hiện đại'}
-                  </Badge>
-                </button>
-              </li>
-            );
-          })}
+          {stages.map((s, pi) => (
+            <li key={s.id}>
+              <button
+                type="button"
+                ref={(el) => {
+                  tabs.current[pi] = el;
+                }}
+                onClick={() => select(pi)}
+                onKeyDown={(e) => onKey(e, pi)}
+                aria-current={pi === index ? 'step' : undefined}
+                aria-label={`${s.label}, ${s.periodShort ?? 'chưa rõ niên đại'}`}
+                data-testid={`hanzi-stage-${s.id}`}
+                data-status={s.status}
+                className={`grid h-[6.5rem] w-[4.5rem] grid-rows-[3rem_1.25rem_1.25rem] justify-items-center rounded-control border p-1 text-center text-xs ${
+                  pi === index ? 'border-primary bg-primary-subtle' : 'border-line'
+                }`}
+              >
+                <span className="h-12 w-12" aria-hidden="true">
+                  <StageGlyph stage={s} glyph={glyph} />
+                </span>
+                <span className="w-full truncate font-medium">{s.label.split(' (')[0]}</span>
+                <span className="w-full truncate text-fg-muted">{s.periodShort ?? '—'}</span>
+              </button>
+            </li>
+          ))}
         </ol>
       </div>
 
@@ -282,12 +272,16 @@ function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
         Giai đoạn hiện tại: {active.label}
       </p>
 
-      <p className="mt-3 text-xs text-fg-muted" data-testid="hanzi-uncertainty">
+      <p className="mt-2 text-xs text-fg-muted" data-testid="hanzi-uncertainty">
         {uncertaintyText(active)}
       </p>
 
+      <div className="mt-2" data-testid="hanzi-mnemonic-wrap">
+        <MnemonicCard glyph={glyph} />
+      </div>
+
       <details
-        className="mt-1 rounded-control bg-subtle p-3 text-sm"
+        className="mt-3 rounded-control bg-subtle p-3 text-sm"
         data-testid="hanzi-evidence"
         data-stage={active.id}
         open={mode === 'explore'}
@@ -295,9 +289,9 @@ function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
       >
         <summary className="cursor-pointer font-semibold">Bằng chứng — {active.label}</summary>
         {active.status === 'attested' ? (
-          <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
+          <dl className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-xs">
             <dt className="text-fg-muted">Nguồn</dt>
-            <dd>
+            <dd className="break-words">
               <a
                 className="text-link underline"
                 href={active.evidence.sourceUrl}
@@ -308,7 +302,7 @@ function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
               </a>
             </dd>
             <dt className="text-fg-muted">Giấy phép</dt>
-            <dd>
+            <dd className="break-words">
               <a
                 className="text-link underline"
                 href={active.evidence.licenceUrl}
@@ -321,7 +315,7 @@ function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
             <dt className="text-fg-muted">Tác giả bản vẽ</dt>
             <dd>{active.evidence.contributor}</dd>
             <dt className="text-fg-muted">Xuất xứ</dt>
-            <dd>{active.evidence.provenance}</dd>
+            <dd className="break-words">{active.evidence.provenance}</dd>
             <dt className="text-fg-muted">Truy cập</dt>
             <dd>{active.evidence.retrievedOn}</dd>
             <dt className="text-fg-muted">Duyệt</dt>
@@ -334,34 +328,46 @@ function HistoryPanel({ glyph, history }: { glyph: string; history: History }) {
         ) : (
           <p className="mt-2 text-xs">{active.status === 'modern' ? active.note : ''}</p>
         )}
-      </details>
 
-      {mode === 'explore' && (
-        <div className="mt-3 space-y-2 text-xs" data-testid="hanzi-explore-extra">
-          <p data-testid="hanzi-variants">
-            <span className="font-medium">Biến thể (phồn thể/giản thể, song song):</span> chưa có dữ
-            liệu có nguồn cho chữ này; không suy đoán.
-          </p>
-          <div data-testid="hanzi-skipped">
-            <p className="font-medium">Nguồn đã loại và lý do:</p>
-            <ul className="list-disc pl-5">
-              {history.skippedSources.map((k) => (
-                <li key={k.title}>
-                  {k.title}: {k.reason}
-                </li>
-              ))}
-            </ul>
+        {mode === 'explore' && (
+          <div className="mt-3 space-y-2 text-xs" data-testid="hanzi-explore-extra">
+            <p data-testid="hanzi-variants">
+              <span className="font-medium">Biến thể song song:</span>{' '}
+              {groups.length === 0
+                ? 'chưa có dữ liệu có nguồn; không suy đoán.'
+                : groups
+                    .map((g) => `${g.track} (${g.stages.map((x) => x.label).join(', ')})`)
+                    .join('; ')}
+            </p>
+            <div data-testid="hanzi-missing">
+              <p className="font-medium">Chưa có tư liệu:</p>
+              <ul className="list-disc pl-5">
+                {missing.map((m) => (
+                  <li key={m.id} data-testid={`hanzi-missing-${m.id}`}>
+                    {m.label}: {m.status === 'missing' ? m.missingReason : ''}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div data-testid="hanzi-skipped">
+              <p className="font-medium">Nguồn đã loại:</p>
+              <ul className="list-disc pl-5">
+                {history.skippedSources.map((k) => (
+                  <li key={k.title}>
+                    {k.title}: {k.reason}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <p data-testid="hanzi-history-disclaimer">
+              Hoạt ảnh chỉ chuyển mờ giữa các hình đã ghi nhận; không tạo hình trung gian.
+            </p>
+            <p data-testid="hanzi-strokeorder-note">
+              Thứ tự nét: chưa có trong bản này. {history.strokeOrder.note}
+            </p>
           </div>
-        </div>
-      )}
-
-      <div className="mt-3">
-        <MnemonicCard glyph={glyph} />
-      </div>
-
-      <p className="mt-3 text-xs text-fg-muted" data-testid="hanzi-strokeorder-note">
-        Thứ tự nét: chưa có trong bản này. {history.strokeOrder.note}
-      </p>
+        )}
+      </details>
     </section>
   );
 }

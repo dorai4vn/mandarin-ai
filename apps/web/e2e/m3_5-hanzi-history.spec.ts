@@ -6,14 +6,31 @@ test.describe('M3.5 hanzi history (山)', () => {
   }) => {
     await page.goto('/lab/hanzi-history');
     await expect(page.getByTestId('hanzi-history')).toBeVisible();
-    await expect(page.getByTestId('hanzi-stage-clerical')).toHaveAttribute(
-      'data-status',
-      'missing',
+    await expect(page.getByTestId('hanzi-stage-clerical')).toHaveCount(0);
+    await expect(page.getByTestId('hanzi-timeline')).toHaveAttribute('data-count', '4');
+    await expect(page.getByTestId('hanzi-review-indicator')).toBeVisible();
+    await page.getByTestId('hanzi-mode-explore').click();
+    await expect(page.getByTestId('hanzi-missing-clerical')).toContainText(
+      'Không vẽ hình thay thế',
     );
     await expect(page.getByTestId('hanzi-evidence')).toContainText('Public domain');
     await expect(page.getByTestId('hanzi-evidence')).toContainText('Chưa được chủ dự án duyệt');
     await expect(page.getByTestId('hanzi-mnemonic')).toContainText('không phải bằng chứng');
     await expect(page.getByTestId('hanzi-strokeorder-note')).toContainText('chưa có');
+  });
+
+  test('timeline thumbnails have equal geometry and no horizontal overflow', async ({ page }) => {
+    await page.goto('/lab/hanzi-history');
+    const boxes = await page
+      .getByTestId('hanzi-timeline')
+      .locator('button')
+      .evaluateAll((els) => els.map((e) => [e.clientWidth, e.clientHeight]));
+    expect(boxes).toHaveLength(4);
+    expect(new Set(boxes.map((b) => b.join('x'))).size).toBe(1);
+    const over = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    );
+    expect(over).toBeLessThanOrEqual(1);
   });
 
   test('keyboard navigation, play/pause/replay', async ({ page }) => {
@@ -58,10 +75,7 @@ test.describe('M3.5 hanzi history (山)', () => {
     await expect(page.getByTestId('hanzi-skipped')).toContainText('bigseal');
     await page.getByTestId('hanzi-mode-quick').click();
     await expect(page.getByTestId('hanzi-history-stage')).toHaveAttribute('data-stage', 'seal');
-    await expect(page.getByTestId('hanzi-stage-clerical')).toHaveAttribute(
-      'data-status',
-      'missing',
-    );
+    await expect(page.getByTestId('hanzi-stage-clerical')).toHaveCount(0);
   });
 
   test('uncertainty is visible outside the closed evidence disclosure in Quick View', async ({

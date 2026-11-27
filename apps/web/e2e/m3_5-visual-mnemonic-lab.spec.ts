@@ -19,12 +19,36 @@ test.describe('M3.5 visual mnemonic lab (D4)', () => {
 
   test('keyboard-accessible navigation and preview mode', async ({ page }) => {
     await page.goto('/lab/visual-mnemonic');
-    await expect(page.getByTestId('mnemonic-nav-鳥')).toHaveAttribute('href', /#mnemonic-niao-bird/);
+    await expect(page.getByTestId('mnemonic-nav-鳥')).toHaveAttribute(
+      'href',
+      /#mnemonic-niao-bird/,
+    );
     await page.getByTestId('mnemonic-preview-toggle').check();
     const card = page.getByTestId('mnemonic-lab-card-山');
     await expect(card.getByTestId('hanzi-mnemonic')).toHaveAttribute('data-art-state', 'preview');
-    await expect(card.getByTestId('mnemonic-provenance')).toContainText('chưa được chủ dự án duyệt');
+    await expect(card.getByTestId('mnemonic-provenance')).toContainText(
+      'chưa được chủ dự án duyệt',
+    );
     // No candidate files exist: falls back to text, never claims approval.
-    await expect(card.getByTestId('mnemonic-art-pending')).toContainText('Chưa có file ảnh ứng viên');
+    await expect(card.getByTestId('mnemonic-art-pending')).toContainText(
+      'Chưa có file ảnh ứng viên',
+    );
   });
+
+  for (const theme of ['light', 'dark'] as const) {
+    test(`theme preview ${theme}: applies token theme, no overflow`, async ({ page }) => {
+      await page.goto('/lab/visual-mnemonic');
+      await page.getByTestId(`mnemonic-theme-${theme}`).click();
+      await expect(page.getByTestId(`mnemonic-theme-${theme}`)).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+      await expect(page.getByTestId('mnemonic-lab-card-山')).toBeVisible();
+      const over = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      );
+      expect(over).toBeLessThanOrEqual(1);
+    });
+  }
 });

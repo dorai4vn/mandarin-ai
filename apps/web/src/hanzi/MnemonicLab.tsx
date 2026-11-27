@@ -1,17 +1,38 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MnemonicCard } from './MnemonicCard';
 import { MNEMONICS, mnemonicSummary } from './mnemonic';
+
+type ThemeChoice = 'system' | 'light' | 'dark';
+
+/**
+ * Preview-only theme control: sets data-theme on <html> using the existing design tokens and
+ * restores the previous value on leave. It does NOT persist (the profile ThemePicker owns that).
+ */
+function useThemePreview(choice: ThemeChoice) {
+  useEffect(() => {
+    const root = document.documentElement;
+    const previous = root.dataset.theme;
+    if (choice === 'system') delete root.dataset.theme;
+    else root.dataset.theme = choice;
+    return () => {
+      if (previous === undefined) delete root.dataset.theme;
+      else root.dataset.theme = previous;
+    };
+  }, [choice]);
+}
 
 /** QC lab: all pilot mnemonic cards, independent of history data availability. */
 export function MnemonicLab() {
   const [preview, setPreview] = useState(false);
+  const [theme, setTheme] = useState<ThemeChoice>('system');
+  useThemePreview(theme);
   const s = mnemonicSummary();
   return (
     <div data-testid="mnemonic-lab">
       <p className="mb-3 text-sm" data-testid="mnemonic-lab-summary" role="status">
-        {s.pending}/{s.total} ảnh đang chờ · {s.approved} đã duyệt · Trạng thái duyệt: chưa có ảnh nào
-        được chủ dự án duyệt.
+        {s.pending}/{s.total} ảnh đang chờ · {s.approved} đã duyệt · Trạng thái duyệt: chưa có ảnh
+        nào được chủ dự án duyệt.
       </p>
       <label className="mb-3 flex items-center gap-2 text-sm">
         <input
@@ -22,6 +43,27 @@ export function MnemonicLab() {
         />
         Xem trước ảnh ứng viên (chưa duyệt, chỉ để chủ dự án xem xét)
       </label>
+      <div
+        role="group"
+        aria-label="Xem trước giao diện"
+        className="mb-3 flex flex-wrap gap-2"
+        data-testid="mnemonic-theme-controls"
+      >
+        {(['system', 'light', 'dark'] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            aria-pressed={theme === t}
+            onClick={() => setTheme(t)}
+            data-testid={`mnemonic-theme-${t}`}
+            className={`rounded-control border px-3 py-1 text-sm ${
+              theme === t ? 'border-primary bg-primary-subtle font-medium' : 'border-line'
+            }`}
+          >
+            {t === 'system' ? 'Theo hệ thống' : t === 'light' ? 'Sáng' : 'Tối'}
+          </button>
+        ))}
+      </div>
       <nav aria-label="Chọn chữ" className="mb-4 flex flex-wrap gap-2">
         {MNEMONICS.map((m) => (
           <a
@@ -52,7 +94,8 @@ export function MnemonicLab() {
             </h2>
             <MnemonicCard glyph={m.glyph} preview={preview} />
             <p className="mt-1 text-xs text-fg-muted">
-              Tệp dự kiến: {m.assetFile} · {m.status === 'pending-artwork' ? 'chờ tác phẩm' : 'đã duyệt'}
+              Tệp dự kiến: {m.assetFile} ·{' '}
+              {m.status === 'pending-artwork' ? 'chờ tác phẩm' : 'đã duyệt'}
             </p>
           </li>
         ))}

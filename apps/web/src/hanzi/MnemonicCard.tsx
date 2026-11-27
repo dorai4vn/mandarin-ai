@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import { Badge } from '@/components/ui';
 import { candidateSrc, findMnemonic, isSafeMnemonicSrc } from './mnemonic';
 
 /**
@@ -31,17 +30,21 @@ export function MnemonicCard({ glyph, preview = false }: { glyph: string; previe
       : 'Không tải được ảnh minh họa (lỗi tải, không phải thiếu nguồn).';
 
   let provenance: string;
-  if (preview) provenance = 'ỨNG VIÊN — chưa được chủ dự án duyệt; chưa có nguồn/giấy phép được xác minh.';
+  if (preview)
+    provenance = 'ỨNG VIÊN — chưa được chủ dự án duyệt; chưa có nguồn/giấy phép được xác minh.';
   else if (approved && !failed)
     provenance = `Tác giả: ${approved.author} · ${approved.licence} · ${approved.provenance}`;
-  else if (approved) provenance = `Nguồn: ${approved.author} · ${approved.licence} · ${approved.provenance}`;
+  else if (approved)
+    provenance = `Nguồn: ${approved.author} · ${approved.licence} · ${approved.provenance}`;
   else provenance = 'Chưa có tác phẩm được duyệt; chưa có nguồn/giấy phép ảnh.';
 
   return (
     <aside
-      className="overflow-hidden rounded-control border border-line text-sm"
+      className="min-w-0 overflow-hidden rounded-control border border-line text-sm"
       data-testid="hanzi-mnemonic"
-      data-art-state={preview ? 'preview' : approved ? (failed ? 'load-failed' : 'approved') : 'pending'}
+      data-art-state={
+        preview ? 'preview' : approved ? (failed ? 'load-failed' : 'approved') : 'pending'
+      }
       aria-label="Minh họa gợi nhớ"
     >
       <div className="aspect-[4/3] w-full bg-surface-muted" data-testid="mnemonic-art-slot">
@@ -68,11 +71,13 @@ export function MnemonicCard({ glyph, preview = false }: { glyph: string; previe
         )}
       </div>
       <div className="p-3">
-        <Badge variant="accent">Minh họa gợi nhớ hiện đại — không phải bằng chứng lịch sử</Badge>
+        <p className="text-xs font-semibold text-accent-text">
+          Gợi nhớ hiện đại — không phải bằng chứng lịch sử
+        </p>
         <p className="mt-1" data-testid="mnemonic-cue">
           {m.cueVi}
         </p>
-        <p className="mt-1 text-xs text-fg-muted" data-testid="mnemonic-provenance">
+        <p className="mt-1 break-words text-xs text-fg-muted" data-testid="mnemonic-provenance">
           {provenance}
         </p>
       </div>

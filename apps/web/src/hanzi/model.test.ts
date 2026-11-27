@@ -3,6 +3,8 @@ import { HANZI_HISTORY } from './data';
 import { HISTORY_GLYPHS, hasHanziHistory, historyGlyphsOf } from './glyphs';
 import {
   clampIndex,
+  missingStages,
+  parallelGroups,
   nextIndex,
   playStartIndex,
   playableStages,
@@ -67,5 +69,46 @@ describe('hanzi history dataset (M3.5)', () => {
     for (const s of HANZI_HISTORY['山']!.stages.filter((x) => x.status !== 'missing'))
       expect(uncertaintyText(s).length).toBeGreaterThan(10);
     expect(uncertaintyText(HANZI_HISTORY['山']!.stages[0]!)).toContain('chưa đối chiếu');
+  });
+});
+
+describe('V3 timeline model', () => {
+  const base = { period: 'p', label: 'L' };
+  const att = (id: string, extra: object) =>
+    ({
+      ...base,
+      id,
+      status: 'attested',
+      svg: { viewBox: '0 0 1 1', d: 'M0 0' },
+      evidence: {} as never,
+      ...extra,
+    }) as never;
+  const h = (stages: unknown[]) => ({ stages }) as never;
+  it('playable stages exclude missing tiles and sort by supported dating, modern last', () => {
+    const ids = playableStages(
+      h([
+        { ...base, id: 'modern', status: 'modern', note: '' },
+        att('seal', { sortYear: -300 }),
+        { ...base, id: 'gap', status: 'missing', missingReason: 'x' },
+        att('oracle', { sortYear: -1300 }),
+      ]),
+    ).map((s) => s.id);
+    expect(ids).toEqual(['oracle', 'seal', 'modern']);
+  });
+  it('keeps data order when dating is unknown (no invented dates)', () => {
+    const ids = playableStages(h([att('b', {}), att('a', {})])).map((s) => s.id);
+    expect(ids).toEqual(['b', 'a']);
+  });
+  it('parallel tracks are grouped, not part of linear playback', () => {
+    const x = h([att('main', { sortYear: -1 }), att('v1', { track: 'Giản thể' })]);
+    expect(playableStages(x).map((s) => s.id)).toEqual(['main']);
+    expect(parallelGroups(x).map((g) => [g.track, g.stages.length])).toEqual([['Giản thể', 1]]);
+    expect(missingStages(x)).toEqual([]);
+  });
+  it('山 timeline shows 4 sourced/modern forms with short dates and the gap only in missing list', () => {
+    const k = HANZI_HISTORY['山']!;
+    expect(playableStages(k)).toHaveLength(4);
+    expect(missingStages(k).map((s) => s.id)).toEqual(['clerical']);
+    for (const s of playableStages(k)) expect(s.periodShort).toBeTruthy();
   });
 });
