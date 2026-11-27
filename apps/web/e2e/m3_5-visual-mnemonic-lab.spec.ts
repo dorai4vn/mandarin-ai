@@ -102,7 +102,10 @@ test.describe('M3.5 visual mnemonic lab (D4)', () => {
               footerTop: Math.round(f.top - r.top),
               footerBottom: Math.round(f.bottom),
               artTop: Math.round(art.top - r.top),
-              artH: Math.round(art.height),
+              // Raw (unrounded) measurements: with fractional grid column widths the 4:3
+              // aspect-ratio box height is fractional and may round to different integers.
+              artH: art.height,
+              artW: art.width,
               clipped:
                 cue.scrollHeight > cue.clientHeight + 1 || card.scrollWidth > card.clientWidth + 1,
               cueLines: Math.round(cue.getBoundingClientRect().height / lh),
@@ -120,7 +123,11 @@ test.describe('M3.5 visual mnemonic lab (D4)', () => {
             expect(r.h).toBe(first.h);
             expect(r.footerTop).toBe(first.footerTop);
             expect(r.artTop).toBe(first.artTop);
-            expect(r.artH).toBe(first.artH);
+            // Art height may differ by at most 1 CSS px (sub-pixel layout of fractional
+            // column widths); card/footer/art-top alignment above stays exact.
+            expect(Math.abs(r.artH - first.artH)).toBeLessThanOrEqual(1);
+            // Media stays 4:3 (height = width * 3/4) within the same 1px bound.
+            expect(Math.abs(r.artH - (r.artW * 3) / 4)).toBeLessThanOrEqual(1);
             expect(r.clipped).toBe(false);
           }
         }
