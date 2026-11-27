@@ -16,6 +16,16 @@ async function settled(page: Page) {
   await page.waitForFunction(() =>
     Object.keys(document.querySelector('main') ?? {}).some((k) => k.startsWith('__react')),
   );
+  // The login button is disabled ("Đang tải…") until its client effect runs; enabling it starts a
+  // background-colour transition (text colour flips at once). Measuring contrast before the
+  // enable + transition finish samples a blend of disabled and primary colours, not the real
+  // token pair — so wait for the enabled state first, then for transitions to end.
+  await page.waitForFunction(
+    () => !document.querySelector('main button[disabled][data-testid="login-submit"]'),
+  );
+  await page.evaluate(
+    () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
+  );
   await page.waitForFunction(() =>
     document.getAnimations().every((a) => !(a instanceof CSSTransition)),
   );
