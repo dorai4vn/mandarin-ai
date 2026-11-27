@@ -259,8 +259,8 @@ Quy tắc cho mọi lưới thẻ có nội dung dài ngắn khác nhau (ví d�
 
 Chưa đạt / còn lại (chưa sửa trong checkpoint này, không tuyên bố đã đủ):
 
-1. Bộ chọn giao diện chỉ có ở Hồ sơ và lab mnemonic; chưa có điều khiển trong AppShell (header/menu).
-2. Chưa chạy E2E hai theme cho từng route (login, dictionary, practice, history, dialogs, menu, loading/empty/error) — hiện chỉ các màn hình trong `ui6-dark.spec.ts` + lab mnemonic.
-3. Chưa kiểm contrast AA tự động cho `/lab/*` và trang lịch sử chữ Hán ở theme tối.
+1. ~~Chưa có điều khiển trong AppShell~~ — ĐÃ CÓ (checkpoint 2026-11-27 #2): `components/shell/ThemeToggle.tsx` (nút xoay vòng Theo hệ thống → Sáng → Tối; header điện thoại, rail, sidebar), dùng chung `design/theme.ts`. Bộ chọn đầy đủ vẫn ở Hồ sơ.
+2. E2E hai theme (axe serious/critical, focus nhìn thấy, không tràn ngang, lưu qua reload) mới thêm cho `/lab/visual-mnemonic` và `/profile` (`m3_5-global-theme.spec.ts`, chưa chạy cục bộ — chờ CI). Còn thiếu: login, dictionary, practice, history, dialogs, menu, loading/empty/error.
+3. Contrast AA tự động đã có cho lab mnemonic cả hai theme; còn thiếu `/lab/handwriting` và trang lịch sử chữ Hán.
 4. Chưa xác minh trực quan focus ring ở cả hai theme cho mọi component.
 5. Môi trường phiên này không có trình duyệt Playwright nên E2E mới chỉ chạy trên CI.

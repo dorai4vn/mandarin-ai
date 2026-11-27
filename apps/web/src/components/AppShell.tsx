@@ -7,6 +7,7 @@ import { MoreIcon, PanelLeftIcon } from './icons';
 import { PRIMARY, SECONDARY, isActive, type NavItem } from './shell/nav';
 import { OfflineBanner } from './shell/OfflineBanner';
 import { SyncIndicator } from './shell/SyncIndicator';
+import { ThemeToggle } from './shell/ThemeToggle';
 import { Sheet } from './ui/Sheet';
 import { ToastProvider } from './ui/Toast';
 import { Tooltip } from './ui/Tooltip';
@@ -164,6 +165,7 @@ function Sidebar({
         <div className="nav-sync-compact flex justify-center">
           <SyncIndicator compact />
         </div>
+        <ThemeToggle withLabel={desktop} />
         {desktop && onToggle && (
           <button
             type="button"
@@ -344,7 +346,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Mark size={32} />
               <Lockup nameSize={17} tagline={false} />
             </Link>
-            <SyncIndicator />
+            <div className="flex items-center gap-1">
+              <ThemeToggle />
+              <SyncIndicator />
+            </div>
           </header>
           <OfflineBanner />
           <main
