@@ -39,13 +39,18 @@ Real calls need `--live` plus ALL of these env vars (values are never printed; k
 | ------------------------------------------------------------------------------ | -------------------------------------------------------- |
 | `MNEMONIC_IMAGE_API_KEY`                                                       | provider key                                             |
 | `MNEMONIC_IMAGE_MODEL`                                                         | model id                                                 |
-| `MNEMONIC_PRICE_USD_PER_IMAGE`                                                 | per-image price **verified by a human on the provider's pricing page** |
+| `MNEMONIC_INPUT_USD_PER_M`, `MNEMONIC_OUTPUT_USD_PER_M`                        | text-input / image-output USD per 1M tokens **verified by a human** (docs list $5 / $30 standard for gpt-image-2.6-flare/sunburst; I could not confirm the 2.6 rows from the pricing page I fetched, which showed GPT Image 2 at $8 image-in / $30 image-out) |
+| `MNEMONIC_MAX_INPUT_TOKENS`, `MNEMONIC_MAX_OUTPUT_TOKENS`                      | per-call token ceilings; per-call bound = in*rateIn + out*rateOut. The docs fetched give NO output-token count per size/quality, so these must come from the image guide / a measured first call |
+| `MNEMONIC_IMAGE_QUALITY`                                                       | low\|medium\|high (default medium) |
 | `MNEMONIC_PRICING_SOURCE_URL`, `MNEMONIC_PRICING_VERIFIED_ON`                  | https URL and YYYY-MM-DD of that check                   |
 
-The owner's ~$11 budget is an unverified estimate; no price is hard-coded. The provider wrapper builds request bodies per the *documented* OpenAI Images API:
-`gpt-image-*` -> `size 1536x1024`, `quality`, no `response_format`; `dall-e-3` -> `1792x1024`, `response_format b64_json`;
-`dall-e-2`/unknown models are rejected (square-only/unverified). 3:2 output is cover-cropped to 4:3. This is checked
-against documentation and a mocked `fetch` only - **live compatibility is NOT verified**.
+No price is hard-coded and there is no fixed per-image price: models are token-priced, so the CLI uses a conservative per-call
+CEILING computed from owner-supplied rates and token ceilings (`tokenCostBound`); live is refused if any figure is missing.
+It is not a provider-enforced hard cap; the real cap is `--max-spend-usd` (<= 1) counted per attempt at the ceiling, plus
+retries 0 in the workflow. Actual `usage` from the response is recorded in the manifest for comparison.
+Model allowlist: `gpt-image-2`, `gpt-image-2.5-{flare,sunburst}`, `gpt-image-2.6-{flare,sunburst}` (+dated snapshots); `gpt-image-1`
+(retired) and `dall-e-*` are rejected. Request: `size 1536x1024`, `quality low|medium|high`, `output_format png`, no `response_format`;
+3:2 output is cover-cropped to 4:3. This follows the API reference text only - **live compatibility is NOT verified**.
 Hard pilot caps in code: `--max-spend-usd` <= 1 (incl. retries, each attempt counted) and <= 10 images per live run.
 Use a separate OpenAI project/key for this CLI.
 **No real API call has been made.** Generated images are candidates: they stay `pending-artwork` until the owner approves.
@@ -61,3 +66,18 @@ no native-speaker or dictionary cross-check; tone-sandhi pinyin (一/不) and gl
 ## Tests
 
 `pnpm test:mnemonic-art` (node:test, 19 cases (mocked transport, real sharp on a synthetic fixture), synthetic fixtures, no network).
+
+## Manual artwork workflow (DRAFT, not active)
+
+`docs/workflow-drafts/mnemonic-art-pilot.yml` - the GitHub App cannot write `.github/workflows`, so the owner must copy it.
+Design: `workflow_dispatch` only (no PR/comment triggers, so no agent/PR text reaches it); runs only on `refs/heads/main` by
+`dorai4vn`; token `contents: read` + `actions: read`; secret `MNEMONIC_IMAGE_API_KEY` only in the Generate step; inputs validated
+and passed via env; retries 0; local candidate artifacts + manifest uploaded (14 days), no cloud writes; `previous_run_id`
+restores the manifest so spend accumulates and stored images are not regenerated.
+
+Safe dispatch prerequisites (all owner actions):
+1. Review/merge this branch, then copy the draft into `.github/workflows/` on main (agent never merges).
+2. Create GitHub Environment `mnemonic-art-pilot` with owner as required reviewer; move `MNEMONIC_IMAGE_API_KEY` there if possible (separate OpenAI project, spend limit set in the provider dashboard - the only true hard cap).
+3. Set repository Variables: `MNEMONIC_IMAGE_MODEL`, `MNEMONIC_INPUT_USD_PER_M`, `MNEMONIC_OUTPUT_USD_PER_M`, `MNEMONIC_MAX_INPUT_TOKENS`, `MNEMONIC_MAX_OUTPUT_TOKENS`, `MNEMONIC_PRICING_SOURCE_URL`, `MNEMONIC_PRICING_VERIFIED_ON`, from the pricing page + image guide.
+4. Run 1: `only=山`, cap 1. QC the artifact. Run 2+: pass `previous_run_id`, then the remaining nine of the pilot.
+Stop condition: if the output-token ceiling cannot be established from docs, do not dispatch - the cost is then unbounded by this tool.

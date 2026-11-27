@@ -16,6 +16,8 @@ import {
   buildPrompt,
   openaiProvider,
   imageRequestBody,
+  tokenCostBound,
+  usageCost,
   supabaseStorage,
   sharpOptimizer,
   isWebp,
@@ -187,16 +189,19 @@ test('review flags weak/abstract briefs and Hanzi in briefs, passes good ones', 
 });
 test('prompt forbids text; provider needs credential and never leaks it', async () => {
   assert.match(buildPrompt(mk(1).characters[0], { artworkStyle: 'S' }), /no text/i);
-  assert.throws(() => openaiProvider({ apiKey: '', model: 'gpt-image-1' }), /missing credential/);
+  assert.throws(
+    () => openaiProvider({ apiKey: '', model: 'gpt-image-2.6-flare' }),
+    /missing credential/,
+  );
   const p = openaiProvider({
     apiKey: 'sk-SECRET',
-    model: 'gpt-image-1',
+    model: 'gpt-image-2.6-flare',
     fetchImpl: async () => ({ ok: false, status: 401 }),
   });
   await assert.rejects(p.generate('x'), (e) => e.status === 401 && !e.message.includes('SECRET'));
   const ok = openaiProvider({
     apiKey: 'k',
-    model: 'gpt-image-1',
+    model: 'gpt-image-2.6-flare',
     fetchImpl: async () => ({
       ok: true,
       text: async () =>
@@ -228,11 +233,19 @@ test('real sharp optimization: synthetic PNG -> exact 1600x1200 WebP', async () 
 });
 
 test('OpenAI request contract per documented model family; unknown/square models rejected', () => {
-  const g = imageRequestBody('gpt-image-1', 'p');
+  const g = imageRequestBody('gpt-image-2.6-flare', 'p');
   assert.deepEqual([g.size, g.n, 'response_format' in g], ['1536x1024', 1, false]);
-  const d = imageRequestBody('dall-e-3', 'p');
-  assert.deepEqual([d.size, d.n, d.response_format], ['1792x1024', 1, 'b64_json']);
-  assert.throws(() => imageRequestBody('dall-e-2', 'p'), /not supported/);
+  for (const m of [
+    'gpt-image-1',
+    'gpt-image-1-mini',
+    'dall-e-3',
+    'dall-e-2',
+    'chatgpt-image-latest',
+  ])
+    assert.throws(() => imageRequestBody(m, 'p'), /not supported/);
+  for (const m of ['gpt-image-2', 'gpt-image-2.5-sunburst', 'gpt-image-2.6-sunburst'])
+    assert.equal(imageRequestBody(m, 'p').quality, 'medium');
+  assert.throws(() => imageRequestBody('gpt-image-2.6-flare', 'p', { quality: 'max' }), /quality/);
   assert.throws(() => imageRequestBody('mystery', 'p'), /not supported/);
   assert.throws(() => openaiProvider({ apiKey: 'k', model: 'mystery' }), /not supported/);
 });
@@ -242,7 +255,7 @@ test('provider: request shape, redirect refused, error object / bad JSON / empty
   const mkp = (resp) =>
     openaiProvider({
       apiKey: 'sk-SECRET',
-      model: 'gpt-image-1',
+      model: 'gpt-image-2.6-flare',
       fetchImpl: async (url, init) => {
         seen = { url, init };
         return resp;
@@ -389,4 +402,17 @@ test('live pilot caps: max spend $1 and 10 images enforced in code', async () =>
     run(base(setup(), d, { live: true, maxSpendUsd: 1, unitPriceUsd: 0.01 })),
     /pilot cap/,
   );
+});
+
+test('token cost bound: ceiling from owner-supplied rates; refuses when unbounded', () => {
+  // 2000 input tokens @ $5/M + 8000 output tokens @ $30/M = 0.01 + 0.24 (illustrative arithmetic only)
+  const r = { inputUsdPerM: 5, outputUsdPerM: 30 };
+  assert.equal(tokenCostBound({ ...r, maxInputTokens: 2000, maxOutputTokens: 8000 }), 0.25);
+  assert.throws(() => tokenCostBound({ ...r, maxInputTokens: 2000 }), /cannot bound/);
+  assert.throws(
+    () => tokenCostBound({ ...r, maxInputTokens: 0, maxOutputTokens: 1 }),
+    /cannot bound/,
+  );
+  assert.equal(usageCost({ input_tokens: 1000, output_tokens: 1000 }, r), 0.035);
+  assert.equal(usageCost(undefined, r), undefined);
 });

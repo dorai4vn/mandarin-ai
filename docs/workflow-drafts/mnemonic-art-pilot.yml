@@ -1,0 +1,101 @@
+# DRAFT - NOT ACTIVE. The Claude GitHub App cannot write .github/workflows, so this file lives in docs/.
+# To enable (owner, after review): copy to .github/workflows/mnemonic-art-pilot.yml on main. Never auto-run.
+# See docs/MNEMONIC_ART_CLI.md "Manual artwork workflow" for prerequisites.
+name: Mnemonic artwork pilot (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: 'Characters to generate (default: one image). Single Hanzi or comma list, e.g. 山'
+        default: '山'
+        required: true
+      quality:
+        description: 'Image quality'
+        type: choice
+        options: [low, medium, high]
+        default: medium
+      previous_run_id:
+        description: 'Run ID of the previous pilot run (to carry the manifest/spend forward). Empty only for the first run.'
+        required: false
+      confirm_spend_cap:
+        description: 'Type the max USD for ALL pilot runs combined (<= 1)'
+        default: '1'
+        required: true
+
+permissions:
+  contents: read # read-only token; no write scopes anywhere
+  actions: read # only to download the previous run's artifact
+
+concurrency:
+  group: mnemonic-art-pilot
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    # Trusted ref + owner-only. No pull_request/issue_comment triggers exist, so no agent/PR text reaches this job.
+    if: github.ref == 'refs/heads/main' && github.actor == 'dorai4vn' && github.triggering_actor == 'dorai4vn'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: mnemonic-art-pilot # configure required reviewer = owner; secret MNEMONIC_IMAGE_API_KEY scoped here
+    env:
+      # Untrusted-looking inputs are passed through env, never interpolated into shell.
+      IN_ONLY: ${{ inputs.only }}
+      IN_QUALITY: ${{ inputs.quality }}
+      IN_CAP: ${{ inputs.confirm_spend_cap }}
+      PREV_RUN: ${{ inputs.previous_run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Validate inputs
+        run: |
+          set -euo pipefail
+          [[ "$IN_ONLY" =~ ^[^[:ascii:]](,[^[:ascii:]]){0,9}$ ]] || { echo "only: 1-10 Hanzi, comma separated"; exit 1; }
+          [[ "$IN_CAP" =~ ^(0(\.[0-9]{1,2})?|1(\.0{1,2})?)$ ]] || { echo "cap must be <= 1"; exit 1; }
+          [[ -z "$PREV_RUN" || "$PREV_RUN" =~ ^[0-9]+$ ]] || { echo "bad run id"; exit 1; }
+
+      - name: Restore previous manifest (spend carry-over)
+        if: ${{ inputs.previous_run_id != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "$PREV_RUN" --name mnemonic-art-pilot --dir .mnemonic-art
+
+      - name: Review briefs + dry-run plan (no secret)
+        run: |
+          pnpm mnemonic-art review
+          pnpm mnemonic-art plan --only "$IN_ONLY"
+
+      - name: Generate (the ONLY step with the secret; retries 0)
+        env:
+          MNEMONIC_IMAGE_API_KEY: ${{ secrets.MNEMONIC_IMAGE_API_KEY }}
+          MNEMONIC_IMAGE_MODEL: ${{ vars.MNEMONIC_IMAGE_MODEL }}
+          MNEMONIC_IMAGE_QUALITY: ${{ inputs.quality }}
+          MNEMONIC_INPUT_USD_PER_M: ${{ vars.MNEMONIC_INPUT_USD_PER_M }}
+          MNEMONIC_OUTPUT_USD_PER_M: ${{ vars.MNEMONIC_OUTPUT_USD_PER_M }}
+          MNEMONIC_MAX_INPUT_TOKENS: ${{ vars.MNEMONIC_MAX_INPUT_TOKENS }}
+          MNEMONIC_MAX_OUTPUT_TOKENS: ${{ vars.MNEMONIC_MAX_OUTPUT_TOKENS }}
+          MNEMONIC_PRICING_SOURCE_URL: ${{ vars.MNEMONIC_PRICING_SOURCE_URL }}
+          MNEMONIC_PRICING_VERIFIED_ON: ${{ vars.MNEMONIC_PRICING_VERIFIED_ON }}
+        run: pnpm mnemonic-art generate --only "$IN_ONLY" --live --storage local --max-retries 0 --max-spend-usd "$IN_CAP"
+
+      - name: Verify checksums
+        if: always()
+        run: pnpm mnemonic-art verify
+
+      - name: Upload candidate artifacts (local only, no cloud write)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mnemonic-art-pilot
+          path: .mnemonic-art/
+          retention-days: 14
+          if-no-files-found: ignore

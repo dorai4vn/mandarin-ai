@@ -5,7 +5,8 @@
 //        --storage local|supabase (default local; supabase needs MNEMONIC_SUPABASE_URL/_SECRET_KEY/_BUCKET)
 //        --max-spend-usd N   --max-retries N(0-3)   --out DIR (default .mnemonic-art)
 // Env (live only; never printed): MNEMONIC_IMAGE_API_KEY, MNEMONIC_IMAGE_MODEL,
-//        MNEMONIC_PRICE_USD_PER_IMAGE, MNEMONIC_PRICING_SOURCE_URL, MNEMONIC_PRICING_VERIFIED_ON (YYYY-MM-DD)
+//        MNEMONIC_INPUT_USD_PER_M, MNEMONIC_OUTPUT_USD_PER_M, MNEMONIC_MAX_INPUT_TOKENS, MNEMONIC_MAX_OUTPUT_TOKENS,
+//        MNEMONIC_IMAGE_QUALITY (low|medium|high), MNEMONIC_PRICING_SOURCE_URL, MNEMONIC_PRICING_VERIFIED_ON (YYYY-MM-DD)
 import { parseArgs } from 'node:util';
 import { join } from 'node:path';
 import {
@@ -19,6 +20,7 @@ import {
   openaiProvider,
   sharpOptimizer,
   sha256,
+  tokenCostBound,
   IMAGE_WIDTH,
   IMAGE_HEIGHT,
 } from './lib.mjs';
@@ -91,20 +93,26 @@ if (a.mock) {
   unitPriceUsd = 0.01;
 } else if (live) {
   const env = process.env;
-  const price = Number(env.MNEMONIC_PRICE_USD_PER_IMAGE);
+  // Token-priced models: per-call ceiling from owner-verified rates + token ceilings (not a fixed unit price).
   if (
-    !(price > 0) ||
     !env.MNEMONIC_PRICING_SOURCE_URL?.startsWith('https://') ||
     !/^\d{4}-\d{2}-\d{2}$/.test(env.MNEMONIC_PRICING_VERIFIED_ON ?? '')
   )
     throw new Error(
-      'live blocked: set MNEMONIC_PRICE_USD_PER_IMAGE, MNEMONIC_PRICING_SOURCE_URL (https) and MNEMONIC_PRICING_VERIFIED_ON (YYYY-MM-DD) after verifying provider pricing',
+      'live blocked: set MNEMONIC_PRICING_SOURCE_URL (https) and MNEMONIC_PRICING_VERIFIED_ON (YYYY-MM-DD) after verifying provider pricing',
     );
+  const price = tokenCostBound({
+    inputUsdPerM: env.MNEMONIC_INPUT_USD_PER_M,
+    outputUsdPerM: env.MNEMONIC_OUTPUT_USD_PER_M,
+    maxInputTokens: env.MNEMONIC_MAX_INPUT_TOKENS,
+    maxOutputTokens: env.MNEMONIC_MAX_OUTPUT_TOKENS,
+  });
   if (!env.MNEMONIC_IMAGE_MODEL) throw new Error('live blocked: set MNEMONIC_IMAGE_MODEL');
   unitPriceUsd = price;
   provider = openaiProvider({
     apiKey: env.MNEMONIC_IMAGE_API_KEY,
     model: env.MNEMONIC_IMAGE_MODEL,
+    quality: env.MNEMONIC_IMAGE_QUALITY || 'medium',
   });
   optimize = await sharpOptimizer();
 }

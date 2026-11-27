@@ -151,21 +151,48 @@ export async function sharpOptimizer() {
 }
 
 /**
- * Request shapes per documented OpenAI Images API model family (OpenAI API reference, "Create image").
- * Documented-contract only: NOT verified live. Unknown models are rejected rather than guessed.
- *  - gpt-image-*: sizes 1024x1024 | 1536x1024 | 1024x1536 | auto; always returns b64_json; `response_format` is
- *    NOT accepted (sending it errors), so it is omitted; `quality` low|medium|high|auto.
- *  - dall-e-3: sizes 1024x1024 | 1792x1024 | 1024x1792; `response_format` b64_json|url, n must be 1.
- *  - dall-e-2: square only -> unsuitable for 4:3, rejected.
+ * Request shape per the OpenAI "Create image" reference (checked 2026-11-27; documented contract only,
+ * NOT verified live). Allowlist: gpt-image-2, gpt-image-2.5-{flare,sunburst}, gpt-image-2.6-{flare,sunburst}
+ * (dated snapshots allowed). Retired/unsuitable models (gpt-image-1, gpt-image-1-mini, dall-e-*, chatgpt-image-latest,
+ * anything unknown) are rejected. Size 1536x1024 is the documented GPT-image size (3:2, cover-cropped to 4:3);
+ * custom sizes are NOT used because the page does not state that 2.6 models accept them. Quality is limited to
+ * low|medium|high (xhigh/max exist only on 2.5+ and cost more; not allowed in the pilot). No `response_format`,
+ * no `style`. The API returns b64_json for GPT image models.
  */
+export const ALLOWED_MODEL = /^gpt-image-2(\.[56]-(flare|sunburst))?(-\d{4}-\d{2}-\d{2})?$/;
+export const ALLOWED_QUALITY = ['low', 'medium', 'high'];
 export function imageRequestBody(model, prompt, { quality = 'medium' } = {}) {
-  if (/^gpt-image-/.test(model))
-    return { model, prompt, n: 1, size: '1536x1024', quality, output_format: 'png' };
-  if (model === 'dall-e-3')
-    return { model, prompt, n: 1, size: '1792x1024', response_format: 'b64_json' };
-  throw new Error(
-    `model "${model}" not supported: use a gpt-image-* model or dall-e-3 (dall-e-2 is square-only)`,
-  );
+  if (!ALLOWED_MODEL.test(model))
+    throw new Error(
+      `model "${model}" not supported: allowlist is gpt-image-2, gpt-image-2.5-*, gpt-image-2.6-* (gpt-image-1 is retired; dall-e is not used)`,
+    );
+  if (!ALLOWED_QUALITY.includes(quality))
+    throw new Error(`quality must be one of ${ALLOWED_QUALITY.join('|')}`);
+  return { model, prompt, n: 1, size: '1536x1024', quality, output_format: 'png' };
+}
+
+/**
+ * Conservative per-call cost CEILING for token-priced image models:
+ *   bound = maxInputTokens * inputUsdPerM/1e6 + maxOutputTokens * outputUsdPerM/1e6
+ * Rates and token ceilings are supplied by a human from the provider pricing page / image guide. This is a
+ * ceiling derived from owner-supplied numbers, NOT a fixed unit price and NOT a provider-enforced hard cap.
+ * If any figure is missing/non-positive the bound is undefined and live runs must stop.
+ */
+export function tokenCostBound({ inputUsdPerM, outputUsdPerM, maxInputTokens, maxOutputTokens }) {
+  const v = [inputUsdPerM, outputUsdPerM, maxInputTokens, maxOutputTokens].map(Number);
+  if (!v.every((n) => Number.isFinite(n) && n > 0))
+    throw new Error(
+      'cannot bound cost: need positive input/output USD per 1M tokens and token ceilings',
+    );
+  return round6((v[2] * v[0]) / 1e6 + (v[3] * v[1]) / 1e6);
+}
+/** Actual cost from response usage (text input + image output tokens), same rates. */
+export function usageCost(usage, { inputUsdPerM, outputUsdPerM }) {
+  if (!usage) return undefined;
+  const i = Number(usage.input_tokens),
+    o = Number(usage.output_tokens);
+  if (!Number.isFinite(i) || !Number.isFinite(o)) return undefined;
+  return round6((i * inputUsdPerM) / 1e6 + (o * outputUsdPerM) / 1e6);
 }
 
 const MAX_RESPONSE_BYTES = 40 * 1024 * 1024;
@@ -212,6 +239,7 @@ export function openaiProvider({
       if (typeof b64 !== 'string' || !b64) throw new Error('provider: no b64_json in response');
       const buf = Buffer.from(b64, 'base64');
       if (!buf.length) throw new Error('provider: empty image');
+      this.lastUsage = j.usage && typeof j.usage === 'object' ? j.usage : undefined;
       return buf;
     },
   };
@@ -388,6 +416,12 @@ export async function run({
           height,
           storedAt: new Date().toISOString(),
           priceUsdEstimated: unitPriceUsd,
+          usage: provider.lastUsage
+            ? {
+                input_tokens: provider.lastUsage.input_tokens,
+                output_tokens: provider.lastUsage.output_tokens,
+              }
+            : undefined,
         };
         saveManifest(manifestPath, manifest);
         summary.generated++;
