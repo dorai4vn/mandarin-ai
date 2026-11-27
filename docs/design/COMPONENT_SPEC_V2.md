@@ -237,3 +237,29 @@ Trạng thái: **ĐÃ DUYỆT 2026-11-24** (D-039). UI-2 đã triển khai Butto
 - **`IconButton`**: 44 × 44 (sm 36 + vùng chạm 44), radius 12 hoặc tròn, `aria-label` bắt buộc, tooltip trên desktop.
 - **`Tooltip`**: chỉ bổ sung (không chứa thông tin duy nhất), hiện khi hover **và** focus, `Esc` đóng; không dùng trên touch làm kênh chính.
 - **Icon:** giữ bộ SVG nội tuyến (`icons.tsx`, lưới 24, nét 1.75–1.8, bo tròn); mở rộng cùng phong cách. Không thêm thư viện icon (có thể cân nhắc sau nếu số icon > 40).
+
+## 25. Thẻ lưới đều chiều cao (Equal-height card grid) — M3.5
+
+Quy tắc cho mọi lưới thẻ có nội dung dài ngắn khác nhau (ví dụ `/lab/visual-mnemonic`):
+
+- `<ul>` dùng `grid items-stretch`; mỗi `<li>` là `flex h-full min-w-0 flex-col`, phần thẻ bọc `flex-1`.
+- Vùng ảnh luôn `aspect-[4/3]` + `shrink-0`; không để nội dung đẩy vùng ảnh.
+- Các "slot" cố định thứ tự: tiêu đề chữ (`min-h`) → ảnh 4:3 → câu gợi nhớ (`min-h` 2 dòng, được phép dài hơn, không cắt `overflow`) → nguồn/giấy phép (`mt-auto`) → chân thẻ (`min-h`, tên tệp).
+- Cảnh báo lặp lại (ví dụ "không phải bằng chứng lịch sử") hiển thị một lần ở đầu trang; thẻ dùng riêng lẻ vẫn giữ cảnh báo (`showNotice`).
+- Kiểm thử: e2e so sánh chiều cao thẻ, vị trí ảnh và chân thẻ trong cùng hàng ở mobile (1 cột), tablet (2 cột), desktop (3 cột), sáng/tối, không bị cắt, không tràn ngang.
+
+## 26. Giao diện Sáng / Tối / Theo hệ thống — phạm vi toàn cục
+
+- Nguồn duy nhất: `apps/web/src/design/theme.ts` (`useTheme`, `setTheme`, `applyTheme`); khoá `localStorage` `mandarin.theme`; script inline trong `app/layout.tsx` áp dụng trước khi vẽ. `ThemeCard` (Hồ sơ) và lab mnemonic dùng chung hook này → cùng lưu, cùng đồng bộ giữa các tab (sự kiện `storage`).
+- Màu chỉ lấy từ token (`tokens.css`, `@theme inline`); không dùng màu cứng. Ảnh minh hoạ không đổi theo theme.
+
+### Kiểm kê (audit) 2026-11-27
+
+Đã đạt: toàn bộ token có biến thể `[data-theme=dark]` + `prefers-color-scheme`; quét mã nguồn `app/` và `src/` (trừ tokens) không còn màu hex/`bg-white`/`text-gray` cứng — ngoại lệ hợp lệ: `theme-color` meta và màu dự phòng của `HandwritingCanvas`; `ui6-dark.spec.ts` đã kiểm axe tương phản AA và không tràn ngang trên các màn hình thật.
+
+Chưa đạt / còn lại (chưa sửa trong checkpoint này, không tuyên bố đã đủ):
+1. Bộ chọn giao diện chỉ có ở Hồ sơ và lab mnemonic; chưa có điều khiển trong AppShell (header/menu).
+2. Chưa chạy E2E hai theme cho từng route (login, dictionary, practice, history, dialogs, menu, loading/empty/error) — hiện chỉ các màn hình trong `ui6-dark.spec.ts` + lab mnemonic.
+3. Chưa kiểm contrast AA tự động cho `/lab/*` và trang lịch sử chữ Hán ở theme tối.
+4. Chưa xác minh trực quan focus ring ở cả hai theme cho mọi component.
+5. Môi trường phiên này không có trình duyệt Playwright nên E2E mới chỉ chạy trên CI.

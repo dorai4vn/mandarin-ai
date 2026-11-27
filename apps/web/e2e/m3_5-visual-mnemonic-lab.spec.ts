@@ -14,7 +14,9 @@ test.describe('M3.5 visual mnemonic lab (D4)', () => {
     }
     await expect(page.getByTestId('mnemonic-lab-summary')).toContainText('10/10 ảnh đang chờ');
     await expect(page.getByTestId('mnemonic-lab-summary')).toContainText('chưa có ảnh nào');
-    await expect(page.getByTestId('hanzi-mnemonic').first()).toContainText('không phải bằng chứng');
+    await expect(page.getByTestId('mnemonic-lab-notice')).toContainText('không phải bằng chứng');
+    // Notice is shown once in the header, not repeated on every card.
+    await expect(page.getByTestId('mnemonic-notice')).toHaveCount(0);
   });
 
   test('keyboard-accessible navigation and preview mode', async ({ page }) => {
@@ -51,4 +53,97 @@ test.describe('M3.5 visual mnemonic lab (D4)', () => {
       expect(over).toBeLessThanOrEqual(1);
     });
   }
+
+  const VIEWPORTS = [
+    { name: 'mobile', width: 375, height: 800 },
+    { name: 'tablet', width: 768, height: 900 },
+    { name: 'desktop', width: 1280, height: 900 },
+  ];
+  for (const vp of VIEWPORTS) {
+    for (const theme of ['light', 'dark'] as const) {
+      test(`equal-height cards, aligned slots, no clipping: ${vp.name} ${theme}`, async ({
+        page,
+      }) => {
+        await page.setViewportSize({ width: vp.width, height: vp.height });
+        await page.goto('/lab/visual-mnemonic');
+        await page.getByTestId(`mnemonic-theme-${theme}`).click();
+        await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+        await expect(page.getByTestId('mnemonic-lab-card-山')).toBeVisible();
+
+        const rows = await page.evaluate(() => {
+          const out: {
+            top: number;
+            h: number;
+            cardBottom: number;
+            footerTop: number;
+            footerBottom: number;
+            artTop: number;
+            artH: number;
+            clipped: boolean;
+            cueLines: number;
+          }[] = [];
+          for (const li of document.querySelectorAll<HTMLElement>(
+            '[data-testid^="mnemonic-lab-card-"]',
+          )) {
+            const r = li.getBoundingClientRect();
+            const art = li
+              .querySelector<HTMLElement>('[data-testid="mnemonic-art-slot"]')!
+              .getBoundingClientRect();
+            const f = li
+              .querySelector<HTMLElement>('[data-testid="mnemonic-footer"]')!
+              .getBoundingClientRect();
+            const cue = li.querySelector<HTMLElement>('[data-testid="mnemonic-cue"]')!;
+            const card = li.querySelector<HTMLElement>('[data-testid="hanzi-mnemonic"]')!;
+            const lh = parseFloat(getComputedStyle(cue).lineHeight) || 20;
+            out.push({
+              top: Math.round(r.top + window.scrollY),
+              h: Math.round(r.height),
+              cardBottom: Math.round(card.getBoundingClientRect().bottom),
+              footerTop: Math.round(f.top - r.top),
+              footerBottom: Math.round(f.bottom),
+              artTop: Math.round(art.top - r.top),
+              artH: Math.round(art.height),
+              clipped:
+                cue.scrollHeight > cue.clientHeight + 1 || card.scrollWidth > card.clientWidth + 1,
+              cueLines: Math.round(cue.getBoundingClientRect().height / lh),
+            });
+          }
+          return out;
+        });
+        expect(rows).toHaveLength(10);
+        // Group by grid row (same top) and require identical geometry inside each row.
+        const byRow = new Map<number, typeof rows>();
+        for (const r of rows) byRow.set(r.top, [...(byRow.get(r.top) ?? []), r]);
+        for (const group of byRow.values()) {
+          const first = group[0]!;
+          for (const r of group) {
+            expect(r.h).toBe(first.h);
+            expect(r.footerTop).toBe(first.footerTop);
+            expect(r.artTop).toBe(first.artTop);
+            expect(r.artH).toBe(first.artH);
+            expect(r.clipped).toBe(false);
+          }
+        }
+        if (vp.name === 'desktop') expect(byRow.size).toBeLessThanOrEqual(4); // 3 columns
+        if (vp.name === 'mobile') expect(byRow.size).toBe(10); // 1 column
+        const over = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth,
+        );
+        expect(over).toBeLessThanOrEqual(1);
+      });
+    }
+  }
+
+  test('theme choice persists across reload and navigation (shared with profile picker)', async ({
+    page,
+  }) => {
+    await page.goto('/lab/visual-mnemonic');
+    await page.getByTestId('mnemonic-theme-dark').click();
+    expect(await page.evaluate(() => localStorage.getItem('mandarin.theme'))).toBe('dark');
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(page.getByTestId('mnemonic-theme-dark')).toHaveAttribute('aria-pressed', 'true');
+    await page.getByTestId('mnemonic-theme-system').click();
+    expect(await page.evaluate(() => localStorage.getItem('mandarin.theme'))).toBeNull();
+  });
 });

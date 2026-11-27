@@ -10,7 +10,16 @@ import { candidateSrc, findMnemonic, isSafeMnemonicSrc } from './mnemonic';
  * `preview` (owner review only): tries the separate /mnemonic-candidates/ path and labels the result
  * as an unapproved candidate. It never changes manifest status or grants approval.
  */
-export function MnemonicCard({ glyph, preview = false }: { glyph: string; preview?: boolean }) {
+export function MnemonicCard({
+  glyph,
+  preview = false,
+  showNotice = true,
+}: {
+  glyph: string;
+  preview?: boolean;
+  /** Lab grids show the "not historical evidence" notice once in the page header instead. */
+  showNotice?: boolean;
+}) {
   const m = findMnemonic(glyph);
   // Track the src that failed (not a boolean) so the state resets automatically on glyph/mode change.
   const [brokenSrc, setBrokenSrc] = useState<string | null>(null);
@@ -40,14 +49,17 @@ export function MnemonicCard({ glyph, preview = false }: { glyph: string; previe
 
   return (
     <aside
-      className="min-w-0 overflow-hidden rounded-control border border-line text-sm"
+      className="flex h-full min-w-0 flex-col overflow-hidden rounded-control border border-line text-sm"
       data-testid="hanzi-mnemonic"
       data-art-state={
         preview ? 'preview' : approved ? (failed ? 'load-failed' : 'approved') : 'pending'
       }
       aria-label="Minh họa gợi nhớ"
     >
-      <div className="aspect-[4/3] w-full bg-surface-muted" data-testid="mnemonic-art-slot">
+      <div
+        className="aspect-[4/3] w-full shrink-0 bg-surface-muted"
+        data-testid="mnemonic-art-slot"
+      >
         {showImg ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -70,14 +82,20 @@ export function MnemonicCard({ glyph, preview = false }: { glyph: string; previe
           </p>
         )}
       </div>
-      <div className="p-3">
-        <p className="text-xs font-semibold text-accent-text">
-          Gợi nhớ hiện đại — không phải bằng chứng lịch sử
-        </p>
-        <p className="mt-1" data-testid="mnemonic-cue">
+      <div className="flex min-w-0 flex-1 flex-col gap-1 p-3">
+        {showNotice && (
+          <p className="text-xs font-semibold text-accent-text" data-testid="mnemonic-notice">
+            Gợi nhớ hiện đại — không phải bằng chứng lịch sử
+          </p>
+        )}
+        {/* Cue slot reserves two lines (never clipped: it grows if a cue is longer). */}
+        <p className="min-h-[3em] break-words" data-testid="mnemonic-cue">
           {m.cueVi}
         </p>
-        <p className="mt-1 break-words text-xs text-fg-muted" data-testid="mnemonic-provenance">
+        <p
+          className="mt-auto break-words pt-1 text-xs text-fg-muted"
+          data-testid="mnemonic-provenance"
+        >
           {provenance}
         </p>
       </div>

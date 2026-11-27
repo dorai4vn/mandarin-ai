@@ -1,38 +1,23 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useTheme } from '@/design/theme';
 import { MnemonicCard } from './MnemonicCard';
 import { MNEMONICS, mnemonicSummary } from './mnemonic';
-
-type ThemeChoice = 'system' | 'light' | 'dark';
-
-/**
- * Preview-only theme control: sets data-theme on <html> using the existing design tokens and
- * restores the previous value on leave. It does NOT persist (the profile ThemePicker owns that).
- */
-function useThemePreview(choice: ThemeChoice) {
-  useEffect(() => {
-    const root = document.documentElement;
-    const previous = root.dataset.theme;
-    if (choice === 'system') delete root.dataset.theme;
-    else root.dataset.theme = choice;
-    return () => {
-      if (previous === undefined) delete root.dataset.theme;
-      else root.dataset.theme = previous;
-    };
-  }, [choice]);
-}
 
 /** QC lab: all pilot mnemonic cards, independent of history data availability. */
 export function MnemonicLab() {
   const [preview, setPreview] = useState(false);
-  const [theme, setTheme] = useState<ThemeChoice>('system');
-  useThemePreview(theme);
+  // Shared Light/Dark/System control: same persistence as the profile picker (src/design/theme.ts).
+  const [theme, setTheme] = useTheme();
   const s = mnemonicSummary();
   return (
     <div data-testid="mnemonic-lab">
       <p className="mb-3 text-sm" data-testid="mnemonic-lab-summary" role="status">
         {s.pending}/{s.total} ảnh đang chờ · {s.approved} đã duyệt · Trạng thái duyệt: chưa có ảnh
         nào được chủ dự án duyệt.
+      </p>
+      <p className="mb-3 text-xs font-semibold text-accent-text" data-testid="mnemonic-lab-notice">
+        Gợi nhớ hiện đại — không phải bằng chứng lịch sử. Mọi thẻ dưới đây chỉ là trợ giúp ghi nhớ.
       </p>
       <label className="mb-3 flex items-center gap-2 text-sm">
         <input
@@ -45,7 +30,7 @@ export function MnemonicLab() {
       </label>
       <div
         role="group"
-        aria-label="Xem trước giao diện"
+        aria-label="Giao diện"
         className="mb-3 flex flex-wrap gap-2"
         data-testid="mnemonic-theme-controls"
       >
@@ -54,6 +39,7 @@ export function MnemonicLab() {
             key={t}
             type="button"
             aria-pressed={theme === t}
+            disabled={theme === null}
             onClick={() => setTheme(t)}
             data-testid={`mnemonic-theme-${t}`}
             className={`rounded-control border px-3 py-1 text-sm ${
@@ -76,15 +62,20 @@ export function MnemonicLab() {
           </a>
         ))}
       </nav>
-      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Thẻ gợi nhớ">
+      <ul
+        className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        data-testid="mnemonic-lab-grid"
+        aria-label="Thẻ gợi nhớ"
+      >
         {MNEMONICS.map((m) => (
           <li
             key={m.glyph}
+            className="flex h-full min-w-0 flex-col"
             id={`mnemonic-${m.assetFile.replace('.webp', '')}`}
             data-testid={`mnemonic-lab-card-${m.glyph}`}
             data-status={m.status}
           >
-            <h2 className="mb-1 text-3xl" lang="zh-Hant">
+            <h2 className="mb-1 min-h-[2.5rem] text-3xl" lang="zh-Hant">
               {m.glyph}
               {m.aliases.length > 0 && (
                 <span className="ml-2 text-base text-fg-muted" lang="zh-Hans">
@@ -92,8 +83,13 @@ export function MnemonicLab() {
                 </span>
               )}
             </h2>
-            <MnemonicCard glyph={m.glyph} preview={preview} />
-            <p className="mt-1 text-xs text-fg-muted">
+            <div className="flex-1">
+              <MnemonicCard glyph={m.glyph} preview={preview} showNotice={false} />
+            </div>
+            <p
+              className="mt-1 min-h-[2.5em] break-all text-xs text-fg-muted"
+              data-testid="mnemonic-footer"
+            >
               Tệp dự kiến: {m.assetFile} ·{' '}
               {m.status === 'pending-artwork' ? 'chờ tác phẩm' : 'đã duyệt'}
             </p>
