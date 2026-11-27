@@ -3,12 +3,15 @@
 // Default is DRY-RUN. Real provider calls need --live AND verified pricing AND --max-spend-usd.
 // Flags: --only 山,水 | --ids 1-10 | --all   --force   --mock   --live
 //        --storage local|supabase (default local; supabase needs MNEMONIC_SUPABASE_URL/_SECRET_KEY/_BUCKET)
+//        --expect-manifest existing|none  (refuse to run unless a prior manifest exists / does not exist: stops a fresh
+//        manifest from silently resetting cumulative spend)   --run-id ID --commit SHA (recorded in manifest provenance)
 //        --max-spend-usd N   --max-retries N(0-3)   --out DIR (default .mnemonic-art)
 // Env (live only; never printed): MNEMONIC_IMAGE_API_KEY, MNEMONIC_IMAGE_MODEL,
 //        MNEMONIC_INPUT_USD_PER_M, MNEMONIC_OUTPUT_USD_PER_M, MNEMONIC_MAX_INPUT_TOKENS, MNEMONIC_MAX_OUTPUT_TOKENS,
 //        MNEMONIC_IMAGE_QUALITY (low|medium|high), MNEMONIC_PRICING_SOURCE_URL, MNEMONIC_PRICING_VERIFIED_ON (YYYY-MM-DD)
 import { parseArgs } from 'node:util';
 import { join } from 'node:path';
+import { existsSync } from 'node:fs';
 import {
   loadDataset,
   reviewDataset,
@@ -20,6 +23,8 @@ import {
   openaiProvider,
   sharpOptimizer,
   sha256,
+  loadManifest,
+  saveManifest,
   tokenCostBound,
   IMAGE_WIDTH,
   IMAGE_HEIGHT,
@@ -37,6 +42,9 @@ const { values: a, positionals } = parseArgs({
     live: { type: 'boolean' },
     'max-spend-usd': { type: 'string' },
     'max-retries': { type: 'string' },
+    'expect-manifest': { type: 'string' },
+    'run-id': { type: 'string' },
+    commit: { type: 'string' },
     out: { type: 'string', default: '.mnemonic-art' },
     dataset: { type: 'string', default: 'apps/web/src/hanzi/beginner200.json' },
   },
@@ -44,6 +52,15 @@ const { values: a, positionals } = parseArgs({
 const cmd = positionals[0] ?? 'plan';
 const data = loadDataset(a.dataset);
 const manifestPath = join(a.out, 'manifest.json');
+if (a['expect-manifest'] !== undefined) {
+  if (!['existing', 'none'].includes(a['expect-manifest']))
+    throw new Error('--expect-manifest must be existing|none');
+  const exists = existsSync(manifestPath);
+  if (a['expect-manifest'] === 'existing' && !exists)
+    throw new Error('manifest expected but missing: refusing to start a fresh spend ledger');
+  if (a['expect-manifest'] === 'none' && exists)
+    throw new Error('manifest unexpectedly present: this must be a first run');
+}
 if (!['local', 'supabase'].includes(a.storage)) throw new Error('--storage must be local|supabase');
 if (a.storage === 'supabase' && a.mock) throw new Error('--mock never uses cloud storage');
 const storage =
@@ -130,6 +147,16 @@ const result = await run({
   maxRetries: Number(a['max-retries'] ?? 2),
   log: console.log,
 });
+if (live && (a['run-id'] || a.commit)) {
+  const m = loadManifest(manifestPath);
+  (m.runs ??= []).push({
+    runId: a['run-id'] ?? null,
+    commit: a.commit ?? null,
+    spentUsdEstimatedAfter: m.spentUsdEstimated,
+    only: a.only ?? a.ids ?? 'all',
+  });
+  saveManifest(manifestPath, m);
+}
 console.log(JSON.stringify(result.summary));
 for (const p of result.plan) console.log(`${p.action}\t${p.hanzi}\t${p.file}`);
 if (!live) console.log('DRY-RUN: no provider call, no files written.');

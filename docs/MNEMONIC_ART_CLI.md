@@ -65,19 +65,47 @@ no native-speaker or dictionary cross-check; tone-sandhi pinyin (一/不) and gl
 
 ## Tests
 
-`pnpm test:mnemonic-art` (node:test, 19 cases (mocked transport, real sharp on a synthetic fixture), synthetic fixtures, no network).
+`pnpm test:mnemonic-art` (node:test, 28 cases incl. CLI guards and workflow structure (mocked transport, real sharp on a synthetic fixture), synthetic fixtures, no network).
 
-## Manual artwork workflow (DRAFT, not active)
+## Pricing bound for one low/medium image (investigated 2026-11-27, official docs only)
 
-`docs/workflow-drafts/mnemonic-art-pilot.yml` - the GitHub App cannot write `.github/workflows`, so the owner must copy it.
-Design: `workflow_dispatch` only (no PR/comment triggers, so no agent/PR text reaches it); runs only on `refs/heads/main` by
-`dorai4vn`; token `contents: read` + `actions: read`; secret `MNEMONIC_IMAGE_API_KEY` only in the Generate step; inputs validated
-and passed via env; retries 0; local candidate artifacts + manifest uploaded (14 days), no cloud writes; `previous_run_id`
-restores the manifest so spend accumulates and stored images are not regenerated.
+Sources: https://developers.openai.com/api/docs/pricing (Image generation, Standard) and
+https://developers.openai.com/api/docs/guides/image-generation (cost section).
+
+- `gpt-image-2`, `gpt-image-2.5-{flare,sunburst}`, `gpt-image-2.6-{flare,sunburst}`: text input $5.00/M, image input $8.00/M, image output $30.00/M.
+  Pricing page states there is **no per-image price table**; it points to an interactive calculator (values not retrievable as text).
+- The guide's "Output tokens per image" table (1536x1024: low 400, medium 1568, high 6208) is labelled **for models prior to `gpt-image-2`**.
+  Its "historical output cost" row for GPT-Image-2 at 1536x1024 gives low $0.005, medium $0.041, high $0.165 (output only).
+- For `gpt-image-2.5`/`2.6` the guide says only "Image output costs $30 per million billable tokens" and gives **no token count or per-image figure**.
+
+Conclusion:
+- **`gpt-image-2`, 1536x1024, low/medium: defensible bound.** Use ceilings from the documented table with margin:
+  `MNEMONIC_OUTPUT_USD_PER_M=30`, `MNEMONIC_INPUT_USD_PER_M=5`, `MNEMONIC_MAX_OUTPUT_TOKENS=1568` (medium) or `400` (low), `MNEMONIC_MAX_INPUT_TOKENS=1500`
+  (the brief + style prompt is well under that; ~$0.0075) -> per-call ceiling ~ $0.055 (medium) / ~$0.020 (low). Caveat: the token table is for
+  pre-`gpt-image-2` models, so treat it as an estimate and compare with the `usage` recorded in the first run's manifest before any further run.
+- **`gpt-image-2.5` / `2.6`: BLOCKER.** No documented output-token ceiling; the cost is not boundable from docs. Do not dispatch with these until the owner
+  measures one image (or the calculator value is read manually from the guide) and records it. The CLI refuses live unless every figure is supplied.
+- Recommended first run: `MNEMONIC_IMAGE_MODEL=gpt-image-2`, quality `low`, one image (山). Not a provider-enforced hard cap; the only true cap is the provider-side project limit.
+
+## Manual artwork workflow (DRAFT launcher, not active)
+
+`docs/workflow-drafts/mnemonic-art-pilot.yml` - the GitHub App cannot write `.github/workflows`, so the owner copies **only this file** to
+`.github/workflows/` on main. It is a minimal launcher: no app/production code changes, PR30 does **not** need to be merged first.
+
+- `workflow_dispatch` only (no PR/comment triggers); `github.ref == refs/heads/main`, actor and triggering actor `dorai4vn`; environment `mnemonic-art-pilot` (required reviewer).
+- Checks out the exact commit typed in `reviewed_sha` (40-hex, verified `HEAD == reviewed_sha`). **Trust note:** that commit's code runs in the job holding the key, so
+  the owner must review that exact SHA (the CLI and this workflow's tests are in it). Dispatch inputs reach shell only through env.
+- All actions pinned to commit SHAs (checkout v4.2.2, setup-node v4.4.0, upload-artifact v4.6.2, pnpm/action-setup v4.1.0); token `contents: read` + `actions: read`.
+- Secret `MNEMONIC_IMAGE_API_KEY` only in the Generate step (retries 0); offline tests/review/plan run first without it.
+- Artifact `mnemonic-art-pilot` uses `include-hidden-files: true` (otherwise the `.mnemonic-art/` dot-directory is silently skipped) and `if-no-files-found: error`.
+- **Ledger provenance (no accidental fresh manifest):** `first_run=true` is refused if any earlier non-skipped run exists; otherwise `previous_run_id` is required and must be the
+  *latest* prior run; the manifest must be restored and the CLI is called with `--expect-manifest existing|none`. Each live run appends `{runId, commit, spent}` to `manifest.runs`.
+  A cancelled/failed latest run without an artifact blocks further runs until the owner resolves it (conservative).
+- Offline checks: `pnpm test:mnemonic-art` (28 tests: CLI guards + structural assertions on the draft). The workflow itself has never run on GitHub; the structural tests do not replace a real dispatch.
 
 Safe dispatch prerequisites (all owner actions):
-1. Review/merge this branch, then copy the draft into `.github/workflows/` on main (agent never merges).
-2. Create GitHub Environment `mnemonic-art-pilot` with owner as required reviewer; move `MNEMONIC_IMAGE_API_KEY` there if possible (separate OpenAI project, spend limit set in the provider dashboard - the only true hard cap).
-3. Set repository Variables: `MNEMONIC_IMAGE_MODEL`, `MNEMONIC_INPUT_USD_PER_M`, `MNEMONIC_OUTPUT_USD_PER_M`, `MNEMONIC_MAX_INPUT_TOKENS`, `MNEMONIC_MAX_OUTPUT_TOKENS`, `MNEMONIC_PRICING_SOURCE_URL`, `MNEMONIC_PRICING_VERIFIED_ON`, from the pricing page + image guide.
-4. Run 1: `only=山`, cap 1. QC the artifact. Run 2+: pass `previous_run_id`, then the remaining nine of the pilot.
-Stop condition: if the output-token ceiling cannot be established from docs, do not dispatch - the cost is then unbounded by this tool.
+1. Copy the launcher to `.github/workflows/` on main (agent never merges). Reviewed commit = the branch tip you typed in `reviewed_sha`.
+2. Create Environment `mnemonic-art-pilot` with owner as required reviewer; keep `MNEMONIC_IMAGE_API_KEY` there if possible (separate OpenAI project with a provider-side spend limit).
+3. Set Variables from the pricing section above (`gpt-image-2` recommended), `MNEMONIC_PRICING_SOURCE_URL`, `MNEMONIC_PRICING_VERIFIED_ON`.
+4. Run 1: `first_run=true`, `only=山`, quality `low`, cap 1. QC the artifact and compare manifest `usage`. Run 2+: `previous_run_id` = latest run.
+No real API call has been made.

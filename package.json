@@ -12,7 +12,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "test:mnemonic-art": "node --test scripts/mnemonic-art/lib.test.mjs",
+    "test:mnemonic-art": "node --test scripts/mnemonic-art/lib.test.mjs scripts/mnemonic-art/cli.test.mjs scripts/mnemonic-art/workflow.test.mjs",
     "mnemonic-art": "node scripts/mnemonic-art/cli.mjs",
     "check:deps": "node scripts/check-deps.mjs",
     "check:secrets": "node scripts/check-secrets.mjs",

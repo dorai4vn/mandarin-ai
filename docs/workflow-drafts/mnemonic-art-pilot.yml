@@ -1,31 +1,40 @@
 # DRAFT - NOT ACTIVE. The Claude GitHub App cannot write .github/workflows, so this file lives in docs/.
-# To enable (owner, after review): copy to .github/workflows/mnemonic-art-pilot.yml on main. Never auto-run.
-# See docs/MNEMONIC_ART_CLI.md "Manual artwork workflow" for prerequisites.
+# This is a MINIMAL LAUNCHER: owner copies ONLY this file to .github/workflows/mnemonic-art-pilot.yml on main
+# (no app/production code changes, PR30 need not be merged). It checks out an exact, owner-typed, reviewed commit
+# (inputs.reviewed_sha) that contains scripts/mnemonic-art. See docs/MNEMONIC_ART_CLI.md "Manual artwork workflow".
+# Trust note: the code at reviewed_sha runs in the job that holds the API key -> the owner must have read that exact commit.
 name: Mnemonic artwork pilot (manual)
 
 on:
   workflow_dispatch:
     inputs:
+      reviewed_sha:
+        description: 'Full 40-hex commit SHA of the owner-reviewed branch tip that contains scripts/mnemonic-art'
+        required: true
       only:
-        description: 'Characters to generate (default: one image). Single Hanzi or comma list, e.g. 山'
+        description: 'Characters to generate. Single Hanzi or comma list, e.g. 山 (first run: exactly one)'
         default: '山'
         required: true
       quality:
-        description: 'Image quality'
+        description: 'Image quality (low or medium only for the pilot)'
         type: choice
-        options: [low, medium, high]
-        default: medium
+        options: [low, medium]
+        default: low
+      first_run:
+        description: 'true ONLY for the very first pilot run (no prior manifest). Otherwise false + previous_run_id.'
+        type: boolean
+        default: false
       previous_run_id:
-        description: 'Run ID of the previous pilot run (to carry the manifest/spend forward). Empty only for the first run.'
+        description: 'Run ID of the LATEST previous pilot run (carries manifest + spend). Required unless first_run.'
         required: false
       confirm_spend_cap:
-        description: 'Type the max USD for ALL pilot runs combined (<= 1)'
+        description: 'Max USD for ALL pilot runs combined (<= 1)'
         default: '1'
         required: true
 
 permissions:
   contents: read # read-only token; no write scopes anywhere
-  actions: read # only to download the previous run's artifact
+  actions: read # only to list runs / download the previous run's artifact
 
 concurrency:
   group: mnemonic-art-pilot
@@ -33,44 +42,80 @@ concurrency:
 
 jobs:
   generate:
-    # Trusted ref + owner-only. No pull_request/issue_comment triggers exist, so no agent/PR text reaches this job.
+    # No pull_request/issue_comment triggers exist, so no agent/PR text reaches this job.
     if: github.ref == 'refs/heads/main' && github.actor == 'dorai4vn' && github.triggering_actor == 'dorai4vn'
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    environment: mnemonic-art-pilot # configure required reviewer = owner; secret MNEMONIC_IMAGE_API_KEY scoped here
+    # Required reviewer = owner (environment protection shows reviewed_sha before approval). Where environments are
+    # unavailable the owner-only `if` above and the typed SHA remain the gates.
+    environment: mnemonic-art-pilot
     env:
-      # Untrusted-looking inputs are passed through env, never interpolated into shell.
+      # Inputs go through env, never interpolated into shell.
+      IN_SHA: ${{ inputs.reviewed_sha }}
       IN_ONLY: ${{ inputs.only }}
       IN_QUALITY: ${{ inputs.quality }}
       IN_CAP: ${{ inputs.confirm_spend_cap }}
+      IN_FIRST: ${{ inputs.first_run }}
       PREV_RUN: ${{ inputs.previous_run_id }}
+      GH_REPO: ${{ github.repository }}
+      THIS_RUN: ${{ github.run_id }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Validate inputs and run provenance (no code checked out yet, no secret)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$IN_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "reviewed_sha must be a full 40-hex SHA"; exit 1; }
+          [[ "$IN_ONLY" =~ ^[^[:ascii:]](,[^[:ascii:]]){0,9}$ ]] || { echo "only: 1-10 Hanzi, comma separated"; exit 1; }
+          [[ "$IN_CAP" =~ ^(0(\.[0-9]{1,2})?|1(\.0{1,2})?)$ ]] || { echo "cap must be <= 1"; exit 1; }
+          [[ -z "$PREV_RUN" || "$PREV_RUN" =~ ^[0-9]+$ ]] || { echo "bad run id"; exit 1; }
+          if [ "$IN_FIRST" = "true" ]; then
+            [ -z "$PREV_RUN" ] || { echo "first_run=true must not have previous_run_id"; exit 1; }
+            [[ "$IN_ONLY" != *,* ]] || { echo "first run: exactly one character"; exit 1; }
+          else
+            [ -n "$PREV_RUN" ] || { echo "previous_run_id required unless first_run=true (prevents a fresh spend ledger)"; exit 1; }
+          fi
+          # Latest completed prior run of this workflow, excluding this run and runs skipped by the guard (they ran no job).
+          latest=$(gh run list --workflow mnemonic-art-pilot.yml --status completed --limit 100 \
+            --json databaseId,conclusion \
+            --jq "[.[] | select(.databaseId != ($THIS_RUN|tonumber)) | select(.conclusion != \"skipped\")] | .[0] // empty")
+          if [ "$IN_FIRST" = "true" ]; then
+            [ -z "$latest" ] || { echo "first_run=true refused: a previous pilot run exists ($latest). Use previous_run_id."; exit 1; }
+          else
+            [ -n "$latest" ] || { echo "no previous pilot run exists; use first_run=true"; exit 1; }
+            latest_id=$(jq -r '.databaseId' <<<"$latest")
+            [ "$latest_id" = "$PREV_RUN" ] || { echo "previous_run_id must be the LATEST run ($latest_id), not $PREV_RUN (older manifests would reset spend)"; exit 1; }
+          fi
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ inputs.reviewed_sha }}
           persist-credentials: false
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - name: Assert exact reviewed commit
+        run: |
+          set -euo pipefail
+          [ "$(git rev-parse HEAD)" = "$IN_SHA" ] || { echo "checked-out HEAD != reviewed_sha"; exit 1; }
+          test -f scripts/mnemonic-art/cli.mjs
+          git log -1 --format='reviewing %H %s' | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Validate inputs
-        run: |
-          set -euo pipefail
-          [[ "$IN_ONLY" =~ ^[^[:ascii:]](,[^[:ascii:]]){0,9}$ ]] || { echo "only: 1-10 Hanzi, comma separated"; exit 1; }
-          [[ "$IN_CAP" =~ ^(0(\.[0-9]{1,2})?|1(\.0{1,2})?)$ ]] || { echo "cap must be <= 1"; exit 1; }
-          [[ -z "$PREV_RUN" || "$PREV_RUN" =~ ^[0-9]+$ ]] || { echo "bad run id"; exit 1; }
-
       - name: Restore previous manifest (spend carry-over)
         if: ${{ inputs.previous_run_id != '' }}
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh run download "$PREV_RUN" --name mnemonic-art-pilot --dir .mnemonic-art
-
-      - name: Review briefs + dry-run plan (no secret)
         run: |
+          set -euo pipefail
+          gh run download "$PREV_RUN" --name mnemonic-art-pilot --dir .mnemonic-art
+          test -f .mnemonic-art/manifest.json || { echo "previous artifact has no manifest.json"; exit 1; }
+
+      - name: Offline checks (no secret)
+        run: |
+          pnpm test:mnemonic-art
           pnpm mnemonic-art review
           pnpm mnemonic-art plan --only "$IN_ONLY"
 
@@ -85,7 +130,11 @@ jobs:
           MNEMONIC_MAX_OUTPUT_TOKENS: ${{ vars.MNEMONIC_MAX_OUTPUT_TOKENS }}
           MNEMONIC_PRICING_SOURCE_URL: ${{ vars.MNEMONIC_PRICING_SOURCE_URL }}
           MNEMONIC_PRICING_VERIFIED_ON: ${{ vars.MNEMONIC_PRICING_VERIFIED_ON }}
-        run: pnpm mnemonic-art generate --only "$IN_ONLY" --live --storage local --max-retries 0 --max-spend-usd "$IN_CAP"
+        run: |
+          set -euo pipefail
+          if [ "$IN_FIRST" = "true" ]; then expect=none; else expect=existing; fi
+          pnpm mnemonic-art generate --only "$IN_ONLY" --live --storage local --max-retries 0 \
+            --max-spend-usd "$IN_CAP" --expect-manifest "$expect" --run-id "$THIS_RUN" --commit "$IN_SHA"
 
       - name: Verify checksums
         if: always()
@@ -93,9 +142,10 @@ jobs:
 
       - name: Upload candidate artifacts (local only, no cloud write)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: mnemonic-art-pilot
           path: .mnemonic-art/
+          include-hidden-files: true # .mnemonic-art is a dot-directory; v4.4+ skips hidden files by default
           retention-days: 14
-          if-no-files-found: ignore
+          if-no-files-found: error
