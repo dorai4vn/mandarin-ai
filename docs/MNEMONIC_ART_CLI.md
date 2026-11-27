@@ -151,3 +151,16 @@ Draft launcher: `docs/workflow-drafts/mnemonic-art-production.yml` (not in `.git
 token, pinned actions, exact reviewed SHA, secret in Generate only, hidden-file artifact uploaded also on failure) plus environment `mnemonic-art-production` (owner as required reviewer),
 shared concurrency group and artifact name with the pilot (one ledger chain; `previous_run_id` must be the latest run across both launchers), timeout 340 min. Never run live from CI of this repo.
 Tests: `pnpm test:mnemonic-art` (49 offline tests; the workflow has never run on GitHub).
+
+## Node24 action pins (draft launchers)
+
+Verified 2026-11-27 via `git ls-remote` + upstream `action.yml` `runs.using`:
+
+| Action                  | Pin (commit)                               | Tag | Runtime                            |
+| ----------------------- | ------------------------------------------ | --- | ---------------------------------- |
+| actions/checkout        | fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09   | v5  | node24                             |
+| actions/setup-node      | a0853c24544627f65ddf259abe73b1d18a591444   | v5  | node24                             |
+| pnpm/action-setup       | fc06bc1257f339d1d5d8b3a19a8cae5388b55320   | v5  | node24 (annotated tag, peeled SHA) |
+| actions/upload-artifact | b7c566a772e6b6bfb58ed0dc250532a479d7789f   | v6  | node24 (v5 is still node20)        |
+
+Application Node stays 22 (`node-version: 22`). Covered by `node24-pins.test.mjs`.
