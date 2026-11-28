@@ -140,14 +140,14 @@ No real API call has been made.
 - Retained images: 10 (`meta.retainedPilot.files`): 水火日月人雨 (active) + 山木鱼鸟 (archive). New images needed: 246 - 6 = **240**.
 - **Carried-ledger guard** (`verifyCarriedLedger`, runs for production incl. dry-run, fails closed, no network): all 10 retained entries must be `stored`, checksum-valid in storage, with `promptHash` equal to the dataset's current prompt
   (v1 frozen for 山水木火日月鱼鸟; v2 for 人 and 雨, unchanged); no `requested`/`failed` entries; no orphan entries; at least 12 prior requests (stored + archived revisions); and `spentUsdEstimated` not lower than the sum of
-  prices the entries themselves prove. A missing or tampered manifest stops the run before any call. The manifest format is unchanged (keyed by file name), so no data migration exists to get wrong: spend and entries carry over byte-for-byte (tested).
+  prices the entries themselves prove. In addition (hardening): every `entry.history[].archivedAt` superseded file must have a safe `mnemonic/superseded/<12hex>-<name>.webp` path, exist, and match its SHA-256; stored entries must match the dataset (hanzi, path `mnemonic/<file>`, finite non-negative price); and the three original runs pinned in `meta.retainedPilot.priorRuns` (46058598242, 46059449724, 46063520659: runId, commit, `only`, spentUsdEstimatedAfter 0.0195 / 0.195 / 0.234, copied from the real GitHub artifact manifest) must be an unchanged, ordered prefix of `manifest.runs`; later production run records may append. `spentUsdEstimated` may not be below 0.234. A missing or tampered manifest stops the run before any call. The manifest format is unchanged (keyed by file name), so no data migration exists to get wrong: spend and entries carry over byte-for-byte (tested).
 - Budget: sanity ceiling lowered to **$6 cumulative ESTIMATED** (owner-approved). It is a typo guard and ledger bound, **not** a provider-enforced cap; set a provider-side project limit.
 - Not verified here: the actual artifact of run 46063520659 and actual provider billing (tests use synthetic fixtures only). The first dispatch will verify the real artifact through this guard.
-- Minimal owner steps: (1) review/merge the draft; (2) copy the production launcher draft per its header; (3) dispatch with `previous_run_id` = latest run, `first_run=false`; (4) first run a `plan --all --production` dry-run (no spend) and expect `toGenerate+deferred = 240`.
+- Minimal owner steps: (1) review/merge the draft; (2) copy the production launcher draft per its header; (3) dispatch with `previous_run_id` = latest run, `first_run=false`; (4) the launcher itself runs `plan --all --production --expect-manifest existing --batch-size N --max-spend-usd B` before the secret-bearing Generate step (ledger guard + budget check, no spend) and expects `toGenerate+deferred = 240`.
 
 ## Production mode for the remaining images (DRAFT, no live calls made)
 
-Prerequisites: owner has QC'd the nine-image pilot and given a **separate final budget approval**. Pilot #3 stays on the pilot launcher with `previous_run_id=46058598242`.
+Prerequisites: owner has QC'd the pilot (10 retained images) and given a **separate final budget approval**. Pilot #3 stays on the pilot launcher with `previous_run_id=46058598242`.
 
 CLI: `generate --all --production --live --expect-manifest existing --batch-size N --max-spend-usd B`
 - Requires the carried manifest with >= 10 stored images (the pilot); verified entries are skipped (same prompt hash + checksum), so reruns never repeat paid calls.
@@ -185,7 +185,7 @@ and **雨** (clearly visible falling rain, not primarily a thunderstorm). No liv
 **Prompt versions (accepted hashes are not invalidated)**
 - `artwork.promptVersion: "v1"` = frozen legacy prompt, byte-identical to what produced the accepted images. Their `promptHash` values are pinned by a golden test
   (`lib.test.mjs`), so a rerun skips them (`skip-verified`) and never re-bills them.
-- Everything else (人, 雨 and the 190 not yet generated) uses **v2** = v1 + one extra line, *thumbnail legibility*: main subject unmistakable at ~160 px wide, dominant (>= half of frame height),
+- Everything else (人, 雨 and every not-yet-generated active character) uses **v2** = v1 + one extra line, *thumbnail legibility*: main subject unmistakable at ~160 px wide, dominant (>= half of frame height),
   simple silhouette, strong value contrast, calm subordinate background, minimal clutter. v2 applies to all remaining production images.
 - New briefs: 人 = one large profile figure striding in a dark wool coat, rim backlight, blurred subordinate lane; 雨 = dense long bright backlit rain streaks on dark slate sky, splashing on wet stone, no lightning.
   Original text; no Hanzi inside the artwork; the pilot's 山 style/model/quality (`low`) are unchanged.
@@ -204,14 +204,14 @@ Expected extra spend: 2 x ~$0.0195 estimated (ledger estimate, actual billing no
 4. Only after QC passes and the final budget is approved: production dispatch (below). If a revision is rejected again, adjust the brief, commit, and repeat step 2 with the new SHA and the new latest run id.
 
 **Can the two revisions be combined with the final production dispatch? Not recommended; the tooling prevents it.** `--revise` is refused in `--production`, and production `plan --all` would show 人/雨 as
-`blocked-revision-needs-flag` until they are revised. Reason: QC of the revisions before bulk spend (owner preference), a failed/rejected revision would otherwise be mixed into a 190-image batch, and production
+`blocked-revision-needs-flag` until they are revised. Reason: QC of the revisions before bulk spend (owner preference), a failed/rejected revision would otherwise be mixed into a 240-image batch, and production
 stops on the first error. Order: revision run (2 images) -> QC -> production batches (25/50/100/200) with `previous_run_id` = latest.
 
 **Environment reuse (`mnemonic-art-pilot` for both launchers) - safe, with differences**
 - Safe because: both launchers are `workflow_dispatch` only, `main` + owner-only guard, read-only token, secret in the Generate step only, shared concurrency group and artifact chain; the same owner is the required reviewer, and the
   API key / pricing vars are scoped once. Approval shows the dispatch inputs (batch size, cumulative budget) either way. No second environment to configure.
 - What differs / residual risk: the environment name no longer signals "bigger spend" at the approval prompt (read `Mnemonic artwork production (manual)` and `batch_size`/`confirm_budget_usd` there); the environment cannot enforce the $1 vs
-  <= $10 caps - those live in the workflow code at the reviewed SHA; a protection rule or environment secret change affects both launchers. If you prefer a visible separation, create `mnemonic-art-production` and revert that one line.
+  <= $6 caps - those live in the workflow code at the reviewed SHA; a protection rule or environment secret change affects both launchers. If you prefer a visible separation, create `mnemonic-art-production` and revert that one line.
 
 **Remaining limitations**: workflow never executed on GitHub; golden hashes assume the briefs of the 8 accepted images are unchanged since the pilot run (verify with `plan --only 山,水,木,火,日,月,鱼,鸟` after carrying the manifest: all must say `skip-verified`);
 image quality of the revisions is unverified until the owner reviews them; the 188 reviewer warnings (no lighting/texture word in briefs) are unchanged and do not block.

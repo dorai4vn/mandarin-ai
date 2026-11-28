@@ -618,6 +618,14 @@ test('--revise refuses when the stored file is tampered, and is not allowed in p
 const ACTIVE_OLD = ['水', '火', '日', '月', '人', '雨']; // retained pilot images that are inside the Level 1 list
 const ARCHIVE_OLD = ['山', '木', '鱼', '鸟']; // retained pilot images outside it
 const by = (h) => real.characters.find((c) => c.hanzi === h);
+const PRIOR_RUNS = real.meta.retainedPilot.priorRuns;
+const supersededFixture = async (t, h, price) => {
+  const body = Buffer.from(`superseded-fixture-${h}`);
+  const hash = sha256(body);
+  const archivedAt = `mnemonic/superseded/${hash.slice(0, 12)}-${by(h).artwork.file}`;
+  await t.storage.put(archivedAt, body);
+  return { archivedAt, sha256: hash, priceUsdEstimated: price };
+};
 /** Synthetic carried manifest for the 10 retained files (bytes are fake fixtures, NOT artwork). */
 const carried = async (t, { price = 0.0195 } = {}) => {
   const m = { version: 1, spentUsdEstimated: 0, entries: {} };
@@ -632,14 +640,14 @@ const carried = async (t, { price = 0.0195 } = {}) => {
       sha256: sha256(body),
       promptHash: promptHash(buildPrompt(c, real.meta)),
       priceUsdEstimated: price,
-      ...(h === '人' || h === '雨'
-        ? { history: [{ archivedAt: 'x', sha256: 'a'.repeat(64), priceUsdEstimated: price }] }
-        : {}),
+      ...(h === '人' || h === '雨' ? { history: [await supersededFixture(t, h, price)] } : {}),
     };
     m.spentUsdEstimated =
       Math.round((m.spentUsdEstimated + price * (c.artwork.promptVersion === 'v2' ? 2 : 1)) * 1e6) /
       1e6;
   }
+  m.runs = PRIOR_RUNS.map((r) => ({ ...r }));
+  m.spentUsdEstimated = Math.max(m.spentUsdEstimated, PRIOR_RUNS.at(-1).spentUsdEstimatedAfter);
   saveManifest(t.manifestPath, m);
   return m;
 };
@@ -747,5 +755,76 @@ test('production sanity ceiling is the owner-approved $6 cumulative estimate; sp
   await assert.rejects(run(realProd(t, { maxSpendUsd: 6.5 })), /sanity ceiling/);
   // carried ~0.2145 + 240 x 0.0195 = 4.89 < 6 is fine; a $1 cap must refuse up-front
   await assert.rejects(run(realProd(t, { maxSpendUsd: 1 })), /spend guard/);
+  assert.equal(t.calls(), 0);
+});
+
+test('carried ledger: superseded history files and run-history prefix are verified fail-closed', async () => {
+  const tamper = async (mutate, re) => {
+    const u = setup();
+    const m = await carried(u);
+    await mutate(m, u);
+    saveManifest(u.manifestPath, m);
+    await assert.rejects(run(realProd(u)), re);
+    assert.equal(u.calls(), 0);
+  };
+  const f = (h) => by(h).artwork.file;
+  // superseded file missing / tampered / unsafe path / bad checksum
+  await tamper(async (m, u) => {
+    const h = m.entries[f('人')].history[0];
+    await u.storage.put(h.archivedAt, Buffer.from('changed'));
+  }, /superseded file .* missing or checksum mismatch/);
+  await tamper(
+    (m) => (m.entries[f('雨')].history[0].archivedAt = 'mnemonic/superseded/zz-x.webp'),
+    /not a safe mnemonic\/superseded path/,
+  );
+  await tamper(
+    (m) => (m.entries[f('雨')].history[0].archivedAt = '../../etc/passwd'),
+    /not a safe/,
+  );
+  await tamper((m) => (m.entries[f('雨')].history[0].sha256 = 'z'), /no valid checksum/);
+  await tamper(
+    (m) =>
+      (m.entries[f('雨')].history[0].archivedAt =
+        'mnemonic/superseded/' + 'a'.repeat(12) + '-gone.webp'),
+    /no valid checksum|missing or checksum/,
+  );
+  // run history: missing / reordered / altered
+  await tamper((m) => m.runs.pop(), /missing prior run #3/);
+  await tamper((m) => delete m.runs, /missing prior run #1/);
+  await tamper((m) => m.runs.reverse(), /altered\/reordered/);
+  await tamper((m) => (m.runs[0].commit = 'f'.repeat(40)), /commit altered/);
+  await tamper((m) => (m.runs[1].only = '山'), /only altered/);
+  await tamper((m) => (m.runs[2].spentUsdEstimatedAfter = 0.01), /spentUsdEstimatedAfter altered/);
+  await tamper((m) => (m.spentUsdEstimated = 0.2), /below final prior run amount|lower than/);
+  // entry vs dataset, price validity
+  await tamper((m) => (m.entries[f('水')].hanzi = '火'), /entry hanzi/);
+  await tamper((m) => (m.entries[f('水')].path = 'mnemonic/other.webp'), /entry path/);
+  await tamper((m) => (m.entries[f('水')].priceUsdEstimated = -1), /price missing\/negative/);
+  await tamper((m) => (m.entries[f('水')].priceUsdEstimated = null), /price missing\/negative/);
+  await tamper(
+    (m) => (m.entries[f('人')].history[0].priceUsdEstimated = Infinity),
+    /history price/,
+  );
+  // later production run records may append without rewriting the prefix; old entries stay byte-for-byte
+  const t = setup();
+  const before = await carried(t);
+  const snapshot = JSON.stringify(before.entries);
+  const m = loadManifest(t.manifestPath);
+  m.runs.push({ runId: '999', commit: 'c'.repeat(40), spentUsdEstimatedAfter: 0.3, only: 'all' });
+  saveManifest(t.manifestPath, m);
+  const r = await run(realProd(t, { live: false }));
+  assert.equal(r.summary.blocked, 0);
+  assert.equal(JSON.stringify(loadManifest(t.manifestPath).entries), snapshot);
+});
+test('production dry-run validates the budget input like the live step (ceiling, already-spent)', async () => {
+  const t = setup();
+  await carried(t);
+  await assert.rejects(run(realProd(t, { live: false, maxSpendUsd: 7 })), /sanity ceiling/);
+  await assert.rejects(
+    run(realProd(t, { live: false, maxSpendUsd: 0.1 })),
+    /already spent exceeds/,
+  );
+  const r = await run(realProd(t, { live: false, maxSpendUsd: 6 }));
+  assert.equal(r.summary.toGenerate + r.summary.deferred, 240);
   assert.equal(t.calls(), 0);
 });

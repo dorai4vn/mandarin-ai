@@ -5,8 +5,8 @@
 //        --storage local|supabase (default local; supabase needs MNEMONIC_SUPABASE_URL/_SECRET_KEY/_BUCKET)
 //        --expect-manifest existing|none  (refuse to run unless a prior manifest exists / does not exist: stops a fresh
 //        manifest from silently resetting cumulative spend)   --run-id ID --commit SHA (recorded in manifest provenance)
-//        --production --batch-size N(1-200, default 25)  remaining-190 mode: needs >=10 stored in carried manifest, retries 0,
-//        stops on first error, failed entries need --force, spend ceiling sanity 10 (owner budget = --max-spend-usd)
+//        --production --batch-size N(1-200, default 25)  240-new-active mode: needs the 10 retained images (6 active + 4 archive) + run history verified, retries 0,
+//        stops on first error, failed entries need --force, cumulative estimated sanity ceiling 6 (NOT a provider cap; owner budget = --max-spend-usd)
 //        --revise  allow regenerating ONLY the selected, already-stored characters whose prompt changed (QC revision; old image
 //        is archived under mnemonic/superseded/ and kept in entry.history; not allowed with --production)
 //        --max-spend-usd N   --max-retries N(0-3)   --out DIR (default .mnemonic-art)

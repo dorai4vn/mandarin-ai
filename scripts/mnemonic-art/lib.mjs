@@ -10,7 +10,7 @@ export const MAX_RETRIES_CAP = 3;
 /** Owner-approved pilot bounds (budget note 2026-11-27): max $1 incl. retries, max 10 images. Raise only by code change after owner approval. */
 export const PILOT_MAX_USD = 1;
 export const PILOT_MAX_IMAGES = 10;
-// Production (remaining ~190) mode: explicit owner budget per dispatch. This is a sanity ceiling on a typo, NOT a
+// Production (240 new active images) mode: explicit owner budget per dispatch. This is a sanity ceiling on a typo, NOT a
 // provider-enforced cap and NOT the approved budget (the owner's --max-spend-usd is). Provider-side limit still advised.
 export const PRODUCTION_SANITY_MAX_USD = 6; // owner-approved cumulative ESTIMATED budget for this scope (2026-11-27)
 export const PRODUCTION_MAX_BATCH = 200;
@@ -113,6 +113,41 @@ export function loadManifest(path) {
   return m;
 }
 const HEX64 = /^[0-9a-f]{64}$/;
+const SUPERSEDED_PATH = /^mnemonic\/superseded\/[0-9a-f]{12}-[a-z0-9][a-z0-9.-]*\.webp$/;
+const validPrice = (v) => typeof v === 'number' && Number.isFinite(v) && v >= 0;
+/**
+ * The historical run chain (dataset meta.retainedPilot.priorRuns, pinned from the real artifact) must be an unchanged
+ * PREFIX of manifest.runs: same runId, commit, `only`, and spentUsdEstimatedAfter, in order; amounts monotonic and the
+ * last prior amount is a floor for the current spend. Later production runs may append; they may not rewrite the prefix.
+ */
+function verifyRunChain(manifest, prior, bad) {
+  if (!Array.isArray(prior) || !prior.length) {
+    bad.push('dataset declares no priorRuns to verify the run history against');
+    return;
+  }
+  const runs = Array.isArray(manifest.runs) ? manifest.runs : [];
+  let last = 0;
+  prior.forEach((p, i) => {
+    const r = runs[i];
+    if (!r) return void bad.push(`run history: missing prior run #${i + 1} (${p.runId})`);
+    for (const k of ['runId', 'commit', 'only'])
+      if (r[k] !== p[k]) bad.push(`run history #${i + 1}: ${k} altered/reordered (${p.runId})`);
+    if (r.spentUsdEstimatedAfter !== p.spentUsdEstimatedAfter)
+      bad.push(`run history #${i + 1}: spentUsdEstimatedAfter altered (${p.runId})`);
+    if (!(p.spentUsdEstimatedAfter >= last)) bad.push(`run history #${i + 1}: not monotonic`);
+    last = p.spentUsdEstimatedAfter;
+  });
+  if (typeof manifest.spentUsdEstimated === 'number' && manifest.spentUsdEstimated + 1e-9 < last)
+    bad.push(
+      `spentUsdEstimated ${manifest.spentUsdEstimated} is below final prior run amount ${last}`,
+    );
+  let prev = last;
+  for (const r of runs.slice(prior.length)) {
+    if (!(r.spentUsdEstimatedAfter >= prev))
+      bad.push('run history: later run amounts not monotonic');
+    prev = r.spentUsdEstimatedAfter;
+  }
+}
 /**
  * Production fail-closed guard for datasets that declare `meta.retainedPilot` (files + priorRequestsAtLeast).
  * The carried manifest must contain ALL retained images (active AND archive) as stored, checksum-valid in storage,
@@ -141,6 +176,9 @@ export async function verifyCarriedLedger({ manifest, data, storage }) {
       bad.push(`${file}: not stored in carried manifest`);
       continue;
     }
+    if (e.hanzi !== c.hanzi) bad.push(`${file}: entry hanzi ${e.hanzi} != dataset ${c.hanzi}`);
+    if (e.path !== `mnemonic/${file}`) bad.push(`${file}: entry path is not mnemonic/${file}`);
+    if (!validPrice(e.priceUsdEstimated)) bad.push(`${file}: price missing/negative/not finite`);
     if (!HEX64.test(e.sha256 ?? '') || typeof e.path !== 'string')
       bad.push(`${file}: no checksum/path`);
     else {
@@ -155,6 +193,17 @@ export async function verifyCarriedLedger({ manifest, data, storage }) {
     for (const h of e.history ?? []) {
       proven += Number(h.priceUsdEstimated) || 0;
       requests += 1;
+      // Every superseded revision must still exist byte-for-byte (approved/rejected candidates are never lost).
+      if (!validPrice(h.priceUsdEstimated)) bad.push(`${file}: history price missing/negative`);
+      if (typeof h.archivedAt !== 'string' || !SUPERSEDED_PATH.test(h.archivedAt))
+        bad.push(`${file}: history archivedAt is not a safe mnemonic/superseded path`);
+      else if (!HEX64.test(h.sha256 ?? '') || !h.archivedAt.includes(`/${h.sha256.slice(0, 12)}-`))
+        bad.push(`${file}: history entry has no valid checksum`);
+      else {
+        const old = await storage.get(h.archivedAt);
+        if (!old || sha256(old) !== h.sha256)
+          bad.push(`${file}: superseded file ${h.archivedAt} missing or checksum mismatch`);
+      }
     }
   }
   for (const [file, e] of Object.entries(manifest.entries)) {
@@ -166,6 +215,7 @@ export async function verifyCarriedLedger({ manifest, data, storage }) {
     bad.push(
       `ledger shows ${requests} prior requests, expected at least ${rp.priorRequestsAtLeast}`,
     );
+  verifyRunChain(manifest, rp.priorRuns, bad);
   if (Number.isFinite(spent) && spent + 1e-9 < proven)
     bad.push(
       `spentUsdEstimated ${spent} is lower than ${proven} proven by stored entries (tampered ledger)`,
@@ -463,6 +513,17 @@ export async function run({
   };
   summary.skipped = plan.filter((p) => p.action === 'skip-verified').length;
   summary.blocked = plan.filter((p) => p.action.startsWith('blocked')).length;
+  if (production && maxSpendUsd > 0) {
+    // Budget input is validated on dry-run too, so the pre-secret preflight rejects what the live step would reject.
+    if (maxSpendUsd > PRODUCTION_SANITY_MAX_USD)
+      throw new Error(
+        `production: --max-spend-usd above sanity ceiling ${PRODUCTION_SANITY_MAX_USD}`,
+      );
+    if (manifest.spentUsdEstimated > maxSpendUsd)
+      throw new Error(
+        `spend guard: ${manifest.spentUsdEstimated} already spent exceeds max ${maxSpendUsd}`,
+      );
+  }
   if (!live)
     return {
       summary,

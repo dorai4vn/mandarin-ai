@@ -66,6 +66,11 @@ test('production draft: validation step really runs in bash/python', () => {
     out.push(lines[k].slice(10));
   const script = out.join('\n');
   const ok = { IN_SHA: 'a'.repeat(40), PREV_RUN: '46058598242', IN_BATCH: '50', IN_BUDGET: '5' };
+  assert.equal(
+    spawnSync('bash', ['-c', script], { env: { PATH: process.env.PATH, ...ok, IN_BUDGET: '6' } })
+      .status,
+    0,
+  );
   const go = (o) =>
     spawnSync('bash', ['-c', script], {
       env: { PATH: process.env.PATH, ...ok, ...o },
@@ -78,6 +83,8 @@ test('production draft: validation step really runs in bash/python', () => {
     { PREV_RUN: '1;x' },
     { IN_BATCH: '7' },
     { IN_BUDGET: '0' },
+    { IN_BUDGET: '6.01' },
+    { IN_BUDGET: '7' },
     { IN_BUDGET: '11' },
     { IN_BUDGET: '5; rm' },
   ])
@@ -128,4 +135,33 @@ test('CLI: production mock run refuses a manifest without the 10 stored pilot im
   ]);
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /carried ledger rejected \(fail closed\).*not stored in carried manifest/);
+});
+
+test('production draft: budget <= 6 and pre-secret production-mode dry-run exercises the ledger guard', () => {
+  assert.match(code, /not 0 < float\(b\) <= 6/);
+  assert.doesNotMatch(code, /<= 10/);
+  const pre = code.slice(code.indexOf('- name: Offline checks'), code.indexOf('- name: Generate'));
+  assert.doesNotMatch(pre, /secrets\./);
+  assert.doesNotMatch(pre, /MNEMONIC_IMAGE_API_KEY/);
+  const line = pre.match(/pnpm mnemonic-art plan [^\n]*\\\n[^\n]*/)[0];
+  for (const f of [
+    '--all',
+    '--production',
+    '--expect-manifest existing',
+    '--batch-size "$IN_BATCH"',
+    '--max-spend-usd "$IN_BUDGET"',
+  ])
+    assert.ok(line.includes(f), f);
+  assert.ok(
+    code.indexOf('mnemonic-art plan --all --production') <
+      code.indexOf('secrets.MNEMONIC_IMAGE_API_KEY'),
+  );
+});
+test('CLI: production dry-run rejects a budget above the $6 sanity ceiling and spend already above budget', () => {
+  const out = join(mkdtempSync(join(tmpdir(), 'mp-')), 'o');
+  const seed = cli(['generate', '--only', '山', '--mock', '--max-spend-usd', '1', '--out', out]);
+  assert.equal(seed.status, 0, seed.stderr);
+  const base = ['plan', '--all', '--production', '--expect-manifest', 'existing', '--out', out];
+  // ledger guard runs first (only 1 of 10 retained images stored) -> fail closed either way
+  assert.match(cli([...base, '--max-spend-usd', '7']).stderr, /carried ledger rejected/);
 });

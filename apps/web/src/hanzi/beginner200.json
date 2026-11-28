@@ -34,6 +34,26 @@
         "niao-bird.webp"
       ],
       "priorRequestsAtLeast": 12,
+      "priorRuns": [
+        {
+          "runId": "46058598242",
+          "commit": "dd7e5493a80e7540a80c176faf324275e20704c4",
+          "spentUsdEstimatedAfter": 0.0195,
+          "only": "山"
+        },
+        {
+          "runId": "46059449724",
+          "commit": "dd7e5493a80e7540a80c176faf324275e20704c4",
+          "spentUsdEstimatedAfter": 0.195,
+          "only": "水,木,火,日,月,人,雨,鱼,鸟"
+        },
+        {
+          "runId": "46063520659",
+          "commit": "858657de9b77ea1b5724f3cf1841216720b3329c",
+          "spentUsdEstimatedAfter": 0.234,
+          "only": "人,雨"
+        }
+      ],
       "note": "10 retained images = 6 active (水火日月人雨) + 4 archive (山木鱼鸟). Production must find all 10 stored and checksum-valid in the carried manifest."
     }
   },

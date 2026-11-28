@@ -1,4 +1,4 @@
-# DRAFT - NOT ACTIVE, NOT TO BE COPIED until the owner has QC'd the nine-image pilot AND given separate final budget approval.
+# DRAFT - NOT ACTIVE, NOT TO BE COPIED until the owner has QC'd the pilot (10 retained images) AND given separate final budget approval.
 # Minimal launcher like mnemonic-art-pilot.yml (owner copies ONLY this file to .github/workflows/ on main; the Claude app cannot write
 # workflows). Generates the REMAINING ACTIVE characters (246 syllabus L1 set minus the 6 retained pilot; archive records are never generated) of beginner200.json (skip-existing, serial, bounded batch) with the approved
 # style/model/quality. Shares the concurrency group and artifact name with the pilot so the spend ledger is one chain.
@@ -63,8 +63,8 @@ jobs:
           if e("IN_BATCH", "") not in ("25", "50", "100", "200"):
               fail("batch_size must be 25, 50, 100 or 200")
           b = e("IN_BUDGET", "")
-          if not re.fullmatch(r"[0-9]{1,2}(\.[0-9]{1,2})?", b, re.ASCII) or not 0 < float(b) <= 10:
-              fail("confirm_budget_usd must be > 0 and <= 10")
+          if not re.fullmatch(r"[0-9]{1,2}(\.[0-9]{1,2})?", b, re.ASCII) or not 0 < float(b) <= 6:
+              fail("confirm_budget_usd must be > 0 and <= 6 (owner-approved cumulative estimate, not a provider cap)")
           print("inputs ok")
           PY
 
@@ -122,7 +122,10 @@ jobs:
             .mnemonic-art/manifest.json >/dev/null \
             || { echo "carried manifest: fewer than 10 stored images or model differs from vars.MNEMONIC_IMAGE_MODEL"; exit 1; }
           pnpm mnemonic-art verify
-          pnpm mnemonic-art plan --all
+          # Production-mode dry-run: exercises the carried-ledger guard (10 retained incl. superseded files, run-history prefix,
+          # spend floor, prompt hashes, archive exclusion) and the cumulative budget check BEFORE the secret-bearing step.
+          pnpm mnemonic-art plan --all --production --expect-manifest existing \
+            --batch-size "$IN_BATCH" --max-spend-usd "$IN_BUDGET"
 
       - name: Generate (the ONLY step with the secret; serial, retries 0, stops on first error)
         env:
