@@ -39,7 +39,7 @@ function Note({
         width={w}
         height={h}
         rx={6}
-        fill="var(--color-surface-muted, #eef)"
+        fill="var(--surface-raised)"
         stroke="currentColor"
         strokeWidth={1.5}
       />
@@ -121,7 +121,7 @@ function Day({ x, label, zh, active }: { x: number; label: string; zh: string; a
         y={31}
         textAnchor="middle"
         fontSize={12}
-        fill="var(--color-bg, #fff)"
+        fill="var(--bg-page)"
         fontFamily={FONT}
       >
         {label}
@@ -191,7 +191,7 @@ export function VisualConcept({ kind, hanzi }: { kind: VisualKind; hanzi: string
           textAnchor="middle"
           fontSize={52}
           fontWeight={800}
-          fill="var(--color-bg, #fff)"
+          fill="var(--bg-page)"
           fontFamily="ui-monospace, monospace"
         >
           0
@@ -201,7 +201,7 @@ export function VisualConcept({ kind, hanzi }: { kind: VisualKind; hanzi: string
           y={74}
           textAnchor="middle"
           fontSize={34}
-          fill="var(--color-bg, #fff)"
+          fill="var(--bg-page)"
           fontFamily={FONT}
         >
           :
@@ -212,7 +212,7 @@ export function VisualConcept({ kind, hanzi }: { kind: VisualKind; hanzi: string
           textAnchor="middle"
           fontSize={52}
           fontWeight={800}
-          fill="var(--color-bg, #fff)"
+          fill="var(--bg-page)"
           fontFamily="ui-monospace, monospace"
         >
           0
@@ -259,7 +259,7 @@ export function VisualConcept({ kind, hanzi }: { kind: VisualKind; hanzi: string
             textAnchor="middle"
             fontSize={30}
             fontWeight={800}
-            fill="var(--color-bg, #fff)"
+            fill="var(--bg-page)"
             fontFamily={FONT}
           >
             出租
