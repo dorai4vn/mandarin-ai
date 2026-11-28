@@ -385,3 +385,10 @@ Quy ước:
   - Tìm kiếm chạy **cục bộ** (Hán tự, pinyin có/không dấu/số, tiếng Việt không dấu) trên danh sách cá nhân và snapshot.
 - **Hoãn (thêm khi có nhu cầu thật):** `course_versions`, `content_admins`, bảng `tags`/`topics` riêng, khóa học riêng tư của người dùng (M4, PDF import), xem lại từ trùng ở phía server.
 - **Hệ quả:** Lịch sử học (M3) cũng có thể dùng mô hình log thao tác này. Nếu sau này cần truy vấn phía server (thống kê, nhiều người dùng), có thể dựng bảng projection từ `sync_operations` mà không đổi app.
+
+## D-044 — Tách M3.5 (lịch sử chữ Hán) khỏi M5; nguồn Wikimedia Commons; chỉ chuyển mờ giữa các hình có nguồn
+- **Ngày:** 2026-11-26 · **Trạng thái:** đề xuất theo yêu cầu chủ dự án (issue #27), **chờ chủ dự án duyệt dữ liệu**.
+- **Bối cảnh:** Kế hoạch ghi Visual Hanzi ở M5. Chủ dự án yêu cầu tách phần lịch sử chữ thành M3.5; nhận dạng viết tay giữ ở M5.
+- **Lựa chọn:** (1) Pilot 山 với 3 hình vector từ Wikimedia Commons được gắn nhãn Public domain (giáp cốt, kim văn, tiểu triện); lệ thư thiếu và hiển thị là thiếu; khải thư là chữ hiện đại bằng phông. (2) Hoạt ảnh = chuyển mờ CSS giữa các giai đoạn, **không morph/nội suy**. (3) Dữ liệu nhúng trong mã (không bảng DB mới, không migration); mô hình trường khớp `hanzi_historical_forms` trong ARCHITECTURE để chuyển sang DB sau. (4) Thứ tự nét tách riêng; `hanzi-writer-data` (APL) chưa tích hợp.
+- **Hạn chế đã biết:** Hình là bản vẽ lại của contributor Commons, chưa đối chiếu với bản dập/ấn bản gốc; nhãn PD là của Commons, chưa có tư vấn pháp lý; `reviewStatus = pending_owner_review`.
+- **Hệ quả:** Thêm chữ mới = thêm dữ liệu có nguồn + test; không thêm chữ khi chưa xác minh giấy phép.

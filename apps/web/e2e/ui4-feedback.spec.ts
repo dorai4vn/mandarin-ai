@@ -57,6 +57,11 @@ test('sync indicator: "Đồng bộ ngay" reports the result in a toast without 
   ).toBe(false);
 });
 
+// Async /health handler (route.fetch → json → fulfill) must finish before the context closes.
+test.afterEach(async ({ page }) => {
+  await page.unrouteAll({ behavior: 'wait' });
+});
+
 test('sync indicator: with cloud sync disabled, "Đồng bộ ngay" says data stays on the device', async ({
   page,
 }) => {

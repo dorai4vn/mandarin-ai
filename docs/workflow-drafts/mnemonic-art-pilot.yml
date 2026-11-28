@@ -1,0 +1,232 @@
+# DRAFT - NOT ACTIVE. The Claude GitHub App cannot write .github/workflows, so this file lives in docs/.
+# This is a MINIMAL LAUNCHER: owner copies ONLY this file to .github/workflows/mnemonic-art-pilot.yml on main
+# (no app/production code changes, PR30 need not be merged). It checks out an exact, owner-typed, reviewed commit
+# (inputs.reviewed_sha) that contains scripts/mnemonic-art. See docs/MNEMONIC_ART_CLI.md "Manual artwork workflow".
+# Trust note: the code at reviewed_sha runs in the job that holds the API key -> the owner must have read that exact commit.
+name: Mnemonic artwork pilot (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      reviewed_sha:
+        description: 'Full 40-hex commit SHA of the owner-reviewed branch tip that contains scripts/mnemonic-art'
+        required: true
+      only:
+        description: 'Characters to generate. Single Hanzi or comma list, e.g. 山 (first run: exactly one)'
+        default: '山'
+        required: true
+      quality:
+        description: 'Image quality (low or medium only for the pilot)'
+        type: choice
+        options: [low, medium]
+        default: low
+      first_run:
+        description: 'true ONLY for the very first pilot run (no prior manifest). Otherwise false + previous_run_id.'
+        type: boolean
+        default: false
+      previous_run_id:
+        description: 'Run ID of the LATEST previous pilot run (carries manifest + spend). Required unless first_run.'
+        required: false
+      recover_run_id:
+        description: 'ONLY 46057258136 (run that failed input validation before Generate). Needs first_run=true; proven via jobs API.'
+        required: false
+      revise:
+        description: 'true ONLY to regenerate already-stored characters whose brief was revised in the reviewed SHA (QC revision, e.g. 人,雨). Needs first_run=false; old image is archived in the artifact.'
+        type: boolean
+        default: false
+      confirm_spend_cap:
+        description: 'Max USD for ALL pilot runs combined (<= 1)'
+        default: '1'
+        required: true
+
+permissions:
+  contents: read # read-only token; no write scopes anywhere
+  actions: read # only to list runs / download the previous run's artifact
+
+concurrency:
+  group: mnemonic-art-pilot
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    # No pull_request/issue_comment triggers exist, so no agent/PR text reaches this job.
+    if: github.ref == 'refs/heads/main' && github.actor == 'dorai4vn' && github.triggering_actor == 'dorai4vn'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Required reviewer = owner (environment protection shows reviewed_sha before approval). Where environments are
+    # unavailable the owner-only `if` above and the typed SHA remain the gates.
+    environment: mnemonic-art-pilot
+    env:
+      # Inputs go through env, never interpolated into shell.
+      IN_SHA: ${{ inputs.reviewed_sha }}
+      IN_ONLY: ${{ inputs.only }}
+      IN_QUALITY: ${{ inputs.quality }}
+      IN_CAP: ${{ inputs.confirm_spend_cap }}
+      IN_FIRST: ${{ inputs.first_run }}
+      IN_REVISE: ${{ inputs.revise }}
+      PREV_RUN: ${{ inputs.previous_run_id }}
+      RECOVER_RUN: ${{ inputs.recover_run_id }}
+      RECOVERABLE_RUN: '46057258136'
+      GH_REPO: ${{ github.repository }}
+      THIS_RUN: ${{ github.run_id }}
+    steps:
+      - name: Validate inputs (pure python3 stdlib, Unicode-aware; no code checked out, no secret)
+        env:
+          PYTHONUTF8: '1'
+        run: |
+          set -euo pipefail
+          python3 -I - <<'PY'
+          import os, re, sys, unicodedata
+
+          def fail(msg):
+              print("::error::" + msg)
+              sys.exit(1)
+
+          def env(k):
+              return os.environ.get(k, "")
+
+          if not re.fullmatch(r"[0-9a-f]{40}", env("IN_SHA"), re.ASCII):
+              fail("reviewed_sha must be a full 40-hex SHA")
+          parts = env("IN_ONLY").split(",")
+          if not 1 <= len(parts) <= 10 or len(set(parts)) != len(parts):
+              fail("only: 1-10 distinct Hanzi, comma separated")
+          for p in parts:
+              try:
+                  ok = len(p) == 1 and unicodedata.name(p).startswith("CJK UNIFIED IDEOGRAPH")
+              except ValueError:
+                  ok = False
+              if not ok:
+                  fail("only: each item must be exactly one CJK Unified Ideograph")
+          cap = env("IN_CAP")
+          if not re.fullmatch(r"(0(\.[0-9]{1,2})?|1(\.0{1,2})?)", cap, re.ASCII) or float(cap) <= 0:
+              fail("cap must be > 0 and <= 1")
+          prev, rec = env("PREV_RUN"), env("RECOVER_RUN")
+          if prev and not re.fullmatch(r"[0-9]{1,20}", prev, re.ASCII):
+              fail("bad previous_run_id")
+          if rec and rec != env("RECOVERABLE_RUN"):
+              fail("recover_run_id may only be the single hardcoded run " + env("RECOVERABLE_RUN"))
+          first = env("IN_FIRST")
+          if env("IN_REVISE") == "true" and first == "true":
+              fail("revise=true needs an existing manifest: first_run must be false")
+          if first == "true":
+              if prev:
+                  fail("first_run=true must not have previous_run_id")
+              if len(parts) != 1:
+                  fail("first run: exactly one character")
+          else:
+              if not prev:
+                  fail("previous_run_id required unless first_run=true (prevents a fresh spend ledger)")
+              if rec:
+                  fail("recover_run_id is only valid together with first_run=true")
+          print("inputs ok")
+          PY
+
+      - name: Verify run provenance (explicit --repo, before checkout, no secret)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Latest completed prior run of this workflow, excluding this run and runs skipped by the guard (they ran no job).
+          gh run list --repo "$GH_REPO" --workflow mnemonic-art-pilot.yml --status completed --limit 100 \
+            --json databaseId,conclusion > runs.json
+          exclude="0"
+          if [ -n "$RECOVER_RUN" ]; then
+            # One-time recovery of the exact run that failed in input validation BEFORE any paid call.
+            # Every check must pass, otherwise fail closed (the run keeps blocking first_run=true).
+            run=$(gh api "repos/$GH_REPO/actions/runs/$RECOVER_RUN")
+            jq -e '.status == "completed" and .conclusion == "failure" and (.path | endswith("/mnemonic-art-pilot.yml"))' <<<"$run" >/dev/null \
+              || { echo "recovery refused: run $RECOVER_RUN is not a completed failed mnemonic-art-pilot run"; exit 1; }
+            # filter=all covers every rerun attempt, so a later attempt that reached Generate is also detected.
+            gh api --paginate "repos/$GH_REPO/actions/runs/$RECOVER_RUN/jobs?filter=all&per_page=100" | jq -s '[.[].jobs[]]' > jobs.json
+            jq -e 'length > 0 and all(.[]; ([.steps[]? | select(.name | startswith("Generate"))] | length == 1) and
+                   ([.steps[]? | select(.name | startswith("Generate")) | .conclusion] == ["skipped"]))' jobs.json >/dev/null \
+              || { echo "recovery refused: Generate step not proven skipped in every attempt (a paid call may have happened)"; exit 1; }
+            gh api "repos/$GH_REPO/actions/runs/$RECOVER_RUN/artifacts" | jq -e '.total_count == 0' >/dev/null \
+              || { echo "recovery refused: run $RECOVER_RUN has artifacts (possible spend ledger)"; exit 1; }
+            echo "recovery: run $RECOVER_RUN proven to have skipped Generate in all attempts; excluded from ledger check" | tee -a "$GITHUB_STEP_SUMMARY"
+            exclude="$RECOVER_RUN"
+          fi
+          latest=$(jq -c --argjson me "$THIS_RUN" --argjson ex "$exclude" \
+            '[.[] | select(.databaseId != $me and .databaseId != $ex) | select(.conclusion != "skipped")] | .[0] // empty' runs.json)
+          if [ "$IN_FIRST" = "true" ]; then
+            [ -z "$latest" ] || { echo "first_run=true refused: a previous pilot run exists ($latest). Use previous_run_id."; exit 1; }
+          else
+            [ -n "$latest" ] || { echo "no previous pilot run exists; use first_run=true"; exit 1; }
+            latest_id=$(jq -r '.databaseId' <<<"$latest")
+            [ "$latest_id" = "$PREV_RUN" ] || { echo "previous_run_id must be the LATEST run ($latest_id), not $PREV_RUN (older manifests would reset spend)"; exit 1; }
+          fi
+          rm -f runs.json jobs.json
+
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 (node24)
+        with:
+          ref: ${{ inputs.reviewed_sha }}
+          persist-credentials: false
+      - name: Assert exact reviewed commit
+        run: |
+          set -euo pipefail
+          [ "$(git rev-parse HEAD)" = "$IN_SHA" ] || { echo "checked-out HEAD != reviewed_sha"; exit 1; }
+          test -f scripts/mnemonic-art/cli.mjs
+          git log -1 --format='reviewing %H %s' | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5 (node24, peeled tag commit)
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5 (node24)
+        with:
+          node-version: 22
+          cache: pnpm
+      - id: install
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Restore previous manifest (spend carry-over)
+        if: ${{ inputs.previous_run_id != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download "$PREV_RUN" --repo "$GH_REPO" --name mnemonic-art-pilot --dir .mnemonic-art
+          test -f .mnemonic-art/manifest.json || { echo "previous artifact has no manifest.json"; exit 1; }
+
+      - name: Offline checks (no secret)
+        run: |
+          pnpm test:mnemonic-art
+          pnpm mnemonic-art review
+          extra=()
+          if [ "$IN_REVISE" = "true" ]; then extra+=(--revise); fi
+          pnpm mnemonic-art plan --only "$IN_ONLY" "${extra[@]}"
+
+      - name: Generate (the ONLY step with the secret; retries 0)
+        env:
+          MNEMONIC_IMAGE_API_KEY: ${{ secrets.MNEMONIC_IMAGE_API_KEY }}
+          MNEMONIC_IMAGE_MODEL: ${{ vars.MNEMONIC_IMAGE_MODEL }}
+          MNEMONIC_IMAGE_QUALITY: ${{ inputs.quality }}
+          MNEMONIC_INPUT_USD_PER_M: ${{ vars.MNEMONIC_INPUT_USD_PER_M }}
+          MNEMONIC_OUTPUT_USD_PER_M: ${{ vars.MNEMONIC_OUTPUT_USD_PER_M }}
+          MNEMONIC_MAX_INPUT_TOKENS: ${{ vars.MNEMONIC_MAX_INPUT_TOKENS }}
+          MNEMONIC_MAX_OUTPUT_TOKENS: ${{ vars.MNEMONIC_MAX_OUTPUT_TOKENS }}
+          MNEMONIC_PRICING_SOURCE_URL: ${{ vars.MNEMONIC_PRICING_SOURCE_URL }}
+          MNEMONIC_PRICING_VERIFIED_ON: ${{ vars.MNEMONIC_PRICING_VERIFIED_ON }}
+        run: |
+          set -euo pipefail
+          if [ "$IN_FIRST" = "true" ]; then expect=none; else expect=existing; fi
+          extra=()
+          if [ "$IN_REVISE" = "true" ]; then extra+=(--revise); fi
+          pnpm mnemonic-art generate --only "$IN_ONLY" "${extra[@]}" --live --storage local --max-retries 0 \
+            --max-spend-usd "$IN_CAP" --expect-manifest "$expect" --run-id "$THIS_RUN" --commit "$IN_SHA"
+
+      - name: Detect candidate artifacts
+        id: detect
+        if: always()
+        run: |
+          if [ -f .mnemonic-art/manifest.json ]; then echo "exists=true" >> "$GITHUB_OUTPUT"; else echo "exists=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Verify checksums
+        if: ${{ always() && steps.install.outcome == 'success' && steps.detect.outputs.exists == 'true' }}
+        run: pnpm mnemonic-art verify
+
+      - name: Upload candidate artifacts (local only, no cloud write)
+        if: ${{ always() && steps.detect.outputs.exists == 'true' }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6 (node24; v5 is still node20)
+        with:
+          name: mnemonic-art-pilot
+          path: .mnemonic-art/
+          include-hidden-files: true # .mnemonic-art is a dot-directory; v4.4+ skips hidden files by default
+          retention-days: 14
+          if-no-files-found: error

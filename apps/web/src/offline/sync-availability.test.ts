@@ -174,3 +174,54 @@ describe('SyncEngine with the availability gate (M0: server sync disabled)', () 
     expect(await store.listOutbox()).toHaveLength(0);
   });
 });
+
+describe('reconnect after offline quiz answers (Firefox flake regression)', () => {
+  it('canAttemptSync: a reconnect event overrides a stale navigator.onLine=false', async () => {
+    const { canAttemptSync } = await import('./sync');
+    expect(canAttemptSync(false)).toBe(false);
+    expect(canAttemptSync(false, true)).toBe(true);
+    expect(canAttemptSync(true)).toBe(true);
+  });
+
+  it('a probe that failed while offline stays unknown until forced; forced check drains the outbox', async () => {
+    const store = new MemoryStore();
+    await store.addNote('山');
+    await store.addNote('水');
+    let offline = true;
+    const h = async (): Promise<HealthLike> => {
+      if (offline) throw new Error('network down');
+      return { providers: { sync: 'live' } };
+    };
+    let t = 0;
+    const probe = new SyncAvailabilityProbe(h, { acceptMock: false, now: () => t });
+    const push = liveServer();
+    const engine = new SyncEngine(store, push, undefined, false, gateFor(probe));
+    expect(await probe.check()).toBe('unknown'); // probed while offline
+    offline = false;
+    t += 30_000; // the 30 s timer fires, still inside the 60 s unknown cache
+    expect((await engine.syncNow()).error).toBe('sync_status_unknown');
+    expect(await store.listOutbox()).toHaveLength(2);
+    expect(push).not.toHaveBeenCalled();
+    const s = await engine.syncNow({ force: true }); // what the online handler now does
+    expect(s.error).toBeNull();
+    expect(await store.listOutbox()).toHaveLength(0);
+  });
+
+  it('delayed store init: an engine created after the online event still syncs with a forced check', async () => {
+    let offline = true;
+    const h = async (): Promise<HealthLike> => {
+      if (offline) throw new Error('network down');
+      return { providers: { sync: 'live' } };
+    };
+    const probe = new SyncAvailabilityProbe(h, { acceptMock: false, now: () => 0 });
+    await probe.check();
+    offline = false; // online event fires while the store is still opening: no listener yet
+    const store = new MemoryStore();
+    await store.addNote('火');
+    const engine = new SyncEngine(store, liveServer(), undefined, false, gateFor(probe));
+    expect(probe.current).toBe('unknown');
+    const s = await engine.syncNow({ force: probe.current !== 'available' });
+    expect(s.error).toBeNull();
+    expect(await store.listOutbox()).toHaveLength(0);
+  });
+});

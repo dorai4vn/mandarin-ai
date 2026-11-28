@@ -3,6 +3,8 @@ import type { VocabularyItem } from '@mandarin/domain';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { HanziText, Pinyin } from '@/components/Hanzi';
+import { HanziHistoryForWord } from '@/hanzi/HanziHistory';
+import { historyGlyphsOf } from '@/hanzi/glyphs';
 import {
   Badge,
   Button,
@@ -266,6 +268,10 @@ function WordDetail({
             <p className="mt-1 text-sm text-fg-muted">{lx.exampleVi}</p>
           )}
         </div>
+      )}
+
+      {historyGlyphsOf(entry.simplified).length > 0 && (
+        <HanziHistoryForWord word={entry.simplified} glyphs={historyGlyphsOf(entry.simplified)} />
       )}
 
       {lessons.length > 0 && (

@@ -52,6 +52,8 @@ interface LearningState {
   lessonById: Map<string, LessonRef & { lexemeIds: string[] }>;
   /** Personal vocabulary (deleted entries excluded), newest first. */
   vocabulary: VocabularyItem[];
+  /** False while the account's local database is still opening (cold start): writes must wait. */
+  storeReady: boolean;
   addWord: (word: NewWord) => Promise<AddResult>;
   updateWord: (id: string, fields: Partial<VocabularyFields>) => Promise<void>;
   deleteWord: (id: string) => Promise<void>;
@@ -259,6 +261,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       lessonsByLexeme,
       lessonById,
       vocabulary,
+      storeReady: store !== null,
       addWord,
       updateWord,
       deleteWord,
@@ -271,6 +274,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       lessonsByLexeme,
       lessonById,
       vocabulary,
+      store,
       addWord,
       updateWord,
       deleteWord,

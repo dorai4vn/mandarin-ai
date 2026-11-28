@@ -34,3 +34,4 @@ packages/adapters/data/
 apps/web/next-env.d.ts
 apps/web/playwright-report/
 apps/web/test-results/
+.mnemonic-art/
