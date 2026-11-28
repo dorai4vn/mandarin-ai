@@ -56,6 +56,48 @@ test.describe('M3.5 visual mnemonic QC lab', () => {
     expect(await brokenImages(page)).toBe(0);
   });
 
+  test('remediation status + filters for the 53 FAIL/UNCERTAIN, nothing promoted or hidden', async ({
+    page,
+  }) => {
+    await page.goto('/lab/visual-mnemonic');
+    const grid = page.getByTestId('artwork-qc-grid');
+    await expect(grid.locator('li')).toHaveCount(246);
+    await expect(grid.locator('li[data-audit="PASS"]')).toHaveCount(193);
+    await expect(grid.locator('li[data-audit="UNCERTAIN"]')).toHaveCount(44);
+    await expect(grid.locator('li[data-audit="FAIL"]')).toHaveCount(9);
+    await expect(page.getByTestId('artwork-qc-remediation')).toHaveCount(53);
+    await expect(grid.locator('li[data-remediation="contextual-card"]')).toHaveCount(41);
+    await expect(grid.locator('li[data-remediation="replace-brief"]')).toHaveCount(11);
+    await expect(grid.locator('li[data-remediation="retain-with-caption"]')).toHaveCount(1);
+    await expect(page.getByTestId('artwork-qc-card')).toHaveCount(41);
+    // 的 (FAIL) shows a teaching card, its candidate image stays, still unapproved.
+    const de = page.getByTestId('artwork-qc-的');
+    await expect(de.getByTestId('artwork-qc-card')).toContainText('这是我的书');
+    await expect(de.locator('img')).toHaveCount(1);
+    await expect(de.getByTestId('artwork-qc-badge')).toContainText('chưa duyệt');
+
+    const counts: [string, number][] = [
+      ['pass', 193],
+      ['review', 53],
+      ['contextual-card', 41],
+      ['replace-brief', 11],
+      ['retain-with-caption', 1],
+    ];
+    for (const [id, n] of counts) {
+      await page.getByTestId(`artwork-qc-filter-${id}`).click();
+      await expect(page.getByTestId(`artwork-qc-filter-${id}`)).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+      await expect(grid.locator('li')).toHaveCount(n);
+      // Archive section and unapproved summary are unaffected by the filter.
+      await expect(page.getByTestId('artwork-qc-archive-grid').locator('li')).toHaveCount(4);
+      await expect(page.getByTestId('mnemonic-lab-summary')).toContainText('0 đã duyệt');
+    }
+    await page.getByTestId('artwork-qc-filter-all').click();
+    await expect(grid.locator('li')).toHaveCount(246);
+  });
+
   test('pilot glyph candidates (人/雨) render real images, not placeholders', async ({ page }) => {
     await page.goto('/lab/visual-mnemonic');
     for (const g of ['人', '雨']) {

@@ -29,6 +29,32 @@ async function settled(page: Page) {
   await page.waitForFunction(() =>
     document.getAnimations().every((a) => !(a instanceof CSSTransition)),
   );
+  // WebKit can report no running transition for a frame or two before (or between) style
+  // updates, so an empty getAnimations() alone is not proof of a settled colour. Require the
+  // computed text/background colours of every button and link in <main> to be identical across
+  // several consecutive frames (reproducible failure: webkit-mobile dark /login, run 46164835311).
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        const snap = () =>
+          Array.from(document.querySelectorAll('main button, main a'))
+            .map((el) => {
+              const cs = getComputedStyle(el);
+              return `${cs.color}|${cs.backgroundColor}|${cs.opacity}`;
+            })
+            .join(';');
+        let prev = snap();
+        let same = 0;
+        const tick = () => {
+          const now = snap();
+          same = now === prev ? same + 1 : 0;
+          prev = now;
+          if (same >= 5) resolve();
+          else requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }),
+  );
 }
 
 async function axeMain(page: Page) {

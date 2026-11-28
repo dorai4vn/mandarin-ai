@@ -1,0 +1,708 @@
+[
+  {
+    "hanzi": "吧",
+    "order": 4,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Rót trà mời gợi ý nhẹ nhàng; đúng bối cảnh nhưng không tách khỏi 请/给/呢 (cảnh mời tương tự).",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我们走吧。",
+      "pinyin": "Wǒmen zǒu ba.",
+      "vi": "Chúng ta đi thôi.",
+      "noteVi": "Trợ từ cuối câu: gợi ý, đề nghị hoặc đồng ý nhẹ."
+    }
+  },
+  {
+    "hanzi": "百",
+    "order": 6,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Đàn hạc giấy rất đông: \"nhiều\" chứ không xác minh \"100\"; trùng chủ thể hạc với 白/飞/非.",
+    "action": "replace-brief",
+    "replacement": {
+      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. A large fully readable grid of 10 rows by 10 columns of small identical paper boats on a calm pond, top view, neat and regular so a viewer can see 10x10.",
+      "acceptance": [
+        "Regular 10x10 lattice visible (100 items)",
+        "No cranes (collision with 白/飞/非 removed)",
+        "Reads as \"a hundred = ten tens\", not just \"many\""
+      ]
+    }
+  },
+  {
+    "hanzi": "便",
+    "order": 13,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Quầy hàng trong tầm tay: \"tiện lợi\" mơ hồ, nhiều chi tiết.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "住在这里很方便。",
+      "pinyin": "Zhù zài zhèlǐ hěn fāngbiàn.",
+      "vi": "Ở đây rất tiện.",
+      "noteVi": "Trong 方便 đọc biàn; trong 便宜 đọc pián."
+    }
+  },
+  {
+    "hanzi": "得",
+    "order": 31,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Người chạy về đích dạy \"đạt được\"/跑得快, nhưng nghĩa chức năng (bổ ngữ trạng thái) không hiện qua ảnh.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "他跑得很快。",
+      "pinyin": "Tā pǎo de hěn kuài.",
+      "vi": "Anh ấy chạy rất nhanh.",
+      "noteVi": "Đọc de, nối động từ với bổ ngữ mô tả mức độ/kết quả."
+    }
+  },
+  {
+    "hanzi": "的",
+    "order": 32,
+    "prelimVerdict": "FAIL",
+    "reasonVi": "Bàn tay trao chìa khoá nhà: dạy 给/租 (trao/thuê), không dạy sở hữu 的; cấu trúc trùng 租 (#242).",
+    "action": "contextual-card",
+    "card": {
+      "zh": "这是我的书。",
+      "pinyin": "Zhè shì wǒ de shū.",
+      "vi": "Đây là sách của tôi.",
+      "noteVi": "Nối định ngữ với danh từ; thường tương ứng \"của\"."
+    }
+  },
+  {
+    "hanzi": "第",
+    "order": 34,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Bục 3 bậc, huy chương đồng ở bậc giữa: thứ tự không rõ (bậc giữa cao nhất nhưng huy chương đồng = hạng 3).",
+    "action": "contextual-card",
+    "card": {
+      "zh": "今天是第二天。",
+      "pinyin": "Jīntiān shì dì èr tiān.",
+      "vi": "Hôm nay là ngày thứ hai.",
+      "noteVi": "Tiền tố tạo số thứ tự: 第 + số."
+    }
+  },
+  {
+    "hanzi": "对",
+    "order": 40,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Hai người đối diện ổn cho \"đối diện\"; dấu tích \"đúng\" bằng đũa không thấy trong ảnh.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "你说得对。",
+      "pinyin": "Nǐ shuō de duì.",
+      "vi": "Bạn nói đúng.",
+      "noteVi": "duì = đúng; cũng gặp trong 对不起 (xin lỗi)."
+    }
+  },
+  {
+    "hanzi": "非",
+    "order": 47,
+    "prelimVerdict": "FAIL",
+    "reasonVi": "Hai con hạc quay lưng, cánh dang: không gợi \"không phải/phi\"; trùng chủ thể với 飞 (hạc bay) nên dễ nhầm với 飞/白/百. Chủ sở hữu đã loại.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "非常好。",
+      "pinyin": "Fēicháng hǎo.",
+      "vi": "Rất tốt.",
+      "noteVi": "非 = không phải; ở HSK1 chủ yếu gặp trong 非常."
+    }
+  },
+  {
+    "hanzi": "个",
+    "order": 53,
+    "prelimVerdict": "FAIL",
+    "reasonVi": "Một quả hồng trên đĩa: vật tuỳ ý, không dạy lượng từ chung 个 (không có cặp danh từ-lượng từ nào).",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我有三个苹果。",
+      "pinyin": "Wǒ yǒu sān gè píngguǒ.",
+      "vi": "Tôi có ba quả táo.",
+      "noteVi": "Lượng từ chung, đứng sau số từ và trước danh từ."
+    }
+  },
+  {
+    "hanzi": "还",
+    "order": 62,
+    "prelimVerdict": "FAIL",
+    "reasonVi": "Nến + tách trà nguội: gợi \"vẫn/còn\" quá gián tiếp; học viên không đọc được nghĩa.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我还有一个问题。",
+      "pinyin": "Wǒ hái yǒu yí gè wèntí.",
+      "vi": "Tôi còn một câu hỏi.",
+      "noteVi": "hái = vẫn, còn; đứng trước động từ."
+    }
+  },
+  {
+    "hanzi": "汉",
+    "order": 64,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Sông + học giả đọc sách: \"Hán\" (sông Hán/dân tộc) gián tiếp.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我学汉语。",
+      "pinyin": "Wǒ xué Hànyǔ.",
+      "vi": "Tôi học tiếng Trung (Hán ngữ).",
+      "noteVi": "Gặp trong 汉语, 汉字."
+    }
+  },
+  {
+    "hanzi": "号",
+    "order": 66,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Chỉ thể hiện nghĩa \"kèn\"; thiếu nghĩa số/ngày (nghĩa chính của 号 khi học).",
+    "action": "contextual-card",
+    "card": {
+      "zh": "今天几号？",
+      "pinyin": "Jīntiān jǐ hào?",
+      "vi": "Hôm nay mùng mấy?",
+      "noteVi": "Chỉ ngày trong tháng hoặc số hiệu (号码)."
+    }
+  },
+  {
+    "hanzi": "和",
+    "order": 68,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Hai bát cơm cạnh nhau ≈ 二 (#43) / 没 (#112); ý \"và\" không rõ.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我和你是朋友。",
+      "pinyin": "Wǒ hé nǐ shì péngyou.",
+      "vi": "Tôi và bạn là bạn bè.",
+      "noteVi": "Nối hai danh từ/đại từ, không nối hai động từ hay hai câu."
+    }
+  },
+  {
+    "hanzi": "很",
+    "order": 69,
+    "prelimVerdict": "FAIL",
+    "reasonVi": "Hoa hướng dương to: vật trang trí, không biểu đạt mức độ \"rất\"; không thể suy ra từ ảnh.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "今天很热。",
+      "pinyin": "Jīntiān hěn rè.",
+      "vi": "Hôm nay rất nóng.",
+      "noteVi": "Đứng trước tính từ làm vị ngữ; trong câu thường nghĩa rất nhẹ."
+    }
+  },
+  {
+    "hanzi": "机",
+    "order": 77,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Khung dệt cổ: \"máy\" đúng nghĩa rộng nhưng gợi nghề dệt hơn máy.",
+    "action": "replace-brief",
+    "replacement": {
+      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. A simple wooden machine with a crank handle, visible interlocking gears and a belt, on a workshop table, no weaving frame or loom.",
+      "acceptance": [
+        "Gears + crank read as \"machine\"",
+        "No loom/textile elements",
+        "Different from 车 and 电 scenes"
+      ]
+    }
+  },
+  {
+    "hanzi": "件",
+    "order": 83,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Một chiếc áo gấp: cặp 件-áo hợp lý nhưng ảnh không cho biết lượng từ; mức giống 个.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我买了一件衣服。",
+      "pinyin": "Wǒ mǎi le yí jiàn yīfu.",
+      "vi": "Tôi đã mua một cái áo.",
+      "noteVi": "Lượng từ cho quần áo (áo, ...) và một số việc/văn bản."
+    }
+  },
+  {
+    "hanzi": "今",
+    "order": 86,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Lịch trống + bình minh: trùng motif lịch với 昨 (#243); \"hôm nay\" không phân biệt được.",
+    "action": "replace-brief",
+    "replacement": {
+      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. One person drinking morning tea on a sunlit balcony as the sun is rising right now, steam visible, the present moment, no calendar.",
+      "acceptance": [
+        "No calendar object",
+        "Sunrise + present-moment action",
+        "Visibly different from 昨 scene (no footprints, no faded sun)"
+      ]
+    }
+  },
+  {
+    "hanzi": "九",
+    "order": 87,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Núi nhiều lớp: không đếm được 9 lớp từ ảnh.",
+    "action": "replace-brief",
+    "replacement": {
+      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. Nine identical red paper lanterns hung in a single horizontal row of nine evenly spaced, clearly countable, under a wooden eave.",
+      "acceptance": [
+        "Exactly 9 lanterns, single row, countable on 533x400",
+        "Different object from 十/六 scenes",
+        "No partially hidden lanterns"
+      ]
+    }
+  },
+  {
+    "hanzi": "可",
+    "order": 91,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Cổng mở then nhấc: gần giống 开 (#89 cửa mở); ý \"được phép\" mơ hồ.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我可以看吗？",
+      "pinyin": "Wǒ kěyǐ kàn ma?",
+      "vi": "Tôi xem được không?",
+      "noteVi": "Trong 可以 = có thể/được phép; cũng trong 可爱."
+    }
+  },
+  {
+    "hanzi": "块",
+    "order": 95,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Miếng dưa hấu: gợi \"miếng\" nhưng không có tín hiệu 块 = đồng/cục.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "这个五块钱。",
+      "pinyin": "Zhège wǔ kuài qián.",
+      "vi": "Cái này năm đồng.",
+      "noteVi": "Khẩu ngữ: đồng (tiền); cũng là lượng từ cho miếng, cục."
+    }
+  },
+  {
+    "hanzi": "两",
+    "order": 101,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Hai vòng ngọc tương tự 二 (#43); không phân biệt 两 (đếm vật) với 二.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我要两个杯子。",
+      "pinyin": "Wǒ yào liǎng gè bēizi.",
+      "vi": "Tôi cần hai cái cốc.",
+      "noteVi": "Dùng khi đếm trước lượng từ; đọc số thì dùng 二."
+    }
+  },
+  {
+    "hanzi": "零",
+    "order": 103,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Bát rỗng gợi \"không\" nhưng trùng 没 (#112 bát úp); mơ hồ giữa 0 và \"không có\".",
+    "action": "replace-brief",
+    "replacement": {
+      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. A thermometer-style glass tube standing in snow at exactly the zero mark, frost on the glass, soft winter light; the zero mark clearly aligned with the liquid level.",
+      "acceptance": [
+        "Liquid level clearly at the zero mark",
+        "Winter/frost cue supports 零下 (below zero) example",
+        "No empty bowls (collision with 没 removed)"
+      ]
+    }
+  },
+  {
+    "hanzi": "六",
+    "order": 104,
+    "prelimVerdict": "FAIL",
+    "reasonVi": "Tháp xửng hấp: đếm được 7 tầng, không phải 6 → sai số lượng, dễ gây nhầm 六/七.",
+    "action": "replace-brief",
+    "replacement": {
+      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. Exactly six identical bamboo steamer baskets stacked in one vertical tower on a kitchen counter, all six rim lines clearly visible, steam rising from the top.",
+      "acceptance": [
+        "Count of stacked tiers is exactly 6 on a 533x400 render",
+        "No second tower or extra baskets that could change the count",
+        "Not reused for 七/八 scenes"
+      ]
+    }
+  },
+  {
+    "hanzi": "么",
+    "order": 111,
+    "prelimVerdict": "FAIL",
+    "reasonVi": "Mèo con trong hộp: vật tuỳ ý (không liên quan 什么), lại trùng chủ thể với 猫/它/息.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "你要什么？",
+      "pinyin": "Nǐ yào shénme?",
+      "vi": "Bạn muốn gì?",
+      "noteVi": "Không đứng riêng; là hậu tố trong 什么, 怎么, 这么."
+    }
+  },
+  {
+    "hanzi": "没",
+    "order": 112,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Bát úp rỗng hợp lý, nhưng trùng ý 零; \"chưa\" không thể hiện.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我没有钱。",
+      "pinyin": "Wǒ méiyǒu qián.",
+      "vi": "Tôi không có tiền.",
+      "noteVi": "Phủ định của 有; cũng phủ định hành động đã xảy ra."
+    }
+  },
+  {
+    "hanzi": "呢",
+    "order": 124,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Lòng bàn tay mở mời đáp lại (\"còn bạn thì sao?\") hợp lý nhưng mơ hồ; cần chú thích ngữ cảnh.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我很好，你呢？",
+      "pinyin": "Wǒ hěn hǎo, nǐ ne?",
+      "vi": "Tôi khoẻ, còn bạn thì sao?",
+      "noteVi": "Trợ từ hỏi lại, lấy chủ đề từ câu trước."
+    }
+  },
+  {
+    "hanzi": "期",
+    "order": 135,
+    "prelimVerdict": "FAIL",
+    "reasonVi": "Bảy viên đá: dạy số 七 (trùng #134), không có tín hiệu \"kỳ/thời kỳ\".",
+    "action": "contextual-card",
+    "card": {
+      "zh": "这个星期我很忙。",
+      "pinyin": "Zhège xīngqī wǒ hěn máng.",
+      "vi": "Tuần này tôi rất bận.",
+      "noteVi": "Hầu như chỉ gặp trong 星期 và 日期."
+    }
+  },
+  {
+    "hanzi": "千",
+    "order": 138,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Hàng nghìn nến: gợi độ lớn nhưng không đếm/so sánh được với 百.",
+    "action": "replace-brief",
+    "replacement": {
+      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. Ten large panels each containing a regular 10x10 grid of tiny dots, arranged in two rows of five, as an abstract-but-concrete picture of one thousand dots.",
+      "acceptance": [
+        "Ten blocks of 100 dots each",
+        "Visibly larger than 百 scene, same lattice language",
+        "No candles (collision with 灯/火 scenes removed)"
+      ]
+    }
+  },
+  {
+    "hanzi": "什",
+    "order": 152,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Hộp quà đóng + nét mặt thắc mắc (\"bên trong là gì?\") hợp lý nhưng chỉ là phần của 什么.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "你吃什么？",
+      "pinyin": "Nǐ chī shénme?",
+      "vi": "Bạn ăn gì?",
+      "noteVi": "什 hầu như chỉ gặp trong 什么."
+    }
+  },
+  {
+    "hanzi": "十",
+    "order": 155,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Hình chữ thập (dạng chữ) đúng, nhưng đèn lồng ≈ 12, không phải 10.",
+    "action": "replace-brief",
+    "replacement": {
+      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. Ten round tangerines arranged in two rows of five on a plain wooden tray, top view, each tangerine fully visible.",
+      "acceptance": [
+        "Exactly 10 items in a 2x5 grid",
+        "Items fully visible and countable",
+        "Different from 五 (no hand) and from 九 (no lanterns)"
+      ]
+    }
+  },
+  {
+    "hanzi": "识",
+    "order": 157,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Sách mở + nến + kính: gợi \"biết/đọc\" chung chung, trùng 知/读.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我认识他。",
+      "pinyin": "Wǒ rènshi tā.",
+      "vi": "Tôi quen anh ấy.",
+      "noteVi": "Gặp trong 认识 và 知识."
+    }
+  },
+  {
+    "hanzi": "事",
+    "order": 160,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Đôi tay chạm khắc chim gỗ: \"việc làm\" chấp nhận được, khó suy ra \"sự việc\".",
+    "action": "contextual-card",
+    "card": {
+      "zh": "你有什么事？",
+      "pinyin": "Nǐ yǒu shénme shì?",
+      "vi": "Bạn có việc gì?",
+      "noteVi": "Việc, sự việc; 没事 = không sao."
+    }
+  },
+  {
+    "hanzi": "视",
+    "order": 161,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Tay che mắt nhìn núi: trùng 看 (#90), không phân biệt.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我喜欢看电视。",
+      "pinyin": "Wǒ xǐhuan kàn diànshì.",
+      "vi": "Tôi thích xem tivi.",
+      "noteVi": "Thường là thành tố trong từ ghép như 电视, 视频."
+    }
+  },
+  {
+    "hanzi": "是",
+    "order": 162,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Hai bóng người, hai tách giống nhau: gợi \"đồng ý/là\" rất mờ.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我是学生。",
+      "pinyin": "Wǒ shì xuésheng.",
+      "vi": "Tôi là học sinh.",
+      "noteVi": "Động từ \"là\" nối hai danh từ; phủ định bằng 不是."
+    }
+  },
+  {
+    "hanzi": "说",
+    "order": 167,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Hai người nói chuyện: trùng 话 (#72), 语 (#222), 呢/吧.",
+    "action": "retain-with-caption",
+    "captionVi": "Hai người đối thoại, một người đang nói — minh hoạ hành động \"nói\" khá trực tiếp. Chỉ giữ làm ứng viên; thêm chú thích phân biệt: 说 = hành động nói, 话 = lời nói, 语 = ngôn ngữ."
+  },
+  {
+    "hanzi": "他",
+    "order": 171,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Bóng người đi về phía thành phố, quay lưng: không thể hiện \"anh ấy\"; trùng 去 (#142).",
+    "action": "contextual-card",
+    "card": {
+      "zh": "他是我的老师。",
+      "pinyin": "Tā shì wǒ de lǎoshī.",
+      "vi": "Anh ấy là giáo viên của tôi.",
+      "noteVi": "Chỉ người nam; 她 chỉ nữ, cùng đọc tā."
+    }
+  },
+  {
+    "hanzi": "它",
+    "order": 172,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Mèo cam: trùng chủ thể với 猫 (#110); \"nó (vật)\" không phân biệt với con mèo.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "它是我的猫。",
+      "pinyin": "Tā shì wǒ de māo.",
+      "vi": "Nó là con mèo của tôi.",
+      "noteVi": "Chỉ vật hoặc con vật, không chỉ người."
+    }
+  },
+  {
+    "hanzi": "题",
+    "order": 175,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Học sinh chống cằm trước cuộn giấy trống: gợi \"suy nghĩ\", chưa là \"đề/câu hỏi\".",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我有一个问题。",
+      "pinyin": "Wǒ yǒu yí gè wèntí.",
+      "vi": "Tôi có một câu hỏi.",
+      "noteVi": "Gặp trong 问题 (câu hỏi) và 题目 (đề bài)."
+    }
+  },
+  {
+    "hanzi": "条",
+    "order": 177,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Con sông dài hẹp: đúng loại vật dài, nhưng không có cặp lượng từ rõ ràng.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "这条路很长。",
+      "pinyin": "Zhè tiáo lù hěn cháng.",
+      "vi": "Con đường này rất dài.",
+      "noteVi": "Lượng từ cho vật dài, hẹp (đường, cá, sông)."
+    }
+  },
+  {
+    "hanzi": "五",
+    "order": 187,
+    "prelimVerdict": "FAIL",
+    "reasonVi": "Bàn tay xoè 5 ngón nhưng cầm 4 quả quýt → số lượng mâu thuẫn (4 vs 5).",
+    "action": "replace-brief",
+    "replacement": {
+      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. A single open hand with exactly five clearly separated fingers held up in front of a market stall, empty palm, no objects held.",
+      "acceptance": [
+        "Exactly 5 fingers visible, one hand only",
+        "No held objects (removes the earlier 4-vs-5 contradiction)",
+        "Hand clearly distinct from 手 (#163) pilot scene: gesture \"5\", not a hand study"
+      ]
+    }
+  },
+  {
+    "hanzi": "息",
+    "order": 190,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Mèo ngủ cạnh nến: gợi nghỉ ngơi nhưng chủ thể mèo trùng 猫/它/么.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我们休息一下。",
+      "pinyin": "Wǒmen xiūxi yíxià.",
+      "vi": "Chúng ta nghỉ một lát.",
+      "noteVi": "Thường đi trong 休息 và 消息, ít đứng riêng."
+    }
+  },
+  {
+    "hanzi": "样",
+    "order": 209,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Hai bình gốm giống nhau: gợi \"kiểu/giống\" nhưng trùng 同 (#179).",
+    "action": "contextual-card",
+    "card": {
+      "zh": "这个怎么样？",
+      "pinyin": "Zhège zěnmeyàng?",
+      "vi": "Cái này thế nào?",
+      "noteVi": "Gặp trong 怎么样 (thế nào) và 一样 (giống nhau)."
+    }
+  },
+  {
+    "hanzi": "也",
+    "order": 211,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Hai người cầm cùng ô đỏ đối xứng: ý \"cũng\" tinh tế, người học khó đọc.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我也喜欢茶。",
+      "pinyin": "Wǒ yě xǐhuan chá.",
+      "vi": "Tôi cũng thích trà.",
+      "noteVi": "Phó từ \"cũng\", đứng trước động từ."
+    }
+  },
+  {
+    "hanzi": "宜",
+    "order": 215,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Cân có rau/xu: \"rẻ/thích hợp\" suy ra gián tiếp.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "这里的水果很便宜。",
+      "pinyin": "Zhèlǐ de shuǐguǒ hěn piányi.",
+      "vi": "Trái cây ở đây rất rẻ.",
+      "noteVi": "Chủ yếu gặp trong 便宜 (rẻ)."
+    }
+  },
+  {
+    "hanzi": "有",
+    "order": 220,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Tay cầm đèn lồng trăng khuyết + túi táo: \"có/sở hữu\" chấp nhận được nhưng trăng khuyết gây nhiễu với 月.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我有一只猫。",
+      "pinyin": "Wǒ yǒu yì zhī māo.",
+      "vi": "Tôi có một con mèo.",
+      "noteVi": "Động từ \"có\" (sở hữu hoặc tồn tại)."
+    }
+  },
+  {
+    "hanzi": "语",
+    "order": 222,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Hai người trao đổi lời + sách thơ: gần 说/话; nghĩa \"ngôn ngữ\" mơ hồ.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "你会说汉语吗？",
+      "pinyin": "Nǐ huì shuō Hànyǔ ma?",
+      "vi": "Bạn biết nói tiếng Trung không?",
+      "noteVi": "Thường là hậu tố chỉ ngôn ngữ: 汉语, 英语."
+    }
+  },
+  {
+    "hanzi": "再",
+    "order": 226,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Vẫy tay tiễn trên thuyền đọc là 再见/tạm biệt hơn là \"lại/nữa\".",
+    "action": "contextual-card",
+    "card": {
+      "zh": "明天再来。",
+      "pinyin": "Míngtiān zài lái.",
+      "vi": "Ngày mai lại đến.",
+      "noteVi": "Phó từ \"lại, nữa\" cho việc chưa xảy ra; cũng trong 再见."
+    }
+  },
+  {
+    "hanzi": "怎",
+    "order": 229,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Ngã ba đường: trùng 哪 (#119); \"thế nào\" khó suy ra.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "你怎么去学校？",
+      "pinyin": "Nǐ zěnme qù xuéxiào?",
+      "vi": "Bạn đến trường bằng cách nào?",
+      "noteVi": "Chủ yếu gặp trong 怎么 / 怎么样."
+    }
+  },
+  {
+    "hanzi": "知",
+    "order": 234,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Cú mèo = biểu tượng trí tuệ kiểu phương Tây, không gắn trực tiếp với 知 (biết).",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我不知道。",
+      "pinyin": "Wǒ bù zhīdào.",
+      "vi": "Tôi không biết.",
+      "noteVi": "Hầu như gặp trong 知道 và 知识."
+    }
+  },
+  {
+    "hanzi": "只",
+    "order": 235,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Một chiếc thuyền lẻ loi gợi \"chỉ\" mơ hồ; trùng chủ đề \"một vật lẻ\" với 一/个/件.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我只有一个哥哥。",
+      "pinyin": "Wǒ zhǐyǒu yí gè gēge.",
+      "vi": "Tôi chỉ có một anh trai.",
+      "noteVi": "Đọc zhǐ = chỉ; còn đọc zhī là lượng từ cho con vật."
+    }
+  },
+  {
+    "hanzi": "字",
+    "order": 241,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Trẻ viết lên trang giấy trống: không thấy chữ; trùng 学/写 (#207, #201).",
+    "action": "contextual-card",
+    "card": {
+      "zh": "这个字怎么读？",
+      "pinyin": "Zhège zì zěnme dú?",
+      "vi": "Chữ này đọc thế nào?",
+      "noteVi": "Chữ viết; 汉字 = chữ Hán."
+    }
+  },
+  {
+    "hanzi": "租",
+    "order": 242,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Trao chìa khoá nhà: hợp lý cho \"thuê\" nhưng trùng 的 (#32) và 给 (#54).",
+    "action": "replace-brief",
+    "replacement": {
+      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. A landlord counting coins from a tenant at a small timber house door, a key on a string on the table between them, a house with a visible rent-sign shape but no legible text.",
+      "acceptance": [
+        "Coins plus key plus house all present (rental, not gifting)",
+        "No bare hand-to-hand key giving only (collision with 给 removed)",
+        "No readable text"
+      ]
+    }
+  },
+  {
+    "hanzi": "昨",
+    "order": 243,
+    "prelimVerdict": "UNCERTAIN",
+    "reasonVi": "Trang lịch lật + ghế trống: hợp lý nhưng trùng 今; khó phân biệt qua ảnh.",
+    "action": "replace-brief",
+    "replacement": {
+      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. Footprints on a sandy path leading away from the viewer toward a setting sun, the previous day left behind, an empty folded blanket on a bench.",
+      "acceptance": [
+        "Receding footprints and sunset (past)",
+        "No calendar object",
+        "Visibly different from 今 scene (low light, warm dusk, no steam)"
+      ]
+    }
+  }
+]
