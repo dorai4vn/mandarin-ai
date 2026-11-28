@@ -1,170 +1,122 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
-const GLYPHS = ['山', '水', '木', '火', '日', '月', '人', '雨', '魚', '鳥'];
-
-test.describe('M3.5 visual mnemonic lab (D4)', () => {
-  test('shows 10 pending cards, no fake images, owner status', async ({ page }) => {
-    await page.goto('/lab/visual-mnemonic');
-    for (const g of GLYPHS) {
-      const card = page.getByTestId(`mnemonic-lab-card-${g}`);
-      await expect(card).toHaveAttribute('data-status', 'pending-artwork');
-      await expect(card.getByTestId('mnemonic-cue')).not.toBeEmpty();
-      await expect(card.getByTestId('mnemonic-art-pending')).toBeVisible();
-      await expect(card.locator('img')).toHaveCount(0);
-    }
-    await expect(page.getByTestId('mnemonic-lab-summary')).toContainText('10/10 ảnh đang chờ');
-    await expect(page.getByTestId('mnemonic-lab-summary')).toContainText('chưa có ảnh nào');
-    await expect(page.getByTestId('mnemonic-lab-notice')).toContainText('không phải bằng chứng');
-    // Notice is shown once in the header, not repeated on every card.
-    await expect(page.getByTestId('mnemonic-notice')).toHaveCount(0);
+/** Wait until every gallery image has loaded (lazy images forced eager) and return broken count. */
+async function brokenImages(page: Page) {
+  return page.evaluate(async () => {
+    const imgs = Array.from(document.querySelectorAll<HTMLImageElement>('main img'));
+    imgs.forEach((i) => (i.loading = 'eager'));
+    await Promise.all(
+      imgs.map((i) =>
+        i.complete
+          ? Promise.resolve()
+          : new Promise((r) => {
+              i.onload = i.onerror = () => r(null);
+            }),
+      ),
+    );
+    return imgs.filter((i) => !i.complete || i.naturalWidth !== 1600 || i.naturalHeight !== 1200)
+      .length;
   });
+}
 
-  test('QC gallery shows 246 active + 4 archive unapproved candidates, all loading', async ({
+test.describe('M3.5 visual mnemonic QC lab', () => {
+  test('artwork shown by default: 246 active primary, 4 archive separate, all unapproved', async ({
     page,
   }) => {
     await page.goto('/lab/visual-mnemonic');
-    const items = page.getByTestId('artwork-qc-grid').locator('li');
-    await expect(items).toHaveCount(250);
+    // No checkbox gating, no pilot-first layout, no placeholders.
+    await expect(page.getByTestId('mnemonic-preview-toggle')).toHaveCount(0);
+    await expect(page.getByTestId('mnemonic-art-pending')).toHaveCount(0);
+    await expect(page.getByTestId('mnemonic-lab-card-山')).toHaveCount(0);
+
+    const active = page.getByTestId('artwork-qc-grid').locator('li');
+    const archive = page.getByTestId('artwork-qc-archive-grid').locator('li');
+    await expect(active).toHaveCount(246);
+    await expect(archive).toHaveCount(4);
     await expect(page.locator('[data-group="active"]')).toHaveCount(246);
     await expect(page.locator('[data-group="archive"]')).toHaveCount(4);
+    // Archive section comes after the primary active gallery.
+    const [aBox, bBox] = await Promise.all([
+      page.getByTestId('artwork-qc-gallery').boundingBox(),
+      page.getByTestId('artwork-qc-archive').boundingBox(),
+    ]);
+    expect(bBox!.y).toBeGreaterThan(aBox!.y + aBox!.height - 1);
+
+    // Owner gate: everything labelled unapproved, nothing approved.
     await expect(page.getByTestId('artwork-qc-note')).toContainText('chưa duyệt');
-    const broken = await page.evaluate(async () => {
-      const imgs = Array.from(
-        document.querySelectorAll<HTMLImageElement>('[data-testid="artwork-qc-grid"] img'),
-      );
-      imgs.forEach((i) => (i.loading = 'eager'));
-      await Promise.all(
-        imgs.map((i) =>
-          i.complete
-            ? Promise.resolve()
-            : new Promise((r) => {
-                i.onload = i.onerror = () => r(null);
-              }),
-        ),
-      );
-      return imgs.filter((i) => !i.complete || i.naturalWidth !== 1600 || i.naturalHeight !== 1200)
-        .length;
-    });
-    expect(broken).toBe(0);
+    await expect(page.getByTestId('mnemonic-lab-summary')).toContainText('0 đã duyệt');
+    await expect(page.getByTestId('mnemonic-lab-summary')).toContainText('chưa có ảnh nào');
+    await expect(page.getByTestId('mnemonic-lab-notice')).toContainText('không phải bằng chứng');
+    await expect(page.getByTestId('artwork-qc-badge')).toHaveCount(250);
+    await expect(
+      page.locator('[data-status="approved"], [data-status="artwork-approved"]'),
+    ).toHaveCount(0);
+    await expect(page.locator('main img[src^="/mnemonic/"]')).toHaveCount(0);
+
+    expect(await brokenImages(page)).toBe(0);
   });
 
-  test('keyboard-accessible navigation and preview mode', async ({ page }) => {
+  test('pilot glyph candidates (人/雨) render real images, not placeholders', async ({ page }) => {
     await page.goto('/lab/visual-mnemonic');
-    await expect(page.getByTestId('mnemonic-nav-鳥')).toHaveAttribute(
-      'href',
-      /#mnemonic-niao-bird/,
-    );
-    await page.getByTestId('mnemonic-preview-toggle').check();
-    const card = page.getByTestId('mnemonic-lab-card-山');
-    await expect(card.getByTestId('hanzi-mnemonic')).toHaveAttribute('data-art-state', 'preview');
-    await expect(card.getByTestId('mnemonic-provenance')).toContainText(
-      'chưa được chủ dự án duyệt',
-    );
-    // Candidate file exists (unapproved): it loads, is labelled unapproved, and approval is never claimed.
-    await expect(card.locator('img')).toHaveAttribute(
-      'src',
-      '/mnemonic-candidates/shan-mountain.webp',
-    );
-    await expect(card.getByTestId('mnemonic-art-pending')).toHaveCount(0);
+    for (const g of ['人', '雨']) {
+      const img = page.getByTestId(`artwork-qc-${g}`).locator('img');
+      await expect(img).toHaveAttribute('src', /^\/mnemonic-candidates\/.+\.webp$/);
+    }
   });
 
-  for (const theme of ['light', 'dark'] as const) {
-    test(`theme preview ${theme}: applies token theme, no overflow`, async ({ page }) => {
-      await page.goto('/lab/visual-mnemonic');
-      await page.getByTestId(`mnemonic-theme-${theme}`).click();
-      await expect(page.getByTestId(`mnemonic-theme-${theme}`)).toHaveAttribute(
-        'aria-pressed',
-        'true',
-      );
-      await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
-      await expect(page.getByTestId('mnemonic-lab-card-山')).toBeVisible();
-      const over = await page.evaluate(
-        () => document.documentElement.scrollWidth - window.innerWidth,
-      );
-      expect(over).toBeLessThanOrEqual(1);
-    });
-  }
+  test('no local theme controls; inherits global theme only', async ({ page }) => {
+    await page.goto('/lab/visual-mnemonic');
+    await expect(page.getByTestId('mnemonic-theme-controls')).toHaveCount(0);
+    await expect(page.locator('[data-testid^="mnemonic-theme-"]')).toHaveCount(0);
+  });
 
   const VIEWPORTS = [
-    { name: 'mobile', width: 375, height: 800 },
-    { name: 'tablet', width: 768, height: 900 },
-    { name: 'desktop', width: 1280, height: 900 },
+    { name: 'mobile', width: 375, height: 800, cols: 2 },
+    { name: 'tablet', width: 768, height: 900, cols: 3 },
+    { name: 'desktop', width: 1280, height: 900, cols: 4 },
   ];
   for (const vp of VIEWPORTS) {
     for (const theme of ['light', 'dark'] as const) {
-      test(`equal-height cards, aligned slots, no clipping: ${vp.name} ${theme}`, async ({
+      test(`global ${theme} theme, aligned 4:3 thumbnails, no overflow: ${vp.name}`, async ({
         page,
       }) => {
+        await page.addInitScript((t) => localStorage.setItem('mandarin.theme', t), theme);
         await page.setViewportSize({ width: vp.width, height: vp.height });
         await page.goto('/lab/visual-mnemonic');
-        await page.getByTestId(`mnemonic-theme-${theme}`).click();
         await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
-        await expect(page.getByTestId('mnemonic-lab-card-山')).toBeVisible();
+        await expect(page.getByTestId('artwork-qc-山')).toBeVisible();
 
-        const rows = await page.evaluate(() => {
-          const out: {
-            top: number;
-            h: number;
-            cardBottom: number;
-            footerTop: number;
-            footerBottom: number;
-            artTop: number;
-            artH: number;
-            artW: number;
-            clipped: boolean;
-            cueLines: number;
-          }[] = [];
-          for (const li of document.querySelectorAll<HTMLElement>(
-            '[data-testid^="mnemonic-lab-card-"]',
-          )) {
+        const rows = await page.evaluate(() =>
+          Array.from(
+            document.querySelectorAll<HTMLElement>('[data-testid="artwork-qc-grid"] > li'),
+          ).map((li) => {
             const r = li.getBoundingClientRect();
             const art = li
-              .querySelector<HTMLElement>('[data-testid="mnemonic-art-slot"]')!
+              .querySelector<HTMLElement>('[data-testid="artwork-qc-art"]')!
               .getBoundingClientRect();
-            const f = li
-              .querySelector<HTMLElement>('[data-testid="mnemonic-footer"]')!
-              .getBoundingClientRect();
-            const cue = li.querySelector<HTMLElement>('[data-testid="mnemonic-cue"]')!;
-            const card = li.querySelector<HTMLElement>('[data-testid="hanzi-mnemonic"]')!;
-            const lh = parseFloat(getComputedStyle(cue).lineHeight) || 20;
-            out.push({
+            return {
               top: Math.round(r.top + window.scrollY),
               h: Math.round(r.height),
-              cardBottom: Math.round(card.getBoundingClientRect().bottom),
-              footerTop: Math.round(f.top - r.top),
-              footerBottom: Math.round(f.bottom),
               artTop: Math.round(art.top - r.top),
-              // Raw (unrounded) measurements: with fractional grid column widths the 4:3
-              // aspect-ratio box height is fractional and may round to different integers.
               artH: art.height,
               artW: art.width,
-              clipped:
-                cue.scrollHeight > cue.clientHeight + 1 || card.scrollWidth > card.clientWidth + 1,
-              cueLines: Math.round(cue.getBoundingClientRect().height / lh),
-            });
-          }
-          return out;
-        });
-        expect(rows).toHaveLength(10);
-        // Group by grid row (same top) and require identical geometry inside each row.
+              clipped: li.scrollWidth > li.clientWidth + 1,
+            };
+          }),
+        );
+        expect(rows).toHaveLength(246);
         const byRow = new Map<number, typeof rows>();
         for (const r of rows) byRow.set(r.top, [...(byRow.get(r.top) ?? []), r]);
+        expect(byRow.size).toBe(Math.ceil(246 / vp.cols));
         for (const group of byRow.values()) {
           const first = group[0]!;
           for (const r of group) {
             expect(r.h).toBe(first.h);
-            expect(r.footerTop).toBe(first.footerTop);
             expect(r.artTop).toBe(first.artTop);
-            // Art height may differ by at most 1 CSS px (sub-pixel layout of fractional
-            // column widths); card/footer/art-top alignment above stays exact.
-            expect(Math.abs(r.artH - first.artH)).toBeLessThanOrEqual(1);
-            // Media stays 4:3 (height = width * 3/4) within the same 1px bound.
             expect(Math.abs(r.artH - (r.artW * 3) / 4)).toBeLessThanOrEqual(1);
             expect(r.clipped).toBe(false);
           }
         }
-        if (vp.name === 'desktop') expect(byRow.size).toBeLessThanOrEqual(4); // 3 columns
-        if (vp.name === 'mobile') expect(byRow.size).toBe(10); // 1 column
         const over = await page.evaluate(
           () => document.documentElement.scrollWidth - window.innerWidth,
         );
@@ -172,17 +124,4 @@ test.describe('M3.5 visual mnemonic lab (D4)', () => {
       });
     }
   }
-
-  test('theme choice persists across reload and navigation (shared with profile picker)', async ({
-    page,
-  }) => {
-    await page.goto('/lab/visual-mnemonic');
-    await page.getByTestId('mnemonic-theme-dark').click();
-    expect(await page.evaluate(() => localStorage.getItem('mandarin.theme'))).toBe('dark');
-    await page.reload();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-    await expect(page.getByTestId('mnemonic-theme-dark')).toHaveAttribute('aria-pressed', 'true');
-    await page.getByTestId('mnemonic-theme-system').click();
-    expect(await page.evaluate(() => localStorage.getItem('mandarin.theme'))).toBeNull();
-  });
 });

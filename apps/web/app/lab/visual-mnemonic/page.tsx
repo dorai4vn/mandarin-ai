@@ -1,4 +1,3 @@
-import { MnemonicLab } from '@/hanzi/MnemonicLab';
 import { ArtworkQcGallery } from '@/hanzi/ArtworkQcGallery';
 import { PageHeader } from '@/components/ui';
 
@@ -10,12 +9,9 @@ export default function VisualMnemonicLab() {
     <>
       <PageHeader
         title="Visual Mnemonic — QC"
-        lead="10 thẻ gợi nhớ hiện đại, độc lập với dữ liệu lịch sử. Ảnh ứng viên đã có, chưa có tác phẩm nào được duyệt."
+        lead="Ảnh gợi nhớ hiện đại, độc lập với dữ liệu lịch sử. Ảnh ứng viên hiển thị sẵn; chưa có tác phẩm nào được duyệt. Giao diện theo cài đặt chung của ứng dụng."
       />
-      <MnemonicLab />
-      <div className="mt-8">
-        <ArtworkQcGallery />
-      </div>
+      <ArtworkQcGallery />
     </>
   );
 }
