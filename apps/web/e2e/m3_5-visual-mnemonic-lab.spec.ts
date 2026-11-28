@@ -110,7 +110,7 @@ test.describe('M3.5 visual mnemonic QC lab', () => {
     const counts: [string, number][] = [
       ['pass', 193],
       ['review', 53],
-      ['contextual-card', 41],
+      ['contextual-card', 42],
       ['counting-diagram', 7],
       ['contrast-card', 3],
       ['retain-with-caption', 1],
