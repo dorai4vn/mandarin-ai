@@ -91,11 +91,11 @@ test('production draft: validation step really runs in bash/python', () => {
     assert.notEqual(go(bad), 0, JSON.stringify(bad));
 });
 
-const cli = (args) =>
+const cli = (args, env = {}) =>
   spawnSync('node', ['scripts/mnemonic-art/cli.mjs', ...args], {
     cwd: new URL('../../', import.meta.url),
     encoding: 'utf8',
-    env: { PATH: process.env.PATH },
+    env: { PATH: process.env.PATH, ...env },
   });
 test('CLI: --production refuses without --expect-manifest existing / with missing manifest', () => {
   const out = join(mkdtempSync(join(tmpdir(), 'mp-')), 'o');
@@ -152,6 +152,16 @@ test('production draft: budget <= 6 and pre-secret production-mode dry-run exerc
     '--max-spend-usd "$IN_BUDGET"',
   ])
     assert.ok(line.includes(f), f);
+  // pricing inputs are passed (non-secret vars only) so the projected-budget check can compute the bound
+  for (const v of [
+    'MNEMONIC_INPUT_USD_PER_M',
+    'MNEMONIC_OUTPUT_USD_PER_M',
+    'MNEMONIC_MAX_INPUT_TOKENS',
+    'MNEMONIC_MAX_OUTPUT_TOKENS',
+    'MNEMONIC_PRICING_SOURCE_URL',
+    'MNEMONIC_PRICING_VERIFIED_ON',
+  ])
+    assert.match(pre, new RegExp(`${v}: \\$\\{\\{ vars\\.${v} \\}\\}`), v);
   assert.ok(
     code.indexOf('mnemonic-art plan --all --production') <
       code.indexOf('secrets.MNEMONIC_IMAGE_API_KEY'),
@@ -162,6 +172,40 @@ test('CLI: production dry-run rejects a budget above the $6 sanity ceiling and s
   const seed = cli(['generate', '--only', '山', '--mock', '--max-spend-usd', '1', '--out', out]);
   assert.equal(seed.status, 0, seed.stderr);
   const base = ['plan', '--all', '--production', '--expect-manifest', 'existing', '--out', out];
+  const pricing = {
+    MNEMONIC_INPUT_USD_PER_M: '5',
+    MNEMONIC_OUTPUT_USD_PER_M: '30',
+    MNEMONIC_MAX_INPUT_TOKENS: '300',
+    MNEMONIC_MAX_OUTPUT_TOKENS: '500',
+    MNEMONIC_PRICING_SOURCE_URL: 'https://example.invalid/pricing',
+    MNEMONIC_PRICING_VERIFIED_ON: '2026-11-27',
+  };
   // ledger guard runs first (only 1 of 10 retained images stored) -> fail closed either way
-  assert.match(cli([...base, '--max-spend-usd', '7']).stderr, /carried ledger rejected/);
+  assert.match(cli([...base, '--max-spend-usd', '7'], pricing).stderr, /carried ledger rejected/);
+});
+
+test('CLI: production plan fails closed on missing/invalid non-secret pricing inputs, never needs the API key', () => {
+  const out = join(mkdtempSync(join(tmpdir(), 'mp-')), 'o');
+  const seed = cli(['generate', '--only', '山', '--mock', '--max-spend-usd', '1', '--out', out]);
+  assert.equal(seed.status, 0, seed.stderr);
+  const args = ['plan', '--all', '--production', '--expect-manifest', 'existing', '--out', out];
+  const full = {
+    MNEMONIC_INPUT_USD_PER_M: '5',
+    MNEMONIC_OUTPUT_USD_PER_M: '30',
+    MNEMONIC_MAX_INPUT_TOKENS: '300',
+    MNEMONIC_MAX_OUTPUT_TOKENS: '500',
+    MNEMONIC_PRICING_SOURCE_URL: 'https://example.invalid/pricing',
+    MNEMONIC_PRICING_VERIFIED_ON: '2026-11-27',
+  };
+  args.push('--max-spend-usd', '6');
+  assert.match(cli(args).stderr, /production plan blocked: set MNEMONIC_PRICING_SOURCE_URL/);
+  const noDate = { ...full, MNEMONIC_PRICING_VERIFIED_ON: 'yesterday' };
+  assert.match(
+    cli(args, noDate).stderr,
+    /production plan blocked: set MNEMONIC_PRICING_SOURCE_URL/,
+  );
+  const badRate = { ...full, MNEMONIC_OUTPUT_USD_PER_M: '0' };
+  assert.match(cli(args, badRate).stderr, /cannot bound cost/);
+  // with valid pricing it proceeds (and here stops at the ledger guard: only 1 of 10 retained images) - no key involved
+  assert.match(cli(args, full).stderr, /carried ledger rejected/);
 });

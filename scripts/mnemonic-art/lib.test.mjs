@@ -828,3 +828,30 @@ test('production dry-run validates the budget input like the live step (ceiling,
   assert.equal(r.summary.toGenerate + r.summary.deferred, 240);
   assert.equal(t.calls(), 0);
 });
+
+test('production projected budget: spent 0.234 + 240 x 0.0195 = 4.914 passes at $6, fails at $4.90, independent of batch size', async () => {
+  const t = setup();
+  const m = await carried(t);
+  assert.equal(m.spentUsdEstimated, 0.234);
+  const ok = await run(realProd(t, { live: false, maxSpendUsd: 6, maxImages: 50 }));
+  assert.equal(ok.summary.remainingActive, 240); // all remaining, not the batch of 50
+  assert.equal(ok.summary.toGenerate, 50);
+  assert.ok(Math.abs(ok.summary.projectedTotalUsd - 4.914) < 1e-9);
+  await assert.rejects(
+    run(realProd(t, { live: false, maxSpendUsd: 4.9, maxImages: 50 })),
+    /projected budget.*4\.914.*exceeds max 4\.9/,
+  );
+  // the live path applies the same projection before any provider call
+  await assert.rejects(run(realProd(t, { maxSpendUsd: 4.9, maxImages: 1 })), /projected budget/);
+  assert.equal(t.calls(), 0);
+});
+test('production projected budget fails closed without a valid per-call bound (before any provider call)', async () => {
+  const t = setup();
+  await carried(t);
+  for (const unitPriceUsd of [0, -1, NaN, undefined])
+    await assert.rejects(
+      run(realProd(t, { live: false, unitPriceUsd })),
+      /projected budget needs a valid per-call cost bound/,
+    );
+  assert.equal(t.calls(), 0);
+});

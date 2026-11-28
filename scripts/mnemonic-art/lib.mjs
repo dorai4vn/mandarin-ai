@@ -523,6 +523,20 @@ export async function run({
       throw new Error(
         `spend guard: ${manifest.spentUsdEstimated} already spent exceeds max ${maxSpendUsd}`,
       );
+    // Projected cumulative estimate for ALL remaining active characters (independent of batch size), from the same
+    // conservative per-call bound live mode uses. Fails closed when the bound is unavailable. Owner-supplied ceiling,
+    // NOT a provider-enforced cap.
+    if (!(unitPriceUsd > 0))
+      throw new Error(
+        'production: projected budget needs a valid per-call cost bound (pricing inputs missing/invalid)',
+      );
+    const projected = round6(manifest.spentUsdEstimated + allTodo.length * unitPriceUsd);
+    summary.projectedTotalUsd = projected;
+    summary.remainingActive = allTodo.length;
+    if (projected > maxSpendUsd)
+      throw new Error(
+        `spend guard: projected budget: ${manifest.spentUsdEstimated} spent + ${allTodo.length}x${unitPriceUsd} = ${projected} exceeds max ${maxSpendUsd}`,
+      );
   }
   if (!live)
     return {

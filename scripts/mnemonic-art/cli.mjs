@@ -10,7 +10,7 @@
 //        --revise  allow regenerating ONLY the selected, already-stored characters whose prompt changed (QC revision; old image
 //        is archived under mnemonic/superseded/ and kept in entry.history; not allowed with --production)
 //        --max-spend-usd N   --max-retries N(0-3)   --out DIR (default .mnemonic-art)
-// Env (live only; never printed): MNEMONIC_IMAGE_API_KEY, MNEMONIC_IMAGE_MODEL,
+// Env (live, and production `plan` for the non-secret pricing vars; never printed): MNEMONIC_IMAGE_API_KEY, MNEMONIC_IMAGE_MODEL,
 //        MNEMONIC_INPUT_USD_PER_M, MNEMONIC_OUTPUT_USD_PER_M, MNEMONIC_MAX_INPUT_TOKENS, MNEMONIC_MAX_OUTPUT_TOKENS,
 //        MNEMONIC_IMAGE_QUALITY (low|medium|high), MNEMONIC_PRICING_SOURCE_URL, MNEMONIC_PRICING_VERIFIED_ON (YYYY-MM-DD)
 import { parseArgs } from 'node:util';
@@ -117,7 +117,8 @@ if (a.mock) {
     height: IMAGE_HEIGHT,
   });
   unitPriceUsd = 0.01;
-} else if (live) {
+} else if (live || (a.production && cmd === 'plan')) {
+  // Same NON-SECRET pricing validation for live and the pre-secret production plan (the API key is only read when live).
   const env = process.env;
   // Token-priced models: per-call ceiling from owner-verified rates + token ceilings (not a fixed unit price).
   if (
@@ -125,7 +126,7 @@ if (a.mock) {
     !/^\d{4}-\d{2}-\d{2}$/.test(env.MNEMONIC_PRICING_VERIFIED_ON ?? '')
   )
     throw new Error(
-      'live blocked: set MNEMONIC_PRICING_SOURCE_URL (https) and MNEMONIC_PRICING_VERIFIED_ON (YYYY-MM-DD) after verifying provider pricing',
+      `${live ? 'live blocked' : 'production plan blocked'}: set MNEMONIC_PRICING_SOURCE_URL (https) and MNEMONIC_PRICING_VERIFIED_ON (YYYY-MM-DD) after verifying provider pricing`,
     );
   const price = tokenCostBound({
     inputUsdPerM: env.MNEMONIC_INPUT_USD_PER_M,
@@ -133,14 +134,16 @@ if (a.mock) {
     maxInputTokens: env.MNEMONIC_MAX_INPUT_TOKENS,
     maxOutputTokens: env.MNEMONIC_MAX_OUTPUT_TOKENS,
   });
-  if (!env.MNEMONIC_IMAGE_MODEL) throw new Error('live blocked: set MNEMONIC_IMAGE_MODEL');
   unitPriceUsd = price;
-  provider = openaiProvider({
-    apiKey: env.MNEMONIC_IMAGE_API_KEY,
-    model: env.MNEMONIC_IMAGE_MODEL,
-    quality: env.MNEMONIC_IMAGE_QUALITY || 'medium',
-  });
-  optimize = await sharpOptimizer();
+  if (live) {
+    if (!env.MNEMONIC_IMAGE_MODEL) throw new Error('live blocked: set MNEMONIC_IMAGE_MODEL');
+    provider = openaiProvider({
+      apiKey: env.MNEMONIC_IMAGE_API_KEY,
+      model: env.MNEMONIC_IMAGE_MODEL,
+      quality: env.MNEMONIC_IMAGE_QUALITY || 'medium',
+    });
+    optimize = await sharpOptimizer();
+  }
 }
 const result = await run({
   data,

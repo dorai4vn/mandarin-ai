@@ -113,6 +113,14 @@ jobs:
       - name: Offline checks and style/model consistency (no secret)
         env:
           MODEL: ${{ vars.MNEMONIC_IMAGE_MODEL }}
+          # NON-SECRET owner-configured pricing inputs only (no API key in this step): the production plan computes the
+          # conservative per-call bound from them and checks spent + ALL remaining active x bound <= budget, failing closed.
+          MNEMONIC_INPUT_USD_PER_M: ${{ vars.MNEMONIC_INPUT_USD_PER_M }}
+          MNEMONIC_OUTPUT_USD_PER_M: ${{ vars.MNEMONIC_OUTPUT_USD_PER_M }}
+          MNEMONIC_MAX_INPUT_TOKENS: ${{ vars.MNEMONIC_MAX_INPUT_TOKENS }}
+          MNEMONIC_MAX_OUTPUT_TOKENS: ${{ vars.MNEMONIC_MAX_OUTPUT_TOKENS }}
+          MNEMONIC_PRICING_SOURCE_URL: ${{ vars.MNEMONIC_PRICING_SOURCE_URL }}
+          MNEMONIC_PRICING_VERIFIED_ON: ${{ vars.MNEMONIC_PRICING_VERIFIED_ON }}
         run: |
           set -euo pipefail
           pnpm test:mnemonic-art
@@ -123,7 +131,8 @@ jobs:
             || { echo "carried manifest: fewer than 10 stored images or model differs from vars.MNEMONIC_IMAGE_MODEL"; exit 1; }
           pnpm mnemonic-art verify
           # Production-mode dry-run: exercises the carried-ledger guard (10 retained incl. superseded files, run-history prefix,
-          # spend floor, prompt hashes, archive exclusion) and the cumulative budget check BEFORE the secret-bearing step.
+          # spend floor, prompt hashes, archive exclusion) and the PROJECTED cumulative budget check (spent + all remaining active x
+          # conservative bound from the non-secret pricing vars, independent of batch size) BEFORE the secret-bearing step.
           pnpm mnemonic-art plan --all --production --expect-manifest existing \
             --batch-size "$IN_BATCH" --max-spend-usd "$IN_BUDGET"
 
