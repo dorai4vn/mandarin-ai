@@ -215,3 +215,10 @@ stops on the first error. Order: revision run (2 images) -> QC -> production bat
 
 **Remaining limitations**: workflow never executed on GitHub; golden hashes assume the briefs of the 8 accepted images are unchanged since the pilot run (verify with `plan --only 山,水,木,火,日,月,鱼,鸟` after carrying the manifest: all must say `skip-verified`);
 image quality of the revisions is unverified until the owner reviews them; the 188 reviewer warnings (no lighting/texture word in briefs) are unchanged and do not block.
+
+## Batch #3 recovery (single failed item, owner-gated)
+
+Run #3 (`46139133768`) stored 15 new images and failed `wei-feed.webp` (喂, `provider HTTP 500`); the old workflow reported success anyway.
+- `--recover-file wei-feed.webp --recover-expect-error "provider HTTP 500"` (production only, no `--force`) retries **that one entry once**. It is refused unless the carried manifest holds it as `failed`, one attempt, with that error text, and no prior recovery. The failed attempt is kept in `entry.failedAttempts`; its conservative estimate already sits in `spentUsdEstimated`, the retry adds one more call price. Recovery item goes first in the batch, retries stay 0, the run stops on the first failure, and the projected cumulative estimate (all remaining active) must stay <= the budget (<= $6).
+- Workflow draft (`docs/workflow-drafts/mnemonic-art-production.yml`) adds input `recover_failed_item` (`none` | `wei-feed.webp`, only valid with `previous_run_id=46139133768`) and fails the Generate step when the CLI summary has `failed>0`, `stoppedEarly`, or is missing; the artifact upload still runs (`always()`). The CLI also exits 2 in that case.
+- The GitHub App cannot write `.github/workflows/`: the owner copies the reviewed draft over `.github/workflows/mnemonic-art-production.yml`.

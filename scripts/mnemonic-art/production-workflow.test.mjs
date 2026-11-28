@@ -209,3 +209,84 @@ test('CLI: production plan fails closed on missing/invalid non-secret pricing in
   // with valid pricing it proceeds (and here stops at the ledger guard: only 1 of 10 retained images) - no key involved
   assert.match(cli(args, full).stderr, /carried ledger rejected/);
 });
+
+// ---- Batch #3 recovery (single failed item) + false-green fix ----
+import { writeFileSync, chmodSync } from 'node:fs';
+const stepScript = (from, to) => {
+  const seg = wf.slice(wf.indexOf(from), wf.indexOf(to));
+  const lines = seg.split('\n');
+  const r = lines.findIndex((l) => /^\s+run: \|/.test(l));
+  const out = [];
+  for (
+    let k = r + 1;
+    k < lines.length && (lines[k].startsWith('          ') || lines[k] === '');
+    k++
+  )
+    out.push(lines[k].slice(10));
+  return out.join('\n');
+};
+test('recovery draft: one explicit choice, bound to run 46139133768, passed to plan AND generate, no force/--all reset', () => {
+  assert.match(code, /recover_failed_item:/);
+  assert.match(code, /options: \['none', 'wei-feed\.webp'\]/);
+  assert.match(code, /default: 'none'/);
+  assert.match(code, /46139133768/);
+  assert.doesNotMatch(code, /--force|--revise/);
+  assert.equal(code.match(/--recover-file "\$IN_RECOVER"/g).length, 2);
+  assert.equal(code.match(/--recover-expect-error "provider HTTP 500"/g).length, 2);
+  assert.match(code, /--max-retries 0/);
+});
+test('recovery draft: validation only accepts none or wei-feed.webp against run 46139133768', () => {
+  const script = stepScript('- name: Validate inputs', '- name: Verify ledger');
+  const ok = { IN_SHA: 'a'.repeat(40), PREV_RUN: '46139133768', IN_BATCH: '25', IN_BUDGET: '6' };
+  const go = (o) =>
+    spawnSync('bash', ['-c', script], { env: { PATH: process.env.PATH, ...ok, ...o } }).status;
+  assert.equal(go({ IN_RECOVER: 'wei-feed.webp' }), 0);
+  assert.equal(go({ IN_RECOVER: 'none' }), 0);
+  assert.notEqual(go({ IN_RECOVER: 'wei-feed.webp', PREV_RUN: '46058598242' }), 0);
+  assert.notEqual(go({ IN_RECOVER: 'other.webp' }), 0);
+  assert.notEqual(go({ IN_RECOVER: 'wei-feed.webp; x' }), 0);
+});
+test('false-green fix: Generate step exits nonzero on failed>0 / stoppedEarly / no summary; artifact upload still runs always()', () => {
+  const script = stepScript('- name: Generate', '- name: Detect');
+  const dir = mkdtempSync(join(tmpdir(), 'wf-'));
+  const run = (summary, code0 = 0) => {
+    writeFileSync(
+      join(dir, 'pnpm'),
+      `#!/bin/bash\n${summary ? `echo '${summary}'` : 'echo nothing'}\nexit ${code0}\n`,
+    );
+    chmodSync(join(dir, 'pnpm'), 0o755);
+    return spawnSync('bash', ['-c', script], {
+      cwd: dir,
+      encoding: 'utf8',
+      env: {
+        PATH: `${dir}:${process.env.PATH}`,
+        IN_BATCH: '25',
+        IN_BUDGET: '6',
+        IN_SHA: 'a'.repeat(40),
+        THIS_RUN: '1',
+        IN_RECOVER: 'wei-feed.webp',
+        GITHUB_STEP_SUMMARY: join(dir, 'summary.md'),
+      },
+    }).status;
+  };
+  const good = '{"live":true,"failed":0,"stoppedEarly":false,"generated":25}';
+  assert.equal(run(good), 0);
+  assert.notEqual(run('{"live":true,"failed":1,"stoppedEarly":true,"generated":15}'), 0);
+  assert.notEqual(run('{"live":true,"failed":1,"stoppedEarly":false}'), 0);
+  assert.notEqual(run('{"live":true,"failed":0,"stoppedEarly":true}'), 0);
+  assert.notEqual(run(good, 2), 0); // CLI nonzero exit propagates
+  assert.notEqual(run(null), 0); // no summary line
+  assert.match(code, /if: \$\{\{ always\(\) && steps\.detect\.outputs\.exists == 'true' \}\}/);
+});
+test('CLI: recover flags must be paired and need --production', () => {
+  const out = join(mkdtempSync(join(tmpdir(), 'mp-')), 'o');
+  assert.match(
+    cli(['plan', '--all', '--production', '--recover-file', 'x.webp', '--out', out]).stderr,
+    /must be given together/,
+  );
+  assert.match(
+    cli(['plan', '--all', '--recover-file', 'x.webp', '--recover-expect-error', 'e', '--out', out])
+      .stderr,
+    /requires --production/,
+  );
+});
