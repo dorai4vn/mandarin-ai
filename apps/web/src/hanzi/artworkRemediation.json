@@ -16,15 +16,17 @@
     "hanzi": "百",
     "order": 6,
     "prelimVerdict": "UNCERTAIN",
-    "reasonVi": "Đàn hạc giấy rất đông: \"nhiều\" chứ không xác minh \"100\"; trùng chủ thể hạc với 白/飞/非.",
-    "action": "replace-brief",
-    "replacement": {
-      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. A large fully readable grid of 10 rows by 10 columns of small identical paper boats on a calm pond, top view, neat and regular so a viewer can see 10x10.",
-      "acceptance": [
-        "Regular 10x10 lattice visible (100 items)",
-        "No cranes (collision with 白/飞/非 removed)",
-        "Reads as \"a hundred = ten tens\", not just \"many\""
-      ]
+    "reasonVi": "Đàn hạc giấy rất đông: \"nhiều\" chứ không xác minh \"100\"; trùng chủ thể hạc với 白/飞/非. → Thay bằng sơ đồ SVG đếm tất định (không dùng ảnh AI).",
+    "action": "counting-diagram",
+    "card": {
+      "zh": "这个一百块。",
+      "pinyin": "Zhège yì bǎi kuài.",
+      "vi": "Cái này một trăm đồng.",
+      "noteVi": "100 = 10 hàng × 10 chấm (mười chục)."
+    },
+    "diagram": {
+      "count": 100,
+      "blocks": 1
     }
   },
   {
@@ -102,7 +104,7 @@
       "zh": "非常好。",
       "pinyin": "Fēicháng hǎo.",
       "vi": "Rất tốt.",
-      "noteVi": "非 = không phải; ở HSK1 chủ yếu gặp trong 非常."
+      "noteVi": "Đứng một mình 非 = \"không phải\" (非洲 Phi Châu, 非法 bất hợp pháp); nghĩa \"rất\" chỉ có trong từ 非常 (fēicháng)."
     }
   },
   {
@@ -128,7 +130,7 @@
       "zh": "我还有一个问题。",
       "pinyin": "Wǒ hái yǒu yí gè wèntí.",
       "vi": "Tôi còn một câu hỏi.",
-      "noteVi": "hái = vẫn, còn; đứng trước động từ."
+      "noteVi": "hái = vẫn, còn; đứng trước động từ. (Đọc huán = trả lại, ví dụ 还钱 — không phải nghĩa dạy ở đây.)"
     }
   },
   {
@@ -187,14 +189,19 @@
     "hanzi": "机",
     "order": 77,
     "prelimVerdict": "UNCERTAIN",
-    "reasonVi": "Khung dệt cổ: \"máy\" đúng nghĩa rộng nhưng gợi nghề dệt hơn máy.",
-    "action": "replace-brief",
-    "replacement": {
-      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. A simple wooden machine with a crank handle, visible interlocking gears and a belt, on a workshop table, no weaving frame or loom.",
-      "acceptance": [
-        "Gears + crank read as \"machine\"",
-        "No loom/textile elements",
-        "Different from 车 and 电 scenes"
+    "reasonVi": "Khung dệt cổ: \"máy\" đúng nghĩa rộng nhưng gợi nghề dệt hơn máy. → Không có hình đơn lẻ đáng tin cậy cho \"máy\" chung chung (dễ trùng 车/电); dạy qua từ ghép 手机/飞机.",
+    "action": "contextual-card",
+    "card": {
+      "zh": "我的手机在这里。",
+      "pinyin": "Wǒ de shǒujī zài zhèlǐ.",
+      "vi": "Điện thoại của tôi ở đây.",
+      "noteVi": "机 = máy; hầu như chỉ gặp trong từ ghép: 手机 shǒujī (điện thoại), 飞机 fēijī (máy bay).",
+      "more": [
+        {
+          "zh": "飞机很大。",
+          "pinyin": "Fēijī hěn dà.",
+          "vi": "Máy bay rất to."
+        }
       ]
     }
   },
@@ -215,30 +222,36 @@
     "hanzi": "今",
     "order": 86,
     "prelimVerdict": "UNCERTAIN",
-    "reasonVi": "Lịch trống + bình minh: trùng motif lịch với 昨 (#243); \"hôm nay\" không phân biệt được.",
-    "action": "replace-brief",
-    "replacement": {
-      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. One person drinking morning tea on a sunlit balcony as the sun is rising right now, steam visible, the present moment, no calendar.",
-      "acceptance": [
-        "No calendar object",
-        "Sunrise + present-moment action",
-        "Visibly different from 昨 scene (no footprints, no faded sun)"
-      ]
+    "reasonVi": "Lịch trống + bình minh: trùng motif lịch với 昨 (#243); \"hôm nay\" không phân biệt được. → Thẻ đối chiếu 今/昨 thay cảnh bình minh/lịch.",
+    "action": "contrast-card",
+    "card": {
+      "zh": "今天我在家。",
+      "pinyin": "Jīntiān wǒ zài jiā.",
+      "vi": "Hôm nay tôi ở nhà.",
+      "noteVi": "今 = nay/hiện tại; hay gặp trong 今天.",
+      "contrast": {
+        "zh": "昨天我在学校。",
+        "pinyin": "Zuótiān wǒ zài xuéxiào.",
+        "vi": "Hôm qua tôi ở trường.",
+        "label": "昨 = hôm qua (quá khứ)"
+      }
     }
   },
   {
     "hanzi": "九",
     "order": 87,
     "prelimVerdict": "UNCERTAIN",
-    "reasonVi": "Núi nhiều lớp: không đếm được 9 lớp từ ảnh.",
-    "action": "replace-brief",
-    "replacement": {
-      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. Nine identical red paper lanterns hung in a single horizontal row of nine evenly spaced, clearly countable, under a wooden eave.",
-      "acceptance": [
-        "Exactly 9 lanterns, single row, countable on 533x400",
-        "Different object from 十/六 scenes",
-        "No partially hidden lanterns"
-      ]
+    "reasonVi": "Núi nhiều lớp: không đếm được 9 lớp từ ảnh. → Thay bằng sơ đồ SVG đếm tất định (không dùng ảnh AI).",
+    "action": "counting-diagram",
+    "card": {
+      "zh": "现在九点。",
+      "pinyin": "Xiànzài jiǔ diǎn.",
+      "vi": "Bây giờ là chín giờ.",
+      "noteVi": "9 = 3 hàng × 3 chấm; thiếu 1 chấm là 10 (十)."
+    },
+    "diagram": {
+      "count": 9,
+      "groups": [3, 3, 3]
     }
   },
   {
@@ -284,30 +297,33 @@
     "hanzi": "零",
     "order": 103,
     "prelimVerdict": "UNCERTAIN",
-    "reasonVi": "Bát rỗng gợi \"không\" nhưng trùng 没 (#112 bát úp); mơ hồ giữa 0 và \"không có\".",
-    "action": "replace-brief",
-    "replacement": {
-      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. A thermometer-style glass tube standing in snow at exactly the zero mark, frost on the glass, soft winter light; the zero mark clearly aligned with the liquid level.",
-      "acceptance": [
-        "Liquid level clearly at the zero mark",
-        "Winter/frost cue supports 零下 (below zero) example",
-        "No empty bowls (collision with 没 removed)"
-      ]
+    "reasonVi": "Bát rỗng gợi \"không\" nhưng trùng 没 (#112 bát úp); mơ hồ giữa 0 và \"không có\". → Thay bằng sơ đồ SVG đếm tất định (không dùng ảnh AI).",
+    "action": "counting-diagram",
+    "card": {
+      "zh": "零下五度。",
+      "pinyin": "Líng xià wǔ dù.",
+      "vi": "Âm năm độ.",
+      "noteVi": "零 = số 0: tập rỗng, không có chấm nào; cũng gặp trong 一百零五 (105)."
+    },
+    "diagram": {
+      "count": 0
     }
   },
   {
     "hanzi": "六",
     "order": 104,
     "prelimVerdict": "FAIL",
-    "reasonVi": "Tháp xửng hấp: đếm được 7 tầng, không phải 6 → sai số lượng, dễ gây nhầm 六/七.",
-    "action": "replace-brief",
-    "replacement": {
-      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. Exactly six identical bamboo steamer baskets stacked in one vertical tower on a kitchen counter, all six rim lines clearly visible, steam rising from the top.",
-      "acceptance": [
-        "Count of stacked tiers is exactly 6 on a 533x400 render",
-        "No second tower or extra baskets that could change the count",
-        "Not reused for 七/八 scenes"
-      ]
+    "reasonVi": "Tháp xửng hấp: đếm được 7 tầng, không phải 6 → sai số lượng, dễ gây nhầm 六/七. → Thay bằng sơ đồ SVG đếm tất định (không dùng ảnh AI).",
+    "action": "counting-diagram",
+    "card": {
+      "zh": "现在六点。",
+      "pinyin": "Xiànzài liù diǎn.",
+      "vi": "Bây giờ là sáu giờ.",
+      "noteVi": "6 = 2 hàng × 3 chấm; không nhầm với 七 (7)."
+    },
+    "diagram": {
+      "count": 6,
+      "groups": [3, 3]
     }
   },
   {
@@ -366,15 +382,17 @@
     "hanzi": "千",
     "order": 138,
     "prelimVerdict": "UNCERTAIN",
-    "reasonVi": "Hàng nghìn nến: gợi độ lớn nhưng không đếm/so sánh được với 百.",
-    "action": "replace-brief",
-    "replacement": {
-      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. Ten large panels each containing a regular 10x10 grid of tiny dots, arranged in two rows of five, as an abstract-but-concrete picture of one thousand dots.",
-      "acceptance": [
-        "Ten blocks of 100 dots each",
-        "Visibly larger than 百 scene, same lattice language",
-        "No candles (collision with 灯/火 scenes removed)"
-      ]
+    "reasonVi": "Hàng nghìn nến: gợi độ lớn nhưng không đếm/so sánh được với 百. → Thay bằng sơ đồ SVG đếm tất định (không dùng ảnh AI).",
+    "action": "counting-diagram",
+    "card": {
+      "zh": "一千块钱。",
+      "pinyin": "Yì qiān kuài qián.",
+      "vi": "Một nghìn đồng.",
+      "noteVi": "1000 = 10 khối, mỗi khối 100 chấm (mười trăm)."
+    },
+    "diagram": {
+      "count": 1000,
+      "blocks": 10
     }
   },
   {
@@ -394,15 +412,17 @@
     "hanzi": "十",
     "order": 155,
     "prelimVerdict": "UNCERTAIN",
-    "reasonVi": "Hình chữ thập (dạng chữ) đúng, nhưng đèn lồng ≈ 12, không phải 10.",
-    "action": "replace-brief",
-    "replacement": {
-      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. Ten round tangerines arranged in two rows of five on a plain wooden tray, top view, each tangerine fully visible.",
-      "acceptance": [
-        "Exactly 10 items in a 2x5 grid",
-        "Items fully visible and countable",
-        "Different from 五 (no hand) and from 九 (no lanterns)"
-      ]
+    "reasonVi": "Hình chữ thập (dạng chữ) đúng, nhưng đèn lồng ≈ 12, không phải 10. → Thay bằng sơ đồ SVG đếm tất định (không dùng ảnh AI).",
+    "action": "counting-diagram",
+    "card": {
+      "zh": "我有十块钱。",
+      "pinyin": "Wǒ yǒu shí kuài qián.",
+      "vi": "Tôi có mười đồng.",
+      "noteVi": "10 = 2 hàng × 5 chấm (hai bàn tay)."
+    },
+    "diagram": {
+      "count": 10,
+      "groups": [5, 5]
     }
   },
   {
@@ -498,10 +518,10 @@
     "reasonVi": "Học sinh chống cằm trước cuộn giấy trống: gợi \"suy nghĩ\", chưa là \"đề/câu hỏi\".",
     "action": "contextual-card",
     "card": {
-      "zh": "我有一个问题。",
-      "pinyin": "Wǒ yǒu yí gè wèntí.",
-      "vi": "Tôi có một câu hỏi.",
-      "noteVi": "Gặp trong 问题 (câu hỏi) và 题目 (đề bài)."
+      "zh": "这个问题很难。",
+      "pinyin": "Zhège wèntí hěn nán.",
+      "vi": "Câu hỏi này rất khó.",
+      "noteVi": "Gặp trong 问题 (câu hỏi/vấn đề) và 题目 (đề bài)."
     }
   },
   {
@@ -521,15 +541,17 @@
     "hanzi": "五",
     "order": 187,
     "prelimVerdict": "FAIL",
-    "reasonVi": "Bàn tay xoè 5 ngón nhưng cầm 4 quả quýt → số lượng mâu thuẫn (4 vs 5).",
-    "action": "replace-brief",
-    "replacement": {
-      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. A single open hand with exactly five clearly separated fingers held up in front of a market stall, empty palm, no objects held.",
-      "acceptance": [
-        "Exactly 5 fingers visible, one hand only",
-        "No held objects (removes the earlier 4-vs-5 contradiction)",
-        "Hand clearly distinct from 手 (#163) pilot scene: gesture \"5\", not a hand study"
-      ]
+    "reasonVi": "Bàn tay xoè 5 ngón nhưng cầm 4 quả quýt → số lượng mâu thuẫn (4 vs 5). → Thay bằng sơ đồ SVG đếm tất định (không dùng ảnh AI).",
+    "action": "counting-diagram",
+    "card": {
+      "zh": "我有五本书。",
+      "pinyin": "Wǒ yǒu wǔ běn shū.",
+      "vi": "Tôi có năm quyển sách.",
+      "noteVi": "5 chấm trong 1 hàng (một bàn tay = 5)."
+    },
+    "diagram": {
+      "count": 5,
+      "groups": [5]
     }
   },
   {
@@ -619,7 +641,7 @@
     "card": {
       "zh": "明天再来。",
       "pinyin": "Míngtiān zài lái.",
-      "vi": "Ngày mai lại đến.",
+      "vi": "Mai hãy đến lại.",
       "noteVi": "Phó từ \"lại, nữa\" cho việc chưa xảy ra; cũng trong 再见."
     }
   },
@@ -656,10 +678,17 @@
     "reasonVi": "Một chiếc thuyền lẻ loi gợi \"chỉ\" mơ hồ; trùng chủ đề \"một vật lẻ\" với 一/个/件.",
     "action": "contextual-card",
     "card": {
-      "zh": "我只有一个哥哥。",
-      "pinyin": "Wǒ zhǐyǒu yí gè gēge.",
-      "vi": "Tôi chỉ có một anh trai.",
-      "noteVi": "Đọc zhǐ = chỉ; còn đọc zhī là lượng từ cho con vật."
+      "zh": "我只喝茶。",
+      "pinyin": "Wǒ zhǐ hē chá.",
+      "vi": "Tôi chỉ uống trà.",
+      "noteVi": "zhǐ = chỉ (phó từ). Đọc khác: zhī = lượng từ cho con vật, ví dụ 一只猫.",
+      "more": [
+        {
+          "zh": "一只猫",
+          "pinyin": "yì zhī māo",
+          "vi": "một con mèo"
+        }
+      ]
     }
   },
   {
@@ -679,30 +708,38 @@
     "hanzi": "租",
     "order": 242,
     "prelimVerdict": "UNCERTAIN",
-    "reasonVi": "Trao chìa khoá nhà: hợp lý cho \"thuê\" nhưng trùng 的 (#32) và 给 (#54).",
-    "action": "replace-brief",
-    "replacement": {
-      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. A landlord counting coins from a tenant at a small timber house door, a key on a string on the table between them, a house with a visible rent-sign shape but no legible text.",
-      "acceptance": [
-        "Coins plus key plus house all present (rental, not gifting)",
-        "No bare hand-to-hand key giving only (collision with 给 removed)",
-        "No readable text"
-      ]
+    "reasonVi": "Trao chìa khoá nhà: hợp lý cho \"thuê\" nhưng trùng 的 (#32) và 给 (#54). → Thẻ đối chiếu 租/买 thay cảnh trao chìa khoá.",
+    "action": "contrast-card",
+    "card": {
+      "zh": "我租房子。",
+      "pinyin": "Wǒ zū fángzi.",
+      "vi": "Tôi thuê nhà.",
+      "noteVi": "租 = trả tiền để dùng tạm; 房租 = tiền thuê nhà.",
+      "contrast": {
+        "zh": "我买房子。",
+        "pinyin": "Wǒ mǎi fángzi.",
+        "vi": "Tôi mua nhà.",
+        "label": "买 = mua (sở hữu); 租 = thuê (dùng tạm, không sở hữu)"
+      }
     }
   },
   {
     "hanzi": "昨",
     "order": 243,
     "prelimVerdict": "UNCERTAIN",
-    "reasonVi": "Trang lịch lật + ghế trống: hợp lý nhưng trùng 今; khó phân biệt qua ảnh.",
-    "action": "replace-brief",
-    "replacement": {
-      "prompt": "Premium editorial illustration, warm natural light. No text, no letters, no numerals, no signage in the image. Footprints on a sandy path leading away from the viewer toward a setting sun, the previous day left behind, an empty folded blanket on a bench.",
-      "acceptance": [
-        "Receding footprints and sunset (past)",
-        "No calendar object",
-        "Visibly different from 今 scene (low light, warm dusk, no steam)"
-      ]
+    "reasonVi": "Trang lịch lật + ghế trống: hợp lý nhưng trùng 今; khó phân biệt qua ảnh. → Thẻ đối chiếu 昨/今 thay cảnh dấu chân/hoàng hôn.",
+    "action": "contrast-card",
+    "card": {
+      "zh": "昨天我在学校。",
+      "pinyin": "Zuótiān wǒ zài xuéxiào.",
+      "vi": "Hôm qua tôi ở trường.",
+      "noteVi": "昨 chỉ hôm qua; hay gặp trong 昨天.",
+      "contrast": {
+        "zh": "今天我在家。",
+        "pinyin": "Jīntiān wǒ zài jiā.",
+        "vi": "Hôm nay tôi ở nhà.",
+        "label": "今 = hôm nay (hiện tại)"
+      }
     }
   }
 ]

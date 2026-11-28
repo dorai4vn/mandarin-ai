@@ -145,6 +145,24 @@ Each brief is a proposed new `artwork.brief`; the pipeline appends its global st
 - Accept: No calendar object
 - Accept: Visibly different from 今 scene (low light, warm dusk, no steam)
 
+## Update 2026-11-28 (zero-cost resolution of the 11 replacement briefs)
+
+Owner direction: no image API. All 11 former `replace-brief` rows are now resolved without generation; the briefs below are kept **only as historical proposals** and are no longer pending (estimated replacement cost now **$0**, ledger unchanged at $4.9335 / $6).
+
+| Action | Count | Hanzi |
+|---|---|---|
+| Thẻ ngữ cảnh | 42 (41 original + 机) | see JSON |
+| Sơ đồ đếm SVG tất định | 7 | 五 六 九 十 百 千 零 |
+| Thẻ đối chiếu | 3 | 今 昨 租 |
+| Giữ kèm chú thích | 1 | 说 |
+| Replacement brief (paid) | 0 | — |
+
+- **Counting diagrams** (`countingLayout.ts`, `CountingDiagram.tsx`): pure-function layout, `role="img"` + `aria-label`/`<title>`, `currentColor` so the global theme applies. 五 = 5 (1 row), 六 = 3+3, 九 = 3+3+3, 十 = 5+5, 百 = one 10×10 block, 千 = ten 10×10 blocks (1000 dots), 零 = dashed empty set with 0 dots. Unit tests assert exact dot counts and unique coordinates; E2E asserts `circle[data-dot]` counts in the rendered page.
+- **Contrast cards**: 今↔昨 (今天我在家 / 昨天我在学校) and 租↔买 (我租房子 / 我买房子); no sunrise/sunset/key scene.
+- **机**: no defensible single picture for generic "machine" (collides with 车/电; loom was misleading). Taught by compounds 手机 / 飞机 in a contextual card.
+- **Original candidate images** stay in the gallery for audit (unchanged files, unchanged status) but every remediated row (all except 说) is labelled "Ảnh gốc chỉ để kiểm tra — không dùng để học" and `img[data-recommended="false"]`.
+- **Example review (41 + 机)**: changed 非 (note: alone = "không phải"; "rất" only in 非常), 只 (example now 我只喝茶 zhǐ, plus 一只猫 zhī), 题 (deduplicated from 还 sentence), 再 (Vietnamese wording), 还 (hái vs huán note). Others judged natural at HSK-1 level. Compound-only characters (便 宜 期 什 识 视 题 息 样 怎 知 语 机 汉 么 可) are flagged in their notes as appearing mainly in compounds. Limits: single-reviewer check, no native-speaker sign-off; wording still needs owner/native confirmation.
+
 ## Notes / limits
 
 - Teaching-card sentences are simple HSK-1-level phrases written for this review; the owner/a native reviewer should confirm wording before any promotion.

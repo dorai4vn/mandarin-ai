@@ -66,10 +66,41 @@ test.describe('M3.5 visual mnemonic QC lab', () => {
     await expect(grid.locator('li[data-audit="UNCERTAIN"]')).toHaveCount(44);
     await expect(grid.locator('li[data-audit="FAIL"]')).toHaveCount(9);
     await expect(page.getByTestId('artwork-qc-remediation')).toHaveCount(53);
-    await expect(grid.locator('li[data-remediation="contextual-card"]')).toHaveCount(41);
-    await expect(grid.locator('li[data-remediation="replace-brief"]')).toHaveCount(11);
+    await expect(grid.locator('li[data-remediation="contextual-card"]')).toHaveCount(42);
+    await expect(grid.locator('li[data-remediation="counting-diagram"]')).toHaveCount(7);
+    await expect(grid.locator('li[data-remediation="contrast-card"]')).toHaveCount(3);
+    await expect(grid.locator('li[data-remediation="replace-brief"]')).toHaveCount(0);
     await expect(grid.locator('li[data-remediation="retain-with-caption"]')).toHaveCount(1);
-    await expect(page.getByTestId('artwork-qc-card')).toHaveCount(41);
+    await expect(page.getByTestId('artwork-qc-card')).toHaveCount(52);
+    // Deterministic SVG counting diagrams show the exact dot count; rejected images are audit-only.
+    const dots: [string, number][] = [
+      ['五', 5],
+      ['六', 6],
+      ['九', 9],
+      ['十', 10],
+      ['百', 100],
+      ['千', 1000],
+      ['零', 0],
+    ];
+    for (const [h, n] of dots) {
+      const d = page.getByTestId(`artwork-qc-${h}`).getByTestId('artwork-qc-diagram');
+      await expect(d).toHaveAttribute('role', 'img');
+      await expect(d).toHaveAttribute('data-dot-count', String(n));
+      await expect(d.locator('circle[data-dot]')).toHaveCount(n);
+      await expect(page.getByTestId(`artwork-qc-${h}`).locator('img')).toHaveCount(1);
+      await expect(
+        page.getByTestId(`artwork-qc-${h}`).getByTestId('artwork-qc-audit-only'),
+      ).toBeVisible();
+    }
+    await expect(
+      page.getByTestId('artwork-qc-今').getByTestId('artwork-qc-contrast'),
+    ).toContainText('昨天');
+    await expect(
+      page.getByTestId('artwork-qc-租').getByTestId('artwork-qc-contrast'),
+    ).toContainText('买房子');
+    await expect(
+      page.getByTestId('artwork-qc-说').getByTestId('artwork-qc-audit-only'),
+    ).toHaveCount(0);
     // 的 (FAIL) shows a teaching card, its candidate image stays, still unapproved.
     const de = page.getByTestId('artwork-qc-的');
     await expect(de.getByTestId('artwork-qc-card')).toContainText('这是我的书');
@@ -80,7 +111,8 @@ test.describe('M3.5 visual mnemonic QC lab', () => {
       ['pass', 193],
       ['review', 53],
       ['contextual-card', 41],
-      ['replace-brief', 11],
+      ['counting-diagram', 7],
+      ['contrast-card', 3],
       ['retain-with-caption', 1],
     ];
     for (const [id, n] of counts) {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { CountingDiagram } from './CountingDiagram';
 import { BEGINNER, activeChars, archiveChars } from './beginner200';
 import {
   ACTION_LABEL,
@@ -16,7 +17,8 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: 'pass', label: 'PASS sơ bộ' },
   { id: 'review', label: 'Cần xử lý' },
   { id: 'contextual-card', label: 'Thẻ ngữ cảnh' },
-  { id: 'replace-brief', label: 'Đề xuất thay ảnh' },
+  { id: 'counting-diagram', label: 'Sơ đồ đếm' },
+  { id: 'contrast-card', label: 'Thẻ đối chiếu' },
   { id: 'retain-with-caption', label: 'Giữ kèm chú thích' },
 ];
 
@@ -45,12 +47,13 @@ export function ArtworkQcGallery() {
     if (filter === 'review') return !!r;
     return r?.action === filter;
   });
-  const replaceN = count('replace-brief');
+  const replaceN = count('replace-brief'); // 0: no image replacement is proposed any more
   // Only the retained archive characters that already have a stored candidate are shown (4 of 40).
   const archive = archiveChars(BEGINNER).filter((c) => c.pilot);
   type Item = (typeof active)[number];
   const card = (c: Item, group: 'active' | 'archive') => {
     const rem = group === 'active' ? REMEDIATION_BY_HANZI.get(c.hanzi) : undefined;
+    const auditOnly = !!rem && rem.action !== 'retain-with-caption';
     return (
       <li
         key={c.id}
@@ -61,7 +64,7 @@ export function ArtworkQcGallery() {
         data-audit={group === 'active' ? (rem ? rem.prelimVerdict : 'PASS') : undefined}
         data-remediation={rem?.action}
       >
-        <div className="aspect-[4/3] w-full bg-surface-muted" data-testid="artwork-qc-art">
+        <div className="relative aspect-[4/3] w-full bg-surface-muted" data-testid="artwork-qc-art">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`/mnemonic-candidates/${c.artwork.file}`}
@@ -71,7 +74,16 @@ export function ArtworkQcGallery() {
             loading="lazy"
             decoding="async"
             className="h-full w-full object-cover"
+            data-recommended={auditOnly ? 'false' : 'true'}
           />
+          {auditOnly && (
+            <span
+              className="absolute inset-x-0 bottom-0 bg-surface px-2 py-1 text-xs font-semibold text-fg"
+              data-testid="artwork-qc-audit-only"
+            >
+              Ảnh gốc chỉ để kiểm tra — không dùng để học
+            </span>
+          )}
         </div>
         <p className="min-h-[3.5rem] break-words p-2" data-testid="artwork-qc-caption">
           <span className="text-xl" lang="zh-Hans">
@@ -90,6 +102,7 @@ export function ArtworkQcGallery() {
               {rem.prelimVerdict} sơ bộ · {ACTION_LABEL[rem.action]}
             </p>
             <p className="text-fg-muted">{rem.reasonVi}</p>
+            {rem.diagram && <CountingDiagram spec={rem.diagram} hanzi={c.hanzi} />}
             {rem.card && (
               <div data-testid="artwork-qc-card">
                 <p lang="zh-Hans" className="text-base">
@@ -99,6 +112,22 @@ export function ArtworkQcGallery() {
                   {rem.card.pinyin} — {rem.card.vi}
                 </p>
                 <p className="text-fg-muted">{rem.card.noteVi}</p>
+                {rem.card.more?.map((m) => (
+                  <p key={m.zh} data-testid="artwork-qc-card-more">
+                    <span lang="zh-Hans">{m.zh}</span> · {m.pinyin} — {m.vi}
+                  </p>
+                ))}
+                {rem.card.contrast && (
+                  <div className="mt-1 border-t border-line pt-1" data-testid="artwork-qc-contrast">
+                    <p lang="zh-Hans" className="text-base">
+                      {rem.card.contrast.zh}
+                    </p>
+                    <p>
+                      {rem.card.contrast.pinyin} — {rem.card.contrast.vi}
+                    </p>
+                    <p className="text-fg-muted">{rem.card.contrast.label}</p>
+                  </div>
+                )}
               </div>
             )}
             {rem.captionVi && <p data-testid="artwork-qc-caption-note">{rem.captionVi}</p>}
@@ -151,9 +180,11 @@ export function ArtworkQcGallery() {
       </div>
       <p className="mb-3 text-xs text-fg-muted" data-testid="artwork-qc-remediation-summary">
         Rà soát sơ bộ (chưa phải duyệt): {count('pass')} PASS sơ bộ · {REMEDIATION.length} cần xử lý
-        ({count('contextual-card')} thẻ ngữ cảnh · {replaceN} đề xuất thay ảnh ≈ $
-        {(replaceN * EST_COST_PER_IMAGE_USD).toFixed(4)} ước tính, chưa chi ·{' '}
-        {count('retain-with-caption')} giữ kèm chú thích). Không ảnh nào bị ẩn, xoá hay thay thế.
+        ({count('contextual-card')} thẻ ngữ cảnh · {count('counting-diagram')} sơ đồ đếm SVG ·{' '}
+        {count('contrast-card')} thẻ đối chiếu · {replaceN} đề xuất thay ảnh ≈ $
+        {(replaceN * EST_COST_PER_IMAGE_USD).toFixed(4)} · {count('retain-with-caption')} giữ kèm
+        chú thích). Ảnh gốc của các mục cần xử lý vẫn truy cập được để kiểm tra nhưng không phải
+        hình học khuyến nghị; không ảnh nào bị xoá hay thay thế.
       </p>
       <section aria-labelledby="qc-gallery-title" data-testid="artwork-qc-gallery">
         <h2 id="qc-gallery-title" className="mb-2 text-xl font-semibold">
