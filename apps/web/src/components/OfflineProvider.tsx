@@ -59,6 +59,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   const [lastSync, setLastSync] = useState<OfflineState['lastSync']>(null);
   const [syncAvailability, setSyncAvailability] = useState<SyncAvailability>('unknown');
   const engine = useRef<SyncEngine | null>(null);
+  const engineReady = useRef<Promise<void> | null>(null);
   const probe = useRef<SyncAvailabilityProbe | null>(null);
   // Dev/E2E builds only: accept acknowledgements from the in-memory MOCK sync server.
   const acceptMock = process.env.NEXT_PUBLIC_ALLOW_MOCK_SYNC === 'true';
@@ -86,6 +87,13 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Reset first: nothing of the previous account may remain visible.
     engine.current = null;
+    // A click on "Đồng bộ ngay" can arrive before the local store has opened: it waits for this.
+    let markReady: () => void = () => {};
+    engineReady.current = userId
+      ? new Promise<void>((resolve) => {
+          markReady = resolve;
+        })
+      : null;
     /* eslint-disable react-hooks/set-state-in-effect */
     setStore(null);
     setPending(0);
@@ -112,9 +120,11 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
         { pull: (after) => api.syncPull(after), lockName: `mandarin-sync:${userId}` },
       );
       setStore(s);
+      markReady();
     });
     return () => {
       cancelled = true;
+      markReady();
       engine.current = null;
       opened?.close();
     };
@@ -137,6 +147,10 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
 
   const syncNow = useCallback(
     async (opts: { force?: boolean } = {}) => {
+      if (!engine.current && engineReady.current) {
+        // Store still opening (cold start): wait briefly instead of reporting a failed sync.
+        await Promise.race([engineReady.current, new Promise((r) => setTimeout(r, 8000))]);
+      }
       const e = engine.current;
       if (!e || !navigator.onLine) return null;
       const s = await e.syncNow(opts);
