@@ -27,7 +27,8 @@
     "diagram": {
       "count": 100,
       "blocks": 1
-    }
+    },
+    "visual": "banknote-100"
   },
   {
     "hanzi": "便",
@@ -235,7 +236,8 @@
         "vi": "Hôm qua tôi ở trường.",
         "label": "昨 = hôm qua (quá khứ)"
       }
-    }
+    },
+    "visual": "calendar-today"
   },
   {
     "hanzi": "九",
@@ -307,7 +309,8 @@
     },
     "diagram": {
       "count": 0
-    }
+    },
+    "visual": "scoreboard-0"
   },
   {
     "hanzi": "六",
@@ -393,7 +396,8 @@
     "diagram": {
       "count": 1000,
       "blocks": 10
-    }
+    },
+    "visual": "banknote-1000"
   },
   {
     "hanzi": "什",
@@ -721,7 +725,8 @@
         "vi": "Tôi mua nhà.",
         "label": "买 = mua (sở hữu); 租 = thuê (dùng tạm, không sở hữu)"
       }
-    }
+    },
+    "visual": "rental-sign"
   },
   {
     "hanzi": "昨",
@@ -740,6 +745,7 @@
         "vi": "Hôm nay tôi ở nhà.",
         "label": "今 = hôm nay (hiện tại)"
       }
-    }
+    },
+    "visual": "calendar-yesterday"
   }
 ]

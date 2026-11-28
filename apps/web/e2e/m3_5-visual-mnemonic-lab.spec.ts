@@ -78,9 +78,6 @@ test.describe('M3.5 visual mnemonic QC lab', () => {
       ['六', 6],
       ['九', 9],
       ['十', 10],
-      ['百', 100],
-      ['千', 1000],
-      ['零', 0],
     ];
     for (const [h, n] of dots) {
       const d = page.getByTestId(`artwork-qc-${h}`).getByTestId('artwork-qc-diagram');
@@ -88,6 +85,23 @@ test.describe('M3.5 visual mnemonic QC lab', () => {
       await expect(d).toHaveAttribute('data-dot-count', String(n));
       await expect(d.locator('circle[data-dot]')).toHaveCount(n);
       await expect(page.getByTestId(`artwork-qc-${h}`).locator('img')).toHaveCount(1);
+      await expect(
+        page.getByTestId(`artwork-qc-${h}`).getByTestId('artwork-qc-audit-only'),
+      ).toBeVisible();
+    }
+    // Owner-clarified flexible concepts: labelled fictional banknotes, scoreboard, calendar, rental sign.
+    const visual = (h: string) =>
+      page.getByTestId(`artwork-qc-${h}`).getByTestId('artwork-qc-visual');
+    await expect(visual('百').locator('[data-banknote="100"]')).toHaveCount(1);
+    await expect(visual('千').locator('[data-banknote="100"]')).toHaveCount(10);
+    await expect(visual('千')).toContainText('1000');
+    await expect(visual('零')).toContainText('0');
+    await expect(visual('零').locator('text')).toHaveCount(3);
+    await expect(visual('今').locator('[data-day="今天"]')).toHaveAttribute('data-active', 'true');
+    await expect(visual('昨').locator('[data-day="昨天"]')).toHaveAttribute('data-active', 'true');
+    await expect(visual('租').locator('[data-sign="出租"]')).toHaveCount(1);
+    for (const h of ['百', '千', '零', '今', '昨', '租']) {
+      await expect(visual(h)).toHaveAttribute('role', 'img');
       await expect(
         page.getByTestId(`artwork-qc-${h}`).getByTestId('artwork-qc-audit-only'),
       ).toBeVisible();

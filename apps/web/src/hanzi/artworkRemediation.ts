@@ -13,6 +13,14 @@ export type RemediationAction =
   | 'replace-brief'
   | 'retain-with-caption';
 
+export type VisualKind =
+  | 'banknote-100'
+  | 'banknote-1000'
+  | 'scoreboard-0'
+  | 'calendar-today'
+  | 'calendar-yesterday'
+  | 'rental-sign';
+
 export interface Example {
   zh: string;
   pinyin: string;
@@ -34,6 +42,8 @@ export interface Remediation {
   };
   /** Deterministic SVG counting diagram (五 六 九 十 百 千 零). */
   diagram?: DiagramSpec;
+  /** Zero-cost deterministic editorial concept graphic (banknote, scoreboard, labelled calendar, rental sign). */
+  visual?: VisualKind;
   replacement?: { prompt: string; acceptance: string[] };
   captionVi?: string;
 }

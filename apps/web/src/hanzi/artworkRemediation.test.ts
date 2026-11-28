@@ -61,6 +61,24 @@ describe('M3.5 zero-cost remediation specifics', () => {
   });
 });
 
+describe('M3.5 flexible visual concepts (zero cost)', () => {
+  it('百 千 零 今 昨 租 carry a deterministic visual concept; counts and originals unchanged', () => {
+    const want: Record<string, string> = {
+      百: 'banknote-100',
+      千: 'banknote-1000',
+      零: 'scoreboard-0',
+      今: 'calendar-today',
+      昨: 'calendar-yesterday',
+      租: 'rental-sign',
+    };
+    for (const [h, k] of Object.entries(want)) expect(H(h).visual, h).toBe(k);
+    expect(REMEDIATION.filter((r) => r.visual)).toHaveLength(6);
+    // data-level numerics still agree with the banknote labels (10 x 100 = 1000)
+    expect(H('千').diagram!.count).toBe(10 * H('百').diagram!.count);
+    expect(REMEDIATION).toHaveLength(53);
+  });
+});
+
 describe('M3.5 remediation matrix (53 FAIL/UNCERTAIN)', () => {
   it('covers exactly the 53 non-PASS audit rows, all active, no duplicates', () => {
     expect(nonPass).toHaveLength(53);

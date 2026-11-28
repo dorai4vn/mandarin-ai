@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { CountingDiagram } from './CountingDiagram';
+import { VisualConcept } from './VisualConcept';
 import { BEGINNER, activeChars, archiveChars } from './beginner200';
 import {
   ACTION_LABEL,
@@ -102,7 +103,8 @@ export function ArtworkQcGallery() {
               {rem.prelimVerdict} sơ bộ · {ACTION_LABEL[rem.action]}
             </p>
             <p className="text-fg-muted">{rem.reasonVi}</p>
-            {rem.diagram && <CountingDiagram spec={rem.diagram} hanzi={c.hanzi} />}
+            {rem.visual && <VisualConcept kind={rem.visual} hanzi={c.hanzi} />}
+            {rem.diagram && !rem.visual && <CountingDiagram spec={rem.diagram} hanzi={c.hanzi} />}
             {rem.card && (
               <div data-testid="artwork-qc-card">
                 <p lang="zh-Hans" className="text-base">

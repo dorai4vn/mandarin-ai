@@ -168,3 +168,25 @@ Owner direction: no image API. All 11 former `replace-brief` rows are now resolv
 - Teaching-card sentences are simple HSK-1-level phrases written for this review; the owner/a native reviewer should confirm wording before any promotion.
 - 零 proposes a thermometer-at-zero scene supporting 零下; it is the weakest brief (abstract) and may be better as a card if owner prefers.
 - No historical/etymology claims are made.
+
+## Update 2026-11-28 (owner clarification: flexible immediate visual association)
+
+Implemented zero-cost, deterministic editorial concepts (`VisualConcept.tsx`, field `visual` in `artworkRemediation.json`); no image API, no workflow dispatch, ledger unchanged ($4.9335 / $6).
+
+| Hanzi | Concept (fictional, labelled) |
+|---|---|
+| 百 | one stylised banknote labelled 100 (not a real-currency replica) |
+| 千 | ten stacked banknotes labelled 100 + "10 × 100 = 1000" |
+| 零 | scoreboard 0 : 0 |
+| 今 / 昨 | labelled calendar pair 昨天 → 今天 with the target day highlighted |
+| 租 | 出租 (for rent) sign contrasted with dashed 出售 (for sale) |
+
+五 六 九 十 keep the small dot diagrams (exact counts, immediately readable); 42 contextual cards and 说 caption are unchanged because grammar/function words are better taught in context than by arbitrary decoration. 百/千/零 no longer render the dot grid (specs kept in data for audit/tests). Originals stay audit-only; 193 PASS, statuses and ledger untouched.
+
+### Final QC checklist (owner, not yet done — no visual acceptance is claimed)
+- [ ] Open Preview `/lab/visual-mnemonic` on mobile + desktop, light + dark; confirm the 6 new concepts are legible and contrast is sufficient.
+- [ ] Confirm banknote concepts are acceptably non-real (no real currency design).
+- [ ] Native-reviewer check of 42 contextual examples + 今/昨/租 wording.
+- [ ] Per-image visual review of the 193 preliminary PASS (technical/semantic audit only so far).
+- [ ] Decide whether any remaining concept needs a paid replacement (none proposed; estimate would be 0.0195 USD/image, ledger headroom ≈ $1.07).
+- [ ] Owner approval before any promotion; PR #30 stays Draft.
