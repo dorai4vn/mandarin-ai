@@ -50,6 +50,13 @@ async function addNote(page: Page, text: string) {
   await expect(page.getByTestId('note-list')).toContainText(text);
 }
 
+// Route handlers here are async (route.fetch → response.json → route.fulfill). If a test ends while
+// a /health probe is in flight, the context closes and the handler throws "Response has been
+// disposed". Wait for in-flight handlers while the page is still alive; errors are NOT ignored.
+test.afterEach(async ({ page }) => {
+  await page.unrouteAll({ behavior: 'wait' });
+});
+
 const chip = (page: Page) => page.getByTestId('sync-chip').filter({ visible: true }).first();
 
 test('sync disabled: data stays on the device, calm message, no push and no console 503', async ({
