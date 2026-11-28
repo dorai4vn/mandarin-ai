@@ -24,7 +24,7 @@ export function AddWordDialog({
   onAdded: (r: AddResult) => void;
   initialHanzi?: string;
 }) {
-  const { lexemes, addWord } = useLearning();
+  const { lexemes, addWord, storeReady } = useLearning();
   const [f, setF] = useState({ ...EMPTY, simplified: initialHanzi });
   const [lexemeId, setLexemeId] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof typeof EMPTY, string>>>({});
@@ -50,6 +50,8 @@ export function AddWordDialog({
   };
 
   const submit = async () => {
+    // The local database opens asynchronously on a cold start; saving before that would fail.
+    if (!storeReady || busy) return;
     const e: typeof errors = {};
     if (!f.simplified.trim()) e.simplified = 'Hãy nhập chữ Hán.';
     if (!f.pinyin.trim()) e.pinyin = 'Hãy nhập pinyin.';
@@ -80,6 +82,9 @@ export function AddWordDialog({
       });
       close();
       onAdded(r);
+    } catch {
+      // Never fail silently: keep the dialog and what was typed, and say what happened.
+      setErrors({ simplified: 'Chưa lưu được từ. Hãy thử lại.' });
     } finally {
       setBusy(false);
     }
@@ -97,7 +102,12 @@ export function AddWordDialog({
           <Button variant="secondary" onClick={close}>
             Hủy
           </Button>
-          <Button loading={busy} onClick={() => void submit()} data-testid="add-word-save">
+          <Button
+            loading={busy}
+            disabled={!storeReady}
+            onClick={() => void submit()}
+            data-testid="add-word-save"
+          >
             Lưu từ
           </Button>
         </>
