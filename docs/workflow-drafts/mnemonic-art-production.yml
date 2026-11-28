@@ -22,6 +22,11 @@ on:
       confirm_budget_usd:
         description: 'CUMULATIVE max USD across ALL runs incl. pilot (owner-approved final budget; <= 6 owner-approved cumulative estimate, not a provider cap)'
         required: true
+      recover_failed_item:
+        description: 'Batch #3 recovery ONLY: retry the single failed item once (needs previous_run_id 46139133768). none = no recovery (failed entries stay blocked).'
+        type: choice
+        options: ['none', 'wei-feed.webp']
+        default: 'none'
 
 permissions:
   contents: read
@@ -41,6 +46,7 @@ jobs:
       IN_SHA: ${{ inputs.reviewed_sha }}
       IN_BATCH: ${{ inputs.batch_size }}
       IN_BUDGET: ${{ inputs.confirm_budget_usd }}
+      IN_RECOVER: ${{ inputs.recover_failed_item }}
       PREV_RUN: ${{ inputs.previous_run_id }}
       GH_REPO: ${{ github.repository }}
       THIS_RUN: ${{ github.run_id }}
@@ -65,6 +71,10 @@ jobs:
           b = e("IN_BUDGET", "")
           if not re.fullmatch(r"[0-9]{1,2}(\.[0-9]{1,2})?", b, re.ASCII) or not 0 < float(b) <= 6:
               fail("confirm_budget_usd must be > 0 and <= 6 (owner-approved cumulative estimate, not a provider cap)")
+          if e("IN_RECOVER", "none") not in ("none", "wei-feed.webp"):
+              fail("recover_failed_item must be none or wei-feed.webp")
+          if e("IN_RECOVER", "none") != "none" and e("PREV_RUN", "") != "46139133768":
+              fail("recovery of wei-feed.webp is only authorized against previous run 46139133768 (failed HTTP 500)")
           print("inputs ok")
           PY
 
@@ -133,8 +143,10 @@ jobs:
           # Production-mode dry-run: exercises the carried-ledger guard (10 retained incl. superseded files, run-history prefix,
           # spend floor, prompt hashes, archive exclusion) and the PROJECTED cumulative budget check (spent + all remaining active x
           # conservative bound from the non-secret pricing vars, independent of batch size) BEFORE the secret-bearing step.
+          recover_args=()
+          if [ "$IN_RECOVER" != "none" ]; then recover_args=(--recover-file "$IN_RECOVER" --recover-expect-error "provider HTTP 500"); fi
           pnpm mnemonic-art plan --all --production --expect-manifest existing \
-            --batch-size "$IN_BATCH" --max-spend-usd "$IN_BUDGET"
+            --batch-size "$IN_BATCH" --max-spend-usd "$IN_BUDGET" "${recover_args[@]}"
 
       - name: Generate (the ONLY step with the secret; serial, retries 0, stops on first error)
         env:
@@ -148,12 +160,22 @@ jobs:
           MNEMONIC_PRICING_SOURCE_URL: ${{ vars.MNEMONIC_PRICING_SOURCE_URL }}
           MNEMONIC_PRICING_VERIFIED_ON: ${{ vars.MNEMONIC_PRICING_VERIFIED_ON }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
+          recover_args=()
+          if [ "$IN_RECOVER" != "none" ]; then recover_args=(--recover-file "$IN_RECOVER" --recover-expect-error "provider HTTP 500"); fi
+          status=0
           pnpm mnemonic-art generate --all --production --live --storage local --max-retries 0 \
             --batch-size "$IN_BATCH" --max-spend-usd "$IN_BUDGET" --expect-manifest existing \
-            --run-id "$THIS_RUN" --commit "$IN_SHA" | tee generate.log
+            --run-id "$THIS_RUN" --commit "$IN_SHA" "${recover_args[@]}" | tee generate.log || status=$?
           # Summary line only (no secrets are ever printed by the CLI).
-          grep '^{"live"' generate.log | tail -1 >> "$GITHUB_STEP_SUMMARY" || true
+          summary=$(grep '^{"live"' generate.log | tail -1 || true)
+          echo "$summary" >> "$GITHUB_STEP_SUMMARY"
+          # Never false-green: failed>0 or stoppedEarly (or any CLI error / missing summary) fails this step; the artifact is still uploaded.
+          if [ -z "$summary" ] || ! jq -e '.failed == 0 and .stoppedEarly == false' <<<"$summary" >/dev/null; then
+            echo "::error::generation reported failed>0 or stoppedEarly (or no summary); failing the run. Candidate artifact is still uploaded."
+            exit 1
+          fi
+          exit "$status"
 
       - name: Detect candidate artifacts
         id: detect

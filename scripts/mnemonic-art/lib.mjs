@@ -155,7 +155,7 @@ function verifyRunChain(manifest, prior, bad) {
  * 'requested'/'failed' entries, no orphan entries, and a spend ledger that is not lower than what the entries
  * themselves prove (price of every stored image + every archived revision in history). Throws on any problem.
  */
-export async function verifyCarriedLedger({ manifest, data, storage }) {
+export async function verifyCarriedLedger({ manifest, data, storage, recoverFile }) {
   const rp = data.meta?.retainedPilot;
   if (!rp) return;
   const bad = [];
@@ -208,6 +208,8 @@ export async function verifyCarriedLedger({ manifest, data, storage }) {
   }
   for (const [file, e] of Object.entries(manifest.entries)) {
     if (!byFile.has(file)) bad.push(`${file}: orphan manifest entry`);
+    else if (file === recoverFile && e.status === 'failed')
+      continue; // the ONE explicitly authorized recovery (checked in run())
     else if (e.status === 'requested' || e.status === 'failed')
       bad.push(`${file}: unresolved ${e.status} entry (needs owner review, never auto-retried)`);
   }
@@ -451,6 +453,7 @@ export async function run({
   maxRetries = 2,
   production = false,
   revise = false,
+  recover,
   maxImages = PILOT_MAX_IMAGES,
   rates,
   sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
@@ -460,14 +463,39 @@ export async function run({
     throw new Error(`maxRetries must be 0..${MAX_RETRIES_CAP}`);
   if (revise && production)
     throw new Error('revise is not allowed in production mode: run QC revisions separately first');
+  if (recover) {
+    if (!production) throw new Error('recover is only allowed in production mode');
+    if (
+      typeof recover.file !== 'string' ||
+      !recover.file ||
+      typeof recover.expectedError !== 'string' ||
+      !recover.expectedError
+    )
+      throw new Error('recover needs an exact file and an expected error text');
+    if (force) throw new Error('recover must not be combined with force');
+  }
   const manifest = loadManifest(manifestPath);
+  if (recover) {
+    // Fail closed unless the manifest holds exactly the authorized failed item: one failed attempt, expected error, never recovered before.
+    const f = manifest.entries[recover.file];
+    if (!f || f.status !== 'failed')
+      throw new Error(`recover: ${recover.file} is not a failed entry in the carried manifest`);
+    if (!String(f.error ?? '').includes(recover.expectedError))
+      throw new Error(`recover: ${recover.file} failed with a different error than authorized`);
+    if (f.attempts !== 1 || (f.failedAttempts ?? []).length > 0)
+      throw new Error(
+        `recover: ${recover.file} was already recovered/retried; a second recovery is refused`,
+      );
+    if (!selection.some((c) => c.artwork.file === recover.file))
+      throw new Error(`recover: ${recover.file} is not part of the selection`);
+  }
   if (production) {
     const archived = selection.filter((c) => !isActive(c));
     if (archived.length)
       throw new Error(
         `production: archive records are never generated (${archived.map((c) => c.hanzi).join('')})`,
       );
-    await verifyCarriedLedger({ manifest, data, storage });
+    await verifyCarriedLedger({ manifest, data, storage, recoverFile: recover?.file });
   }
   const plan = [];
   for (const c of selection) {
@@ -475,7 +503,8 @@ export async function run({
     const ph = promptHash(prompt);
     const e = manifest.entries[c.artwork.file];
     let action = 'generate';
-    if (e?.status === 'requested' && !force) action = 'blocked-unresolved-request';
+    if (recover && c.artwork.file === recover.file) action = 'recover-failed';
+    else if (e?.status === 'requested' && !force) action = 'blocked-unresolved-request';
     // Production: a failed entry may already have been billed; never silently pay again on rerun.
     else if (production && e?.status === 'failed' && !force) action = 'blocked-failed-needs-force';
     else if (e?.status === 'stored' && e.promptHash === ph && !force) {
@@ -487,7 +516,11 @@ export async function run({
       action = 'blocked-revision-needs-flag';
     plan.push({ char: c, prompt, ph, action, prev: e?.status === 'stored' ? e : undefined });
   }
-  const allTodo = plan.filter((p) => p.action === 'generate');
+  // The authorized recovery item (if any) goes first so it is never deferred out of the batch.
+  const allTodo = [
+    ...plan.filter((p) => p.action === 'recover-failed'),
+    ...plan.filter((p) => p.action === 'generate'),
+  ];
   if (production) {
     if (!Number.isInteger(maxImages) || maxImages < 1 || maxImages > PRODUCTION_MAX_BATCH)
       throw new Error(`production: batch size must be 1..${PRODUCTION_MAX_BATCH}`);
@@ -504,6 +537,7 @@ export async function run({
     deferred: allTodo.length - todo.length,
     actualUsdReported: 0,
     stoppedEarly: false,
+    recovered: 0,
     worstCaseUsd: worst,
     generated: 0,
     failed: 0,
@@ -573,6 +607,23 @@ export async function run({
     let attempt = 0;
     // Revision of an accepted image: keep the previous bytes + metadata (never lose an approved/rejected candidate).
     let history = manifest.entries[file]?.history ?? [];
+    // Recovery: keep the failed attempt as audit (its estimate is already inside spentUsdEstimated; the new call adds one more).
+    let failedAttempts = manifest.entries[file]?.failedAttempts ?? [];
+    if (p.action === 'recover-failed') {
+      const f = manifest.entries[file];
+      failedAttempts = [
+        ...failedAttempts,
+        {
+          error: f.error,
+          attempts: f.attempts,
+          provider: f.provider,
+          model: f.model,
+          promptHash: f.promptHash,
+          priceUsdEstimated: unitPriceUsd,
+          recoveredByRunId: recover.runId ?? null,
+        },
+      ];
+    }
     if (p.prev) {
       const old = await storage.get(p.prev.path);
       if (!old || sha256(old) !== p.prev.sha256)
@@ -605,6 +656,7 @@ export async function run({
       manifest.entries[file] = {
         status: 'requested',
         ...(history.length ? { history } : {}),
+        ...(failedAttempts.length ? { failedAttempts } : {}),
         hanzi: p.char.hanzi,
         promptHash: p.ph,
         attempts: attempt + 1,
@@ -649,6 +701,7 @@ export async function run({
         }
         saveManifest(manifestPath, manifest);
         summary.generated++;
+        if (p.action === 'recover-failed') summary.recovered++;
         break;
       } catch (err) {
         const again = !err.fatal && retryable(err) && attempt < maxRetries;
