@@ -19,6 +19,35 @@ test.describe('M3.5 visual mnemonic lab (D4)', () => {
     await expect(page.getByTestId('mnemonic-notice')).toHaveCount(0);
   });
 
+  test('QC gallery shows 246 active + 4 archive unapproved candidates, all loading', async ({
+    page,
+  }) => {
+    await page.goto('/lab/visual-mnemonic');
+    const items = page.getByTestId('artwork-qc-grid').locator('li');
+    await expect(items).toHaveCount(250);
+    await expect(page.locator('[data-group="active"]')).toHaveCount(246);
+    await expect(page.locator('[data-group="archive"]')).toHaveCount(4);
+    await expect(page.getByTestId('artwork-qc-note')).toContainText('chưa duyệt');
+    const broken = await page.evaluate(async () => {
+      const imgs = Array.from(
+        document.querySelectorAll<HTMLImageElement>('[data-testid="artwork-qc-grid"] img'),
+      );
+      imgs.forEach((i) => (i.loading = 'eager'));
+      await Promise.all(
+        imgs.map((i) =>
+          i.complete
+            ? Promise.resolve()
+            : new Promise((r) => {
+                i.onload = i.onerror = () => r(null);
+              }),
+        ),
+      );
+      return imgs.filter((i) => !i.complete || i.naturalWidth !== 1600 || i.naturalHeight !== 1200)
+        .length;
+    });
+    expect(broken).toBe(0);
+  });
+
   test('keyboard-accessible navigation and preview mode', async ({ page }) => {
     await page.goto('/lab/visual-mnemonic');
     await expect(page.getByTestId('mnemonic-nav-鳥')).toHaveAttribute(
@@ -31,10 +60,12 @@ test.describe('M3.5 visual mnemonic lab (D4)', () => {
     await expect(card.getByTestId('mnemonic-provenance')).toContainText(
       'chưa được chủ dự án duyệt',
     );
-    // No candidate files exist: falls back to text, never claims approval.
-    await expect(card.getByTestId('mnemonic-art-pending')).toContainText(
-      'Chưa có file ảnh ứng viên',
+    // Candidate file exists (unapproved): it loads, is labelled unapproved, and approval is never claimed.
+    await expect(card.locator('img')).toHaveAttribute(
+      'src',
+      '/mnemonic-candidates/shan-mountain.webp',
     );
+    await expect(card.getByTestId('mnemonic-art-pending')).toHaveCount(0);
   });
 
   for (const theme of ['light', 'dark'] as const) {

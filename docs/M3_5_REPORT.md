@@ -25,3 +25,9 @@ Ngày: 2026-11-26 · Nhánh `claude/issue-27-20261126-1747` · PR nháp, **khôn
 - Preview mechanism: toggle "ảnh ứng viên" loads `/mnemonic-candidates/<assetFile>` (separate from approved `/mnemonic/`), labelled unapproved; never changes manifest status. No candidate files exist.
 - D3 fixes: image src restricted to `/mnemonic/<name>.webp`; broken-image state keyed by src (resets on glyph change); failed load vs missing provenance have distinct messages.
 - Not run locally: Playwright E2E (browsers not installed in this runner).
+
+## Artwork integration (candidates, unapproved) — 2026-11-28
+
+- Source: owner-gated production run 46158400581 (main `68d3473`), artifact `mnemonic-art-pilot` 15268902249. No paid calls were made for this integration.
+- 250 current WebP (246 active HSK 3.0 L1 + 4 retained archive) in `apps/web/public/mnemonic-candidates/`; 2 superseded revisions (人, 雨) in `.../superseded/`; manifest/ledger copy in `docs/artifacts/mnemonic-art-manifest-run-46158400581.json` (SHA-256 + size re-verified by `artworkCandidates.test.ts`).
+- All `artwork.status` stay `pending-artwork`; nothing is in `public/mnemonic/` (approved path). Owner QC gallery: `/lab/visual-mnemonic` (all 250 candidates). Final visual/pedagogical approval remains with the owner.

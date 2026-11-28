@@ -1,7 +1,6 @@
 # Visual Mnemonic — artwork integration manifest & checklist
 
-Status: **ALL 10 PENDING. No image file exists in the repo and none is approved.** This document is a
-process checklist only; it does not assert that any artwork has been created, licensed or reviewed.
+Status: **ALL 10 PENDING APPROVAL. Candidate files (generated, run 46158400581) are in `mnemonic-candidates/` for owner QC; none is approved and none is in `mnemonic/`.** All 246 active + 4 archive candidates and the 2 superseded revisions are checked in; provenance is in `docs/artifacts/mnemonic-art-manifest-run-46158400581.json`. This document does not assert that any artwork has been licensed or reviewed.
 Briefs (art direction, scene per glyph) live in `VISUAL_MNEMONIC_BRIEFS.md`; the code manifest is
 `apps/web/src/hanzi/mnemonic.ts`. Actual image assets are produced and supplied separately.
 
@@ -9,16 +8,16 @@ Briefs (art direction, scene per glyph) live in `VISUAL_MNEMONIC_BRIEFS.md`; the
 
 | Glyph | File | Candidate path (owner preview) | Approved path (production) | Status | Owner QC | Approved |
 |---|---|---|---|---|---|---|
-| 山 | `shan-mountain.webp` | `apps/web/public/mnemonic-candidates/shan-mountain.webp` | `apps/web/public/mnemonic/shan-mountain.webp` | pending — no file | ☐ | ☐ |
-| 水 | `shui-water.webp` | `apps/web/public/mnemonic-candidates/shui-water.webp` | `apps/web/public/mnemonic/shui-water.webp` | pending — no file | ☐ | ☐ |
-| 木 | `mu-tree.webp` | `apps/web/public/mnemonic-candidates/mu-tree.webp` | `apps/web/public/mnemonic/mu-tree.webp` | pending — no file | ☐ | ☐ |
-| 火 | `huo-fire.webp` | `apps/web/public/mnemonic-candidates/huo-fire.webp` | `apps/web/public/mnemonic/huo-fire.webp` | pending — no file | ☐ | ☐ |
-| 日 | `ri-sun.webp` | `apps/web/public/mnemonic-candidates/ri-sun.webp` | `apps/web/public/mnemonic/ri-sun.webp` | pending — no file | ☐ | ☐ |
-| 月 | `yue-moon.webp` | `apps/web/public/mnemonic-candidates/yue-moon.webp` | `apps/web/public/mnemonic/yue-moon.webp` | pending — no file | ☐ | ☐ |
-| 人 | `ren-person.webp` | `apps/web/public/mnemonic-candidates/ren-person.webp` | `apps/web/public/mnemonic/ren-person.webp` | pending — no file | ☐ | ☐ |
-| 雨 | `yu-rain.webp` | `apps/web/public/mnemonic-candidates/yu-rain.webp` | `apps/web/public/mnemonic/yu-rain.webp` | pending — no file | ☐ | ☐ |
-| 魚 | `yu-fish.webp` | `apps/web/public/mnemonic-candidates/yu-fish.webp` | `apps/web/public/mnemonic/yu-fish.webp` | pending — no file | ☐ | ☐ |
-| 鳥 | `niao-bird.webp` | `apps/web/public/mnemonic-candidates/niao-bird.webp` | `apps/web/public/mnemonic/niao-bird.webp` | pending — no file | ☐ | ☐ |
+| 山 | `shan-mountain.webp` | `apps/web/public/mnemonic-candidates/shan-mountain.webp` | `apps/web/public/mnemonic/shan-mountain.webp` | candidate present — pending approval | ☐ | ☐ |
+| 水 | `shui-water.webp` | `apps/web/public/mnemonic-candidates/shui-water.webp` | `apps/web/public/mnemonic/shui-water.webp` | candidate present — pending approval | ☐ | ☐ |
+| 木 | `mu-tree.webp` | `apps/web/public/mnemonic-candidates/mu-tree.webp` | `apps/web/public/mnemonic/mu-tree.webp` | candidate present — pending approval | ☐ | ☐ |
+| 火 | `huo-fire.webp` | `apps/web/public/mnemonic-candidates/huo-fire.webp` | `apps/web/public/mnemonic/huo-fire.webp` | candidate present — pending approval | ☐ | ☐ |
+| 日 | `ri-sun.webp` | `apps/web/public/mnemonic-candidates/ri-sun.webp` | `apps/web/public/mnemonic/ri-sun.webp` | candidate present — pending approval | ☐ | ☐ |
+| 月 | `yue-moon.webp` | `apps/web/public/mnemonic-candidates/yue-moon.webp` | `apps/web/public/mnemonic/yue-moon.webp` | candidate present — pending approval | ☐ | ☐ |
+| 人 | `ren-person.webp` | `apps/web/public/mnemonic-candidates/ren-person.webp` | `apps/web/public/mnemonic/ren-person.webp` | candidate present — pending approval | ☐ | ☐ |
+| 雨 | `yu-rain.webp` | `apps/web/public/mnemonic-candidates/yu-rain.webp` | `apps/web/public/mnemonic/yu-rain.webp` | candidate present — pending approval | ☐ | ☐ |
+| 魚 | `yu-fish.webp` | `apps/web/public/mnemonic-candidates/yu-fish.webp` | `apps/web/public/mnemonic/yu-fish.webp` | candidate present — pending approval | ☐ | ☐ |
+| 鳥 | `niao-bird.webp` | `apps/web/public/mnemonic-candidates/niao-bird.webp` | `apps/web/public/mnemonic/niao-bird.webp` | candidate present — pending approval | ☐ | ☐ |
 
 ## Per-asset checklist (all must be true before flipping an entry)
 

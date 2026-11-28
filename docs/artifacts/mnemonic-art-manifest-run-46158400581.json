@@ -1,0 +1,5072 @@
+{
+  "version": 1,
+  "spentUsdEstimated": 4.9335,
+  "entries": {
+    "shan-mountain.webp": {
+      "status": "stored",
+      "hanzi": "山",
+      "promptHash": "d990f391d0e77600e19a91c5f263440c529e1efd23f4872edadf874426312f80",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shan-mountain.webp",
+      "sha256": "210d521336a74b3c6efd1ad2311017d7800a8aac0458c4b5b4babf17ea86f5a6",
+      "bytes": 184778,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-27T19:45:02.213Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 113,
+        "output_tokens": 158
+      }
+    },
+    "shui-water.webp": {
+      "status": "stored",
+      "hanzi": "水",
+      "promptHash": "c1ab023d11d2f8de1d0562c6a3304a3bdcf82d6a3ca9ec7528bfd7f0d42f60de",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shui-water.webp",
+      "sha256": "8c6189373ea73b2aecaefb23d85f5a36c22f49aa7689d6c44d05f2e5a49a1094",
+      "bytes": 266328,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-27T19:50:48.144Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 112,
+        "output_tokens": 158
+      }
+    },
+    "mu-tree.webp": {
+      "status": "stored",
+      "hanzi": "木",
+      "promptHash": "4269139ad4c210f668be6844ea56347b5e1de5ff96d4698351d6b8487305163a",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/mu-tree.webp",
+      "sha256": "ea32a41c94cf09c279113331aa31956e8bd31001cf47b79750faa50ec65fd65f",
+      "bytes": 311600,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-27T19:50:58.658Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 110,
+        "output_tokens": 158
+      }
+    },
+    "huo-fire.webp": {
+      "status": "stored",
+      "hanzi": "火",
+      "promptHash": "4772fca257dc227bcf7e4f5285d47f1497255602c0704a9f4ef4b89085c70fc1",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/huo-fire.webp",
+      "sha256": "350c2c26c0e4f1a3e831fd6b38de10ad75c306b5068da6ac4c0aa68fdf2d1c1d",
+      "bytes": 188740,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-27T19:51:08.998Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 112,
+        "output_tokens": 158
+      }
+    },
+    "ri-sun.webp": {
+      "status": "stored",
+      "hanzi": "日",
+      "promptHash": "0032cf30af9e63b9c80369cf49533fcc623a7f9de00cd31cef14c77cfcda8c20",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ri-sun.webp",
+      "sha256": "27a7256545bc5858ab1c62f919c8f8a572c5777bd60c80f8b9bfb59303072c81",
+      "bytes": 133486,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-27T19:51:20.573Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 111,
+        "output_tokens": 158
+      }
+    },
+    "yue-moon.webp": {
+      "status": "stored",
+      "hanzi": "月",
+      "promptHash": "31e9952bdcf6acae131fb2b33768a1cb19d974e61b7b048dec759ef088048c8e",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/yue-moon.webp",
+      "sha256": "47aa26d74e9c6fa5f01c12cc5c294ca63d7ca4d87af77ff36821e03fe23de6f2",
+      "bytes": 124198,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-27T19:51:29.452Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 110,
+        "output_tokens": 158
+      }
+    },
+    "ren-person.webp": {
+      "status": "stored",
+      "history": [
+        {
+          "archivedAt": "mnemonic/superseded/63b2debc050c-ren-person.webp",
+          "sha256": "63b2debc050c84b63046072165ec7bdde6a5ad86a89114d88298d76b945c9d53",
+          "promptHash": "81a64c1c61b934d97ec15780414c986ed1a33d8214a33995e41eb4df5c55870f",
+          "storedAt": "2026-11-27T19:51:41.802Z",
+          "priceUsdEstimated": 0.0195
+        }
+      ],
+      "hanzi": "人",
+      "promptHash": "4e710b4f9f320b476aa6b3b3d6570c5460243b68c9b55035a2461656cdc61ad3",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ren-person.webp",
+      "sha256": "25c993900a9713a75192c95c7efda4a7d5741930f92e38cc19360438cee29d64",
+      "bytes": 133356,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-27T20:26:07.163Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 212,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.0058
+    },
+    "yu-rain.webp": {
+      "status": "stored",
+      "history": [
+        {
+          "archivedAt": "mnemonic/superseded/0798c2eb01c3-yu-rain.webp",
+          "sha256": "0798c2eb01c3dd159de65fbd86fb1b310bb4b1f96666c4aa0f1b05ea9f1de196",
+          "promptHash": "2bf621410b0ce29446fd1ec852b0300c310f23581b68d1b8cc8809715e3378d4",
+          "storedAt": "2026-11-27T19:51:54.398Z",
+          "priceUsdEstimated": 0.0195
+        }
+      ],
+      "hanzi": "雨",
+      "promptHash": "eecd20381c5c77862ef4add33674f64df3e74cf1d188216084e0bbf867abfc07",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/yu-rain.webp",
+      "sha256": "8fd4c26c61f4d1b63bd6be1bd8d9e9b440947f02d64598b5dd42fb102f511423",
+      "bytes": 291684,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-27T20:26:18.178Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 210,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00579
+    },
+    "yu-fish.webp": {
+      "status": "stored",
+      "hanzi": "鱼",
+      "promptHash": "bcbf68fb11e75db5a3ace3dc716f8b59c572c6c05fcd6e71464c5e12b361aa67",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/yu-fish.webp",
+      "sha256": "93bd69293a3cd019339242a4f8816e25a57dcb1c453b9e8013def6bbaaf20e52",
+      "bytes": 239038,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-27T19:52:04.839Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 112,
+        "output_tokens": 158
+      }
+    },
+    "niao-bird.webp": {
+      "status": "stored",
+      "hanzi": "鸟",
+      "promptHash": "51697d219a520c018fc6a9849f54e0b9ea7eb72c284180473737c8bfafcdbf25",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/niao-bird.webp",
+      "sha256": "4a6b9de4b015112c89c98dc89fb0db389046d6b222d271f10a704ace6d04bf76",
+      "bytes": 162896,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-27T19:52:16.130Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 111,
+        "output_tokens": 158
+      }
+    },
+    "yi-one.webp": {
+      "status": "stored",
+      "hanzi": "一",
+      "promptHash": "6e1b60bb10905c872d84e6af3f5c2ffa7f4abd145e82eee97affe25cce11b028",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/yi-one.webp",
+      "sha256": "342f7f7026db1aa63cb32a5a4d600c49124243f5a98882a23702934ac66dbf06",
+      "bytes": 98996,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:27:06.324Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "er-two.webp": {
+      "status": "stored",
+      "hanzi": "二",
+      "promptHash": "fd00860de5592a183d4bed78ac9a6a77c397d9bf66a64fc37c6b877b662974da",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/er-two.webp",
+      "sha256": "1d3fffb1f0272a968feaef2504bfa5ca8ffdeeceb1f51e75e025ffdc5f439902",
+      "bytes": 91460,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:27:16.077Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "san-three.webp": {
+      "status": "stored",
+      "hanzi": "三",
+      "promptHash": "fdd169983f740d78c89cb9037412acf40a768eae69881ba00e73e28c07444217",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/san-three.webp",
+      "sha256": "51b63aa15086aaf2cddba072085fed16200928e8fb64954f5c3917074bb54613",
+      "bytes": 155316,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:27:24.896Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "si-four.webp": {
+      "status": "stored",
+      "hanzi": "四",
+      "promptHash": "6419898bd2821f5d769c8d44b7b778ea3fc512c02a70f95179828662d92c1dcb",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/si-four.webp",
+      "sha256": "b280160746d438cdb255f1cf181e2d17763651f93858dc89e4ff03ddb45295ab",
+      "bytes": 152096,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:27:37.979Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "wu-five.webp": {
+      "status": "stored",
+      "hanzi": "五",
+      "promptHash": "16813635ac36d11a0c0f4eed5660346e4449b84cc5072a9f667f013e78613ac7",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/wu-five.webp",
+      "sha256": "de907eee4e8f8321a2ec1e7dba6895809fe6e6a5ff6b15562a162cbb0605d9f8",
+      "bytes": 122326,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:27:50.281Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "liu-six.webp": {
+      "status": "stored",
+      "hanzi": "六",
+      "promptHash": "f0bd494a53f16cdd4343ff4b63755d546396fd127495abecdd75a284916f7136",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/liu-six.webp",
+      "sha256": "8253819ce28c511a71b057c898dca8556fdec5a1d67331ccd3e696792d72fa88",
+      "bytes": 117314,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:27:59.491Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "qi-seven.webp": {
+      "status": "stored",
+      "hanzi": "七",
+      "promptHash": "66cb780f8c27f6824b33b4be70ca0060aaff6918b59e9e06f80b3d2691456fa0",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/qi-seven.webp",
+      "sha256": "eebd577cda6603b780f790140cdc9ac744a3edea168aec94010e3aa6f009ab7c",
+      "bytes": 134584,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:28:08.677Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "ba-eight.webp": {
+      "status": "stored",
+      "hanzi": "八",
+      "promptHash": "9fd22fb4a97ac79af4a4ab1d5e4616ed72f7ad3b5b3a247b01bce45cf10cf24d",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ba-eight.webp",
+      "sha256": "08337936e88329a186652ed97e5066cd1075937d8d637987fca121f61d3f51b6",
+      "bytes": 229660,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:28:20.025Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "jiu-nine.webp": {
+      "status": "stored",
+      "hanzi": "九",
+      "promptHash": "79b2691548a28c1709bae6f76ebaa5e7247b81a2b6273aabf8747cb3316e0b32",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/jiu-nine.webp",
+      "sha256": "dc8abda0b1d7e6f082afb888c5d56d86b98b8158354a7f3118e9bf3bb644d034",
+      "bytes": 160906,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:28:30.200Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "shi-ten.webp": {
+      "status": "stored",
+      "hanzi": "十",
+      "promptHash": "1d4c70f15ff2385b67d0aace0464b4be98f3d8bfdb88a40ce7dca6505124e030",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shi-ten.webp",
+      "sha256": "a78485f46fe5d8f7843eee93815e551e3effd818adfeaeb22f1ece079ca216bf",
+      "bytes": 284936,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:28:40.495Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "bai-hundred.webp": {
+      "status": "stored",
+      "hanzi": "百",
+      "promptHash": "8e83070ea91e77dd33424c57205ce5959f4f0caf29a3b5192cd59f165c6124d7",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/bai-hundred.webp",
+      "sha256": "49522b2f8bebb029e58f64a38bf59c1f4bfb7882e1d98c547f490015a3280f79",
+      "bytes": 159188,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:28:49.826Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "qian-thousand.webp": {
+      "status": "stored",
+      "hanzi": "千",
+      "promptHash": "eb3dad8549bcd42fa607c33d06eef56094ee478d8bed86d6afaa30a574cad186",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/qian-thousand.webp",
+      "sha256": "d7549ff0a2f78b6d77ddde7689fcb120fb9829e9488ad6c35a0fcb453df4f464",
+      "bytes": 159496,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:28:59.034Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "liang-two-items.webp": {
+      "status": "stored",
+      "hanzi": "两",
+      "promptHash": "c8f66a3e9240ed935c0f87e405f55734ed767d59e97221f794709fcd1c954543",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/liang-two-items.webp",
+      "sha256": "684fd45aa5f853f4c4b504e4e6ec5eecc799fdfcee1b40a1de0eb42e513b0eec",
+      "bytes": 110760,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:29:07.191Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 151,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005495
+    },
+    "xue-snow.webp": {
+      "status": "stored",
+      "hanzi": "雪",
+      "promptHash": "b1a443b14ab07dc728b04dfe00adc8213975cc068c8933691833e91ddab4910f",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xue-snow.webp",
+      "sha256": "a74998b067644dc10a0865bbeaea483d557dd60fe801fd1ca82e5f5c79bc98af",
+      "bytes": 158442,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:29:17.110Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "tian-sky.webp": {
+      "status": "stored",
+      "hanzi": "天",
+      "promptHash": "28b815838d086643d86162d81fed1089ebfc42335d511502448e541247c53bb2",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/tian-sky.webp",
+      "sha256": "462cea751628c37e59247d587bf4e556008155856c582dcaef08a9cb06532636",
+      "bytes": 106158,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:29:26.072Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "xing-star.webp": {
+      "status": "stored",
+      "hanzi": "星",
+      "promptHash": "dde6ac81b5afcdff44abc45d7f689e64bab01162db33f39a5b6214a2eb1d22fe",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xing-star.webp",
+      "sha256": "25e0475901bc9cbb3c445ee6bf54557407b068f1740d57ac3727cefcfed9cd2c",
+      "bytes": 191070,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:29:36.968Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "dian-lightning.webp": {
+      "status": "stored",
+      "hanzi": "电",
+      "promptHash": "25c242f97a049b67601bc241ccae5dce1ba098ab9770d45980d1e29ad5e9cdb9",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/dian-lightning.webp",
+      "sha256": "82a476feccda62b73adb4502202e0256f7988bbf71a38d90636e8ece9c55cbf0",
+      "bytes": 111730,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:29:48.378Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "nu-woman.webp": {
+      "status": "stored",
+      "hanzi": "女",
+      "promptHash": "89c265479c63c03bf15b4429ef44a64b78562cd9a9104e84c1a89af2b1a90884",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/nu-woman.webp",
+      "sha256": "48011698d6488b6edfe8d9ca878c6c95d7e17fcd9c6f52d304ca3bf54a2e3c06",
+      "bytes": 112792,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:30:21.088Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "nan-man.webp": {
+      "status": "stored",
+      "hanzi": "男",
+      "promptHash": "bd2553ee21b2af266075adce81659e355d6eeac4d73410eba18f7b29f1be2065",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/nan-man.webp",
+      "sha256": "3bf18ad9260fdb557123e2d59958abeafc1c470fe593e28777b7d6cab05812cd",
+      "bytes": 176884,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:30:32.373Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "zi-child.webp": {
+      "status": "stored",
+      "hanzi": "子",
+      "promptHash": "fea0334fa7ef024d2180e671def188648febf408e6e284fd79b4e36de021e83e",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zi-child.webp",
+      "sha256": "86b533a1d0dabfe5ac3a2c6546afff180911b6e134c9d4caf15c046c62848ffe",
+      "bytes": 101294,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:30:41.646Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "hai-kid.webp": {
+      "status": "stored",
+      "hanzi": "孩",
+      "promptHash": "d871809c4e2fa8430cb6f85da6d2842628428762b10987adbd1454a32d8d5312",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/hai-kid.webp",
+      "sha256": "91062ca4d9560049be0cbd3f0c3e69b4fe06196651099fde9ac316797d6d62c0",
+      "bytes": 179488,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:31:07.807Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "ba-dad.webp": {
+      "status": "stored",
+      "hanzi": "爸",
+      "promptHash": "63e7b1ae9e0a3f293c5d0c65f8180f078de10b3c8023c1bb171d929dde017175",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ba-dad.webp",
+      "sha256": "e668d07bb39ea366e3ac3bc6a0cc2d35f1b4beea0b2b82eed664bd5a2d4e4bca",
+      "bytes": 118668,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:31:32.786Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "ma-mom.webp": {
+      "status": "stored",
+      "hanzi": "妈",
+      "promptHash": "5ed63a1d26aae82beb67ed65e05ef674b3044293ca87ff081eb492702fc54a79",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ma-mom.webp",
+      "sha256": "b1ede536eda283737648d88929e47ae5df8fd8de1633ac204730c6a3fb7b88b6",
+      "bytes": 205866,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:31:45.035Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "ge-older-brother.webp": {
+      "status": "stored",
+      "hanzi": "哥",
+      "promptHash": "36e6b561f74180adcaed0f7e7106c5924098e81feccaa273f5b143b789733c6c",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ge-older-brother.webp",
+      "sha256": "c584cd9d1be76e6648e8af6c815971951262175e84e593d206c9997b8149569b",
+      "bytes": 243250,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:31:58.001Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00551
+    },
+    "jie-older-sister.webp": {
+      "status": "stored",
+      "hanzi": "姐",
+      "promptHash": "afbe79cf69059990b9d07e231e5958882658c9230a2ff2c022fef878b611319a",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/jie-older-sister.webp",
+      "sha256": "0f5557f98cebd88b285850f4e268b2b5b2c315302df8562d587f95a814b262c2",
+      "bytes": 168968,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:32:07.363Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00551
+    },
+    "di-younger-brother.webp": {
+      "status": "stored",
+      "hanzi": "弟",
+      "promptHash": "3d4af77243efa35a5a850ec1105413b1b36215975d90c5eeca88544bc48d3625",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/di-younger-brother.webp",
+      "sha256": "88c357e6621e616f49ee28df4b623933f98667febb5283eee5455dd2c3cc996c",
+      "bytes": 199042,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:32:20.644Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "mei-younger-sister.webp": {
+      "status": "stored",
+      "hanzi": "妹",
+      "promptHash": "67941cc8e9580d169fff266e347bee4c2fdc1d12d49cb33b966c83932b20bc56",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/mei-younger-sister.webp",
+      "sha256": "538cf9f1a5dc1eed5de104aa282f83920e14c2ea8d0429cfe128f8d2d4356d21",
+      "bytes": 100190,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:32:31.155Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "jia-home.webp": {
+      "status": "stored",
+      "hanzi": "家",
+      "promptHash": "75fbfe4063cb0fc8cff895bed3d0a62705edf751f863c4e311184bb6d87e3261",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/jia-home.webp",
+      "sha256": "d002a76166441e8646b135fdf40f0a5e2f7f7af835902c30f41eea3bba6c7be4",
+      "bytes": 125128,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:32:42.571Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "peng-companion.webp": {
+      "status": "stored",
+      "hanzi": "朋",
+      "promptHash": "ed0932f867d93fbbbee3f7ef359b6305add0fb6f49483f81322b7958217ba2b7",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/peng-companion.webp",
+      "sha256": "0a237b368d733565712b7d2184a0b6b0cdbc4829a30f905ed686a5b930644ab8",
+      "bytes": 145278,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:32:54.552Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "you-friend.webp": {
+      "status": "stored",
+      "hanzi": "友",
+      "promptHash": "94b43ccbd3950c70c271e2a78eba611cdfbd550438e913aebb729265fec7312e",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/you-friend.webp",
+      "sha256": "b45edd8cc840abd8caa25a3246051c2ce8271feb681d236dd1e4a6b766d7f01c",
+      "bytes": 89800,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:33:04.571Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "lao-old.webp": {
+      "status": "stored",
+      "hanzi": "老",
+      "promptHash": "39fab8ece2a40b212ea05050fe775608dce45b0429c7c01c67bc60fabdfe3434",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/lao-old.webp",
+      "sha256": "759ebb462f7c3d7e768a01e726e7ecffc58d9a63b2e5121ac371d562971b4b9f",
+      "bytes": 168818,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:33:15.654Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "shi-teacher.webp": {
+      "status": "stored",
+      "hanzi": "师",
+      "promptHash": "8a845173ee3ffba679293167ea41d39efbd04ee399258ca53909f4cb52b30f89",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shi-teacher.webp",
+      "sha256": "469deb92d177219fa3711973b4e4bb031d6a5851ce20550f104daddd9761c01b",
+      "bytes": 96790,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:33:25.720Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "xue-study.webp": {
+      "status": "stored",
+      "hanzi": "学",
+      "promptHash": "fd7ca09f75623d73cf61e72b3a2a699d83c486e12bc10fb0c556cc0363a7fb0d",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xue-study.webp",
+      "sha256": "ed181a7db72a9c05fb3477b2ed8398b5cba1b287a559fa4fbb6ad947fe2c7af1",
+      "bytes": 103548,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:33:37.725Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "sheng-grow.webp": {
+      "status": "stored",
+      "hanzi": "生",
+      "promptHash": "54516bfca262645b290100f910300e8361463e841904123980a203f80d9b2880",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/sheng-grow.webp",
+      "sha256": "41e11d4994f5469352685d8f44b92bf3eaefdc03d67f8b4d2bb60ecf18e2fd18",
+      "bytes": 107218,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:33:57.523Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "yi-doctor.webp": {
+      "status": "stored",
+      "hanzi": "医",
+      "promptHash": "a81f1f9de2baa7658441a2a8534a7548d41de133175ba8e22933ddb8b8016bd9",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/yi-doctor.webp",
+      "sha256": "f50e8988ff7187f921de2ca528f7cf999e557154b4d836dbd61503862587b50b",
+      "bytes": 140108,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:34:08.408Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "wo-i-me.webp": {
+      "status": "stored",
+      "hanzi": "我",
+      "promptHash": "e0ae1e3be5de6b229813124afe04e7342233858a7428840fc3262a7028c181b3",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/wo-i-me.webp",
+      "sha256": "48b9045cd30850cda1db7370f0a88f61299213dc8c7ebafd318b71b68ccdcb47",
+      "bytes": 200458,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:34:19.651Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "ni-you.webp": {
+      "status": "stored",
+      "hanzi": "你",
+      "promptHash": "1cd201ef358d22e1fc1b9b3b904e7bfe61b219ffcedffa1eeab2004eb1723c6b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ni-you.webp",
+      "sha256": "e2b2fb8402648e7b97a48061e4f3471a6eebfc8b954fbff5e6b1a59575e677a7",
+      "bytes": 120030,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:34:31.428Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "ta-he.webp": {
+      "status": "stored",
+      "hanzi": "他",
+      "promptHash": "072b445a447fc503818baadd5f3fbd6bb15c95d5af7362175961e3c22666449d",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ta-he.webp",
+      "sha256": "ff8411a1a497d011765158f40dcd0e9a783adc0232cc78d289d13365e1928be2",
+      "bytes": 176842,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:34:43.777Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "ta-she.webp": {
+      "status": "stored",
+      "hanzi": "她",
+      "promptHash": "a4f33a03e410029d54ef74afb9cab6aba6d7a408f9c32e6a41c9af237e3fa992",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ta-she.webp",
+      "sha256": "5f62a017fee8f33df0d0913244805c5b1600f1635ba7dafa65513cd7cd0bc191",
+      "bytes": 121400,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:34:56.921Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "men-plural.webp": {
+      "status": "stored",
+      "hanzi": "们",
+      "promptHash": "88d109ad53f8c45137ca643a73d3a42d2751b85fa8cf5ddd0b4071a5667fadc7",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/men-plural.webp",
+      "sha256": "9e3963af94210a7ccad55bdfb42772299dc05c4b21c06b27beae59965922e729",
+      "bytes": 173358,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:35:10.197Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "de-possessive.webp": {
+      "status": "stored",
+      "hanzi": "的",
+      "promptHash": "9fb53be7443bec0b89ea77c90f9c8caafe5cfa04dd8e7b31659a378a409a66b2",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/de-possessive.webp",
+      "sha256": "b0488164bd4188e288aa72b2ce1064c1f9b98cbe8eae06e6a2159512f8d877c2",
+      "bytes": 87444,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:35:18.755Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "le-completed.webp": {
+      "status": "stored",
+      "hanzi": "了",
+      "promptHash": "fa0d85f6776dab0d29d0a93f6fd5e231f6540f4dc6d0c5e52a626fc71997e846",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/le-completed.webp",
+      "sha256": "d5f21ac9ba1602683414384f62d84c76793a19eec99ef59399647997ba8e87fc",
+      "bytes": 116490,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:35:28.540Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "bu-not.webp": {
+      "status": "stored",
+      "hanzi": "不",
+      "promptHash": "44acea56265f68124b18f6f0cae37e564820af7d02c92bae0d67f5a8b3afc33c",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/bu-not.webp",
+      "sha256": "181ecbfcffd280864c08488028b5ed1819855b5c318a5a4bb0f4bdff7cbd8b50",
+      "bytes": 94006,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:35:37.354Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "shi-be.webp": {
+      "status": "stored",
+      "hanzi": "是",
+      "promptHash": "ed534a5e178e39eeb1e59d6e64726f0ed0f909d92204aed6a6b64eaa1825bd30",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shi-be.webp",
+      "sha256": "7e60737f73aab88c11cff17a20f537094be2170386503d5f1c2d80e7812a2773",
+      "bytes": 140840,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:35:48.780Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "you-have.webp": {
+      "status": "stored",
+      "hanzi": "有",
+      "promptHash": "cb4d9cec1f2e02c297f94968e422d7509d14c42712cdde29169123a54f3b3025",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/you-have.webp",
+      "sha256": "9d4d1612f7f99d17fa08af91f0248929c195183e225044b0a395fdf6cbd8ad1a",
+      "bytes": 82194,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:36:00.192Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "zai-at.webp": {
+      "status": "stored",
+      "hanzi": "在",
+      "promptHash": "e3be100757f86a8bec9f25dbea8e6b13a77bbe66104fa0fe6718c3bbfb70037a",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zai-at.webp",
+      "sha256": "7674e87117f51aa27bd5963daa26467ad113e6ccb8dadc2a1d1303e04fb1b7b4",
+      "bytes": 246474,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:36:11.336Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "he-and.webp": {
+      "status": "stored",
+      "hanzi": "和",
+      "promptHash": "154639354b8708db987294dfde5c84381d8d0d0e03fcf83ab5d6ac91d1c7ea40",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/he-and.webp",
+      "sha256": "16a0c1af6d960ce5a3446aaab9859eea81a8c426ae5fe86b2236ff5a11a0b20d",
+      "bytes": 126086,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:36:21.553Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "ma-question.webp": {
+      "status": "stored",
+      "hanzi": "吗",
+      "promptHash": "c366d94ecedb72bb321b0813ed50cd31aa4205e3679c76f611c91dcfd9e0ad32",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ma-question.webp",
+      "sha256": "7708c2d8eb144e40bd73db36ff9436277dd0fe9c9b7c0fe944120fde47f21403",
+      "bytes": 119702,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:36:31.965Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "ne-and-you.webp": {
+      "status": "stored",
+      "hanzi": "呢",
+      "promptHash": "14cc9a8fc988015b487e01602bb76ea52e94946ab978427664fec39f017d52e1",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ne-and-you.webp",
+      "sha256": "7cb025509c1f6334ed9f7b53f1c79574a2cbc098012682c929b12a932c5f3538",
+      "bytes": 176314,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:36:42.082Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "zhe-this.webp": {
+      "status": "stored",
+      "hanzi": "这",
+      "promptHash": "b0c7765feda55ca5d0ae261c69054e5e86cbb97e1fe9013b570510cbccf4694a",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zhe-this.webp",
+      "sha256": "f70493c722741ffbab8374d4273fd1739fa9d7ba63311eee53e80a17ba51c032",
+      "bytes": 121486,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:36:51.482Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "na-that.webp": {
+      "status": "stored",
+      "hanzi": "那",
+      "promptHash": "f5ef927f1c512ac9b38efb69f7ca92b8ae18b20edb32529878b7419dadc58a9c",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/na-that.webp",
+      "sha256": "950a56446ad201311acb640c4278c1113f280e9671cbd87f104292d882bd08dd",
+      "bytes": 105028,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:37:01.188Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "shei-who.webp": {
+      "status": "stored",
+      "hanzi": "谁",
+      "promptHash": "751e7659dfc9f3bb97fa8e3491014ebeb03a43d6827c05cc730b18990b8fe1d4",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shei-who.webp",
+      "sha256": "b63f3ca55b787d384671a9a2fe45f63c70de5d91548df7296c05711a97943684",
+      "bytes": 173486,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:37:12.686Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "shen-what-part.webp": {
+      "status": "stored",
+      "hanzi": "什",
+      "promptHash": "e118e34e4cf91142388697a0fd28df7db7e29d98dbc4738a4eb537730ba5e898",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shen-what-part.webp",
+      "sha256": "16ffddc725283d1c33048a8b7526cee40d849bb7ba15775ae27fa7a98d330a75",
+      "bytes": 106400,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:37:23.173Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "me-what-suffix.webp": {
+      "status": "stored",
+      "hanzi": "么",
+      "promptHash": "6c52cf20a84d4ccd8595de51cb79efff183da19276ddf8a588c71b4f0eebbb9b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/me-what-suffix.webp",
+      "sha256": "cd75bc71a97e37c9da252175acbf24cf223f00a8a9f47596cfa174197204a96b",
+      "bytes": 176028,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:37:33.772Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "na-which.webp": {
+      "status": "stored",
+      "hanzi": "哪",
+      "promptHash": "db1fb7e4e914da391f5c245561e358bf2d1127663f35e45926de07925241c985",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/na-which.webp",
+      "sha256": "6a0fa9ed4b7a9405c63c7a37dcf54b2eaa0457457910352b483aaccab6457341",
+      "bytes": 154614,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:37:45.261Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00551
+    },
+    "ji-how-many.webp": {
+      "status": "stored",
+      "hanzi": "几",
+      "promptHash": "fe8a473b013f4bc725e6ce481bcbea20ce1f7df572617730e47ebeb77fd959fe",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ji-how-many.webp",
+      "sha256": "3676501bd60aff79f9bf49d37937b0c5550832ba87cdced519cbdb5a1ed5fdd5",
+      "bytes": 117682,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:38:04.041Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "dou-all.webp": {
+      "status": "stored",
+      "hanzi": "都",
+      "promptHash": "4063d72219753784c5e42a2a804e6a624b4e1e7c08e876ff6301d42e7433d029",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/dou-all.webp",
+      "sha256": "d2515b4600e911370bce36cef7f6d9a2c948f52a38f0b1ee3afbd9af0acd765a",
+      "bytes": 208624,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:38:16.654Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "ye-also.webp": {
+      "status": "stored",
+      "hanzi": "也",
+      "promptHash": "bb4bb7025532f12c06c8a49f74b3bce7c9a6166616bfb0490c1b5aa43cf02293",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ye-also.webp",
+      "sha256": "26f5bdb1d0acd8c8a07dbfaa623974f1ca88aba5f9df868ebadb672c932fb853",
+      "bytes": 260698,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:38:28.878Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00551
+    },
+    "hen-very.webp": {
+      "status": "stored",
+      "hanzi": "很",
+      "promptHash": "2ab3acd6d6719b9d617831dc28b48ef0c6c9bee703e75c30690ff4424a4d660e",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/hen-very.webp",
+      "sha256": "bd527f65d8e754a62fef214f11c40f8c68761b05cdc0e75ccc9ddffa1737f4d8",
+      "bytes": 283914,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:38:42.013Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 153,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005505
+    },
+    "tai-too-much.webp": {
+      "status": "stored",
+      "hanzi": "太",
+      "promptHash": "e89733e8faef2e709f3ada66c3acc1fd1bf86089ea62725c372b6c8a64e207ac",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/tai-too-much.webp",
+      "sha256": "da5f5b8292720f50b0e657a577b41887fc2063162e13ea087aca0282ed9d4102",
+      "bytes": 117052,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:38:51.206Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "mei-not-have.webp": {
+      "status": "stored",
+      "hanzi": "没",
+      "promptHash": "0635aedf9268f92692a8bffe4275400d18037b751aa5b863fd9dfc4999133a44",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/mei-not-have.webp",
+      "sha256": "5b002dc68799c6cd63c9a759f0d8a6de913506ab8bf70cc11dadc199597303ed",
+      "bytes": 141448,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:39:01.775Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "kou-mouth.webp": {
+      "status": "stored",
+      "hanzi": "口",
+      "promptHash": "10c05d3123d7b0362f01b37fd40ea3b4b99cb341a9b1f9d44e0dc1973ec26acd",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/kou-mouth.webp",
+      "sha256": "5a92b8605404b80989d43aa411da8846a912cba35742e3e2ce6c7ace572d77bc",
+      "bytes": 128468,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:39:33.968Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "shou-hand.webp": {
+      "status": "stored",
+      "hanzi": "手",
+      "promptHash": "f3ee586d35bfd3b02146576d7a462125aab0d3921611da7ef667c7a77e295982",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shou-hand.webp",
+      "sha256": "15ef10deba842e6d0ff915a3049467030f85b9311bfeebe46888154901b455d1",
+      "bytes": 134468,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:39:44.408Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "niu-ox.webp": {
+      "status": "stored",
+      "hanzi": "牛",
+      "promptHash": "bd5599ba70bbcc153abf0e189eea82c1d7f83ba1a6cbda429b191e8b0bbb8e74",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/niu-ox.webp",
+      "sha256": "792abca3cdae67ccea83984ce7e3ab26562a7a35581b2fbd7d5a2a1eba5e9356",
+      "bytes": 213500,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:39:57.196Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "gou-dog.webp": {
+      "status": "stored",
+      "hanzi": "狗",
+      "promptHash": "4f8179026c63f856e7bea065affe0ebc92a411b8e95511c803a0282f601229b3",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/gou-dog.webp",
+      "sha256": "f2c16dd3338de851050754fa288424b4f80feb08faee503f19d765c0d4a1caab",
+      "bytes": 123670,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:40:06.146Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "mao-cat.webp": {
+      "status": "stored",
+      "hanzi": "猫",
+      "promptHash": "791d5510b5e7a672983555a30e4ca1819ce2336fee1fe7d93a762599f1b50182",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/mao-cat.webp",
+      "sha256": "2a57975b97c070350a5be1ff191b66db81e08d9730fce04b996eb879ad5013f1",
+      "bytes": 161390,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:40:16.075Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "ji-chicken.webp": {
+      "status": "stored",
+      "hanzi": "鸡",
+      "promptHash": "2f27aba1bb376b38c5f6ed2224838dac77bee209a02ea8c425027ed64a2c5564",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ji-chicken.webp",
+      "sha256": "dbc3817fdbd96cc3696ed9ca0401e6879094192cc89ce90682bedbc052c8bfb4",
+      "bytes": 139270,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:40:24.974Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "qu-go.webp": {
+      "status": "stored",
+      "hanzi": "去",
+      "promptHash": "d8ff4caf345368c6c60a2a703e6e8c0423c5669cafe508f0be90bfec56b4c38e",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/qu-go.webp",
+      "sha256": "d9aae47b64e1806f833a8e4a2c77f336b661e56609e02e35e69ca5d1bc4b2995",
+      "bytes": 150278,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:40:49.026Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "lai-come.webp": {
+      "status": "stored",
+      "hanzi": "来",
+      "promptHash": "39aaf531092c07a556150952194c717870a66df28cf7eb832d5fe4d23696a4ad",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/lai-come.webp",
+      "sha256": "d988dd68d7911b1bea3aa8da5d81262d659817a36dc3c9feb534cbe8a8f18db1",
+      "bytes": 150578,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:41:01.343Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00551
+    },
+    "kan-look.webp": {
+      "status": "stored",
+      "hanzi": "看",
+      "promptHash": "ecd138462ec2ab2d7893a8f3478a0fc474fe92d09bb5f76e53b28cd72db32f54",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/kan-look.webp",
+      "sha256": "0e2bc8b29130b79820b224c3a5b49a39f1d87e9745d051fa55501a09a7a01780",
+      "bytes": 249634,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:41:12.720Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "ting-listen.webp": {
+      "status": "stored",
+      "hanzi": "听",
+      "promptHash": "940a73d7d3dd97f634ceca2a0828376f1342a6ec8c8c58d4218151d5fd542cbe",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ting-listen.webp",
+      "sha256": "676540fd76e3d62456f9d53412c6d1572a187f43ad0f8c2787621e2882e3a8a7",
+      "bytes": 121596,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:41:41.692Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "shuo-speak.webp": {
+      "status": "stored",
+      "hanzi": "说",
+      "promptHash": "d2b56ad8e5e7c8fd8d80a8b394d29bb82c4857c44a7b1fc29637f3ad23b6b19c",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shuo-speak.webp",
+      "sha256": "1e3b6dd7f330884d6688bbb93bf367eb7637eb96b3ddba55934a4ec662af1f81",
+      "bytes": 118188,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:41:52.887Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "du-read.webp": {
+      "status": "stored",
+      "hanzi": "读",
+      "promptHash": "5987c7b879cf3c7c689c0e9a5b6df1f9222d81d231b4cfa16edcbb6262b277f2",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/du-read.webp",
+      "sha256": "48db8f6b447d80498e6bdfff85c80635de0f1f3a769e8c0370f81dac8c9b9a1b",
+      "bytes": 130546,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:42:04.843Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "xie-write.webp": {
+      "status": "stored",
+      "hanzi": "写",
+      "promptHash": "a1e7e56c635499b3fc8784ab5f9930558284b121923987d15673ebfdebb2bc4a",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xie-write.webp",
+      "sha256": "3701c8f33fcdcfc7af63b53f3d7ffd62ccb976a9416b3f143130eac013bbc854",
+      "bytes": 96822,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:42:16.563Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "chi-eat.webp": {
+      "status": "stored",
+      "hanzi": "吃",
+      "promptHash": "2f62c3a31f4a5d81a318160eeea13f92900b044e9f4d75c1c8c0054d259ff66f",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/chi-eat.webp",
+      "sha256": "3da5ef93f671aade2cdb8d645c37f7cfa00e6b5272c305eacb5e0ed95230047e",
+      "bytes": 205646,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:42:27.836Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "he-drink.webp": {
+      "status": "stored",
+      "hanzi": "喝",
+      "promptHash": "fdc8bee318ef16a5329fc88e7833877f4e5f9a03dd8068931c3e2fafc45f0688",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/he-drink.webp",
+      "sha256": "34727072139651d3f278cc443e0dfe4395616a15ea9046e4120d410832b97089",
+      "bytes": 112862,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:42:40.642Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00551
+    },
+    "mai-buy.webp": {
+      "status": "stored",
+      "hanzi": "买",
+      "promptHash": "f35905bbae2d11c353b1fd2edbbf883c77a52966f39976f6098163428226c02b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/mai-buy.webp",
+      "sha256": "f8b165ba598bd9667254fcbea6a12cd8982692b9a11f1dd8ed4d28363f2ca763",
+      "bytes": 155974,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:42:52.088Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "mai-sell.webp": {
+      "status": "stored",
+      "hanzi": "卖",
+      "promptHash": "b310c30d7d46b4f472bb3686c36a7d47f05da47d979da836ac78a29989f0dc08",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/mai-sell.webp",
+      "sha256": "3858198e8443f115e06e2ea2c44851c993b37ef49ec573b2db72378df365f30c",
+      "bytes": 180250,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:43:02.310Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "zuo-do.webp": {
+      "status": "stored",
+      "hanzi": "做",
+      "promptHash": "26636b7d5e25159b008cdd5a3ca11ed16b2391c350e71b482f6c724fc16de14d",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zuo-do.webp",
+      "sha256": "ee7b32dacb796f4bb23f55905d943c85c3cc024abab3a236a0da4642853039da",
+      "bytes": 199274,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:43:11.615Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "zuo-sit.webp": {
+      "status": "stored",
+      "hanzi": "坐",
+      "promptHash": "e3a8ba6346d27e0130ad28cd88955e7c4bed153669ed00bab79e8fb035680c94",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zuo-sit.webp",
+      "sha256": "ff663b1e02a2f9a78ee077369a3f888d113c02a635c8edb7542f115fd1d9c54e",
+      "bytes": 234164,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:43:22.189Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00551
+    },
+    "zhu-live.webp": {
+      "status": "stored",
+      "hanzi": "住",
+      "promptHash": "c99c35bd341443351a1576ed5fdd6f0185628abc515152abf248f9874dee1a6b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zhu-live.webp",
+      "sha256": "e10b27c1d8087ba21c10ddbdff9231ad03a50367f2af1a741900af6230534524",
+      "bytes": 130236,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:43:34.606Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "shui-sleep.webp": {
+      "status": "stored",
+      "hanzi": "睡",
+      "promptHash": "441030b43f7912855a8977ce800bc290d07df4690bd2165fd8bb596c8927fe24",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shui-sleep.webp",
+      "sha256": "534397f2deaa998b5f9c07b7e346046010e7239ea75f070ab8dce74508c1798c",
+      "bytes": 78512,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:43:45.248Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "ai-love.webp": {
+      "status": "stored",
+      "hanzi": "爱",
+      "promptHash": "d00682642b4eca70d1cb9a047a68bb3d96a9e1959845f916551092c00e9476fc",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ai-love.webp",
+      "sha256": "6ea83153ba47771c4fb8067b15b866085ef1fae618c38752e405646ef9454d2d",
+      "bytes": 93084,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:43:56.452Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "xiang-think.webp": {
+      "status": "stored",
+      "hanzi": "想",
+      "promptHash": "9969a2c0770fb5b28b7f77648000115131474485d6eb939babb08a4929f15b0e",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xiang-think.webp",
+      "sha256": "2efc57577aaf2b4ae17699b9761e7c1eaf966db6a04f5a391be449bda33b34a8",
+      "bytes": 83756,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:44:07.829Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "jiao-call.webp": {
+      "status": "stored",
+      "hanzi": "叫",
+      "promptHash": "c7597011ae6af910bc04c9c4cb3b0f1438ed9c8d3c20f1b00ac160592b5a5b95",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/jiao-call.webp",
+      "sha256": "68821aa6001167e869498d5d0f230de32989b3fba87e238c1090a74f85bb94a0",
+      "bytes": 97192,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:44:17.867Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "wen-ask.webp": {
+      "status": "stored",
+      "hanzi": "问",
+      "promptHash": "813b61012e482741c8ae3b49a3f8a8d0790cca5b31010836a63c23dfff6e1082",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/wen-ask.webp",
+      "sha256": "a563554bbbe8c64303971d07230640303707901bb6716e477bc8cff21f7e76fe",
+      "bytes": 220310,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:44:28.871Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "gei-give.webp": {
+      "status": "stored",
+      "hanzi": "给",
+      "promptHash": "92ff104245b6b30cc2ce9a0908e41f9048134fa172b5ac6a19609ed4d8c23737",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/gei-give.webp",
+      "sha256": "33853373391f23b3b43b38693d21e8fb4a691b4917eff25311de12fb7f9594a9",
+      "bytes": 91590,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:44:39.214Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "kai-open.webp": {
+      "status": "stored",
+      "hanzi": "开",
+      "promptHash": "25421bb5f6065d6bd4135ce4cd6413a8c1f843484f341b3de59d9f5208b420aa",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/kai-open.webp",
+      "sha256": "ab66664c18c4f7331bdf8b7472395e6b51787e2a00d61a2fd429b0977539429b",
+      "bytes": 221494,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:44:48.492Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 153,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005505
+    },
+    "guan-close.webp": {
+      "status": "stored",
+      "hanzi": "关",
+      "promptHash": "57fe8787efa4b2e843a753029e47215d7a7c634cafb230a27d871b60535d7964",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/guan-close.webp",
+      "sha256": "a72d6f046e6e4e677d1d9c64165e6deda10c6c467a2d550a4a69090b5fbc21c8",
+      "bytes": 112180,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:45:00.530Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "gong-work.webp": {
+      "status": "stored",
+      "hanzi": "工",
+      "promptHash": "75394a2036a09ce2d07506052c46c3a71184932605a15571bdea6e93a7f1effd",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/gong-work.webp",
+      "sha256": "0fca92a1d70bbdcf7c6a24a931193514b991fe3a493998d0387e2e3270bae2a7",
+      "bytes": 173306,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:45:10.738Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "zuo-make.webp": {
+      "status": "stored",
+      "hanzi": "作",
+      "promptHash": "0cbb7b9bf2ce8089f8ee7a24e5602e8c4ba7d5e8e7b519d7a600f4a92a1d46c0",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zuo-make.webp",
+      "sha256": "6100f787d8085f22f8a66225706a7d2b8e41893980c41e57690fc5141aa591eb",
+      "bytes": 138122,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:45:21.519Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "hui-can.webp": {
+      "status": "stored",
+      "hanzi": "会",
+      "promptHash": "3ac77fa57fa848a454c7842670cfaf9e06ed5df542850f19a193d57105cc0a9b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/hui-can.webp",
+      "sha256": "fb023020bdc378f8c28822aa9761ce7076ec97e3c0c6c856fe9b3bec9e471e4f",
+      "bytes": 179498,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:45:33.490Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "neng-able.webp": {
+      "status": "stored",
+      "hanzi": "能",
+      "promptHash": "6e5d282be30bfb779f4e1492500fb1cf6650b4ceee49695704b9623e88025e9b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/neng-able.webp",
+      "sha256": "b71388cdc3b4c60739ad4eba6e98b90ca20c2c3993e49975a50a36bfc1abc262",
+      "bytes": 143890,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:45:45.219Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "yao-want.webp": {
+      "status": "stored",
+      "hanzi": "要",
+      "promptHash": "ec219b984ddbe85de012523e4eae150e30ff7b4a63f3ded29b5230b74d311c54",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/yao-want.webp",
+      "sha256": "f8b2bad510ed4f58d41bb51c73d3373c474e6acc33ca49d6dfc0be30506abfa6",
+      "bytes": 141784,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:45:56.904Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "qing-please.webp": {
+      "status": "stored",
+      "hanzi": "请",
+      "promptHash": "5ab9db41b700bf74f57bb31a9ab6865b0f305099acee324eb133843bdea88772",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/qing-please.webp",
+      "sha256": "3f984e814de01709467815db6efa534dfcf2f82bcaa6b6def5dfd9d57b6821bb",
+      "bytes": 142010,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:46:08.338Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "xie-thanks.webp": {
+      "status": "stored",
+      "hanzi": "谢",
+      "promptHash": "fdb7a3f35ffd6c89f0369f939ef23acf7f0898e420946bd88e782e5ce56cd676",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xie-thanks.webp",
+      "sha256": "d3496b5e28b659acadaab3be11753b61bfc777f14f3f3e53aabc04ba88480b56",
+      "bytes": 116746,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:46:18.486Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "jian-meet.webp": {
+      "status": "stored",
+      "hanzi": "见",
+      "promptHash": "ac00c54c66e03bf1c1d3f2fdc206eb14dc528f440382728a05a1325ebb09e9e2",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/jian-meet.webp",
+      "sha256": "f1993d22058cae9078e141c09a6c2d73b3f9905f998feaeb810e201a83dd0211",
+      "bytes": 162958,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:46:42.464Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "dui-correct.webp": {
+      "status": "stored",
+      "hanzi": "对",
+      "promptHash": "1cb80503128b99bb575ea50fcbf6a02cd6a45332d2b85a6398c5d6f4c94b6d3a",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/dui-correct.webp",
+      "sha256": "34421e6a5d87a6e21839c22fbcce9d69a65fef18f271bbe372b1780b2de4c470",
+      "bytes": 133114,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:46:53.746Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "da-big.webp": {
+      "status": "stored",
+      "hanzi": "大",
+      "promptHash": "a9b1dd565233919f6073c1651a2783e5392d7eb27360bd0ad716a8881a67ced3",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/da-big.webp",
+      "sha256": "0fa1ae539ec47bc6bcdcf1c7bafd37c647a69b638a63d24c70a122100a3bb435",
+      "bytes": 145228,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:47:02.493Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "xiao-small.webp": {
+      "status": "stored",
+      "hanzi": "小",
+      "promptHash": "e761e96f239da15be50be56e839bd71bca940d29459e7fc77d0d6c9a1fcd41aa",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xiao-small.webp",
+      "sha256": "caba88c1a4566017ebc0206cc1e6e7d969ce68387131df816899b9328fa3c789",
+      "bytes": 161212,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T08:47:12.755Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 167,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005575
+    },
+    "duo-many.webp": {
+      "status": "stored",
+      "hanzi": "多",
+      "promptHash": "c37317bd95ee9cc685b0b7b1867636a7106ef2cab6536391ce5b5702124b9d3b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/duo-many.webp",
+      "sha256": "eec16872eadabdf452196adf52c530138b48db15da1108b9b1cd4188428e9dec",
+      "bytes": 214406,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:48:04.261Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 153,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005505
+    },
+    "shao-few.webp": {
+      "status": "stored",
+      "hanzi": "少",
+      "promptHash": "4cbc1e652bfc74ad0d757ce92f066afac68725ad8f944029ef729dad1fee9186",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shao-few.webp",
+      "sha256": "321fa3b341b8ac55d8e995fc1e0caca709f507c75bb55b5e21ce9f331cc4641f",
+      "bytes": 184396,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:48:14.261Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "hao-good.webp": {
+      "status": "stored",
+      "hanzi": "好",
+      "promptHash": "b9c501104a3638d90aa824592c8873c0ac72a1f0628d158c8957a30f52127196",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/hao-good.webp",
+      "sha256": "4cd04d914baceb504569e4dc73022eb2df93a629ab68c651184745fda8485113",
+      "bytes": 139404,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:48:26.893Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 167,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005575
+    },
+    "gao-tall.webp": {
+      "status": "stored",
+      "hanzi": "高",
+      "promptHash": "62c26ae3bc085a0fa06f88d6e449f74f5c56c91deccfb73dd8eea3ab9bc36ec3",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/gao-tall.webp",
+      "sha256": "4703555c6b261ae75d58310263b6d3caaf49ebe35447478b5d829192eef209e1",
+      "bytes": 147888,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:48:36.426Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00551
+    },
+    "xin-new.webp": {
+      "status": "stored",
+      "hanzi": "新",
+      "promptHash": "77ed632ab8da9cde603de31febd675065e8850c4d8f4f2c42cf00082612ee70c",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xin-new.webp",
+      "sha256": "012c77590adb06fe72febffd1bf2bd4ad179341207e8dff9b86206eb1676907d",
+      "bytes": 117614,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:48:46.330Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "leng-cold.webp": {
+      "status": "stored",
+      "hanzi": "冷",
+      "promptHash": "bcd4247245b336cb1b5ab760fc80298d45057b8981d0e0ff33fa82a340099c8e",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/leng-cold.webp",
+      "sha256": "46f99c3264f8ac9d115ceb5e3ad424d142f8bcdee9608f1b1d6969273f6d2776",
+      "bytes": 241716,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:48:58.482Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "re-hot.webp": {
+      "status": "stored",
+      "hanzi": "热",
+      "promptHash": "5e538833962ce380fd6b03f2c358bcecebd83c3d530fc2617f63f106007aa0f9",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/re-hot.webp",
+      "sha256": "502b20363ed520db19718f049af65d2d1df3cfc1c07cad943d5ae6a790d91f4a",
+      "bytes": 144076,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:49:09.276Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00551
+    },
+    "bai-white.webp": {
+      "status": "stored",
+      "hanzi": "白",
+      "promptHash": "2b92150e0442a08f20a2fcf455ab5f53c4460a09543a591b1cf242e3eddbf623",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/bai-white.webp",
+      "sha256": "e03f1c6db24a232a01a17896eec50e8efc5cf2a2aa3970ceabc58a9967d4a174",
+      "bytes": 56252,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:49:18.701Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 152,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.0055
+    },
+    "shang-up.webp": {
+      "status": "stored",
+      "hanzi": "上",
+      "promptHash": "e5e03a17c274a573227f1df45845f06b82457136291250021dc8e58d7f65e3e2",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shang-up.webp",
+      "sha256": "d1299e3a48af06cc16fbc30ea5a9f8d2f7c02cd5ac21ef04fcbb1f80c2e8a5ba",
+      "bytes": 178584,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:49:28.316Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "xia-down.webp": {
+      "status": "stored",
+      "hanzi": "下",
+      "promptHash": "58ee1eac77b471c291f2b9e9c35c910ea71c42c9cadc574dfdd9be1da98610a6",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xia-down.webp",
+      "sha256": "0b60bd34c53edb26806dd22b3003bcf12b5a06bd344d8d0e40e18ae5e9705da3",
+      "bytes": 162502,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:49:39.107Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "zhong-middle.webp": {
+      "status": "stored",
+      "hanzi": "中",
+      "promptHash": "ee218984a0229f795fb197d9cdad1a6b1e8715a48b209de9068e095bbad31e95",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zhong-middle.webp",
+      "sha256": "15123d951cc3134977fd9d318a74cafc74edb816ea28cbd5d8bc3d698816e22c",
+      "bytes": 270064,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:49:54.868Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "qian-front.webp": {
+      "status": "stored",
+      "hanzi": "前",
+      "promptHash": "4ee6b2ff2ebf56d7618f3916b3784d84fa62e2351ecafe609096690b98b42689",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/qian-front.webp",
+      "sha256": "d3f617f384fdb01b4ed7ccf7f3c8d943bffd5d2ecbab1d83adafb87724b87618",
+      "bytes": 140832,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:50:05.372Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00551
+    },
+    "hou-behind.webp": {
+      "status": "stored",
+      "hanzi": "后",
+      "promptHash": "bd277a8726a82140d96667ee8df0a1efd1f279a04114d1e05b22382102ac0986",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/hou-behind.webp",
+      "sha256": "efbf5b4dbb0488d41d59b2f3e797d3af0ea985443479d22f35b4d4a81e8f756c",
+      "bytes": 155636,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:50:16.582Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00551
+    },
+    "li-inside.webp": {
+      "status": "stored",
+      "hanzi": "里",
+      "promptHash": "fb026e49591bdc7351ace02d4102256cd53e99a086971717e06fd1afd5dcf6e0",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/li-inside.webp",
+      "sha256": "b82367ef2d0460cc714658a93a7d1f60c418826a3503893b4266bdd3d0216817",
+      "bytes": 176718,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:50:27.278Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 152,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.0055
+    },
+    "wai-outside.webp": {
+      "status": "stored",
+      "hanzi": "外",
+      "promptHash": "c4a8aff2d4e95db4bcbc530353c587d691cf93c437706b74c9453db712b0c367",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/wai-outside.webp",
+      "sha256": "10f1e557e602ae2fb7309bba00f0304e21b73c84e5b339c91373cea086d211d1",
+      "bytes": 101084,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:50:47.634Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "nian-year.webp": {
+      "status": "stored",
+      "hanzi": "年",
+      "promptHash": "d98c9b0ebb89bad8d4287d54f01244e1c81a1f0af655a669cfe1b90c4f781751",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/nian-year.webp",
+      "sha256": "36aabff8582ebf4151d22c4d3a94e4f3ff7a18979a0e89940ee8a41abd241d89",
+      "bytes": 224994,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:50:58.475Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "jin-today.webp": {
+      "status": "stored",
+      "hanzi": "今",
+      "promptHash": "24238a37657c5b63835db1cec94bb50dbf9ea3516b81ff76d5c41942e36f1e38",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/jin-today.webp",
+      "sha256": "7a690e7ee18a069d31adf8385bd5a9e6e553d03707bb6479d68c22a0260ae437",
+      "bytes": 113806,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:51:08.148Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "ming-bright.webp": {
+      "status": "stored",
+      "hanzi": "明",
+      "promptHash": "e5eaf019d904b6d2b532f0760860584fb9660909b5c8911b41a84577e4c5ff0d",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ming-bright.webp",
+      "sha256": "c4659fa45c1d5d6b8cab561961dbcf22f2510af266ad5e58850813d44f9495f4",
+      "bytes": 136194,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:51:28.995Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 153,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005505
+    },
+    "zuo-yesterday.webp": {
+      "status": "stored",
+      "hanzi": "昨",
+      "promptHash": "9866614b1e4bdb48e2e7df6e9fe3252e2a23daaa4b5f18074bbddf1af073ed8d",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zuo-yesterday.webp",
+      "sha256": "abe6dd12cffc878a3cb95eefdac331b3b397f1b91b1cd5e635ba0d33255c76cd",
+      "bytes": 105062,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:51:39.170Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "zao-early.webp": {
+      "status": "stored",
+      "hanzi": "早",
+      "promptHash": "7b0829a7c6dc7a00e1d28d0533508ae7f2d9f57f4663a04dc3538ce393f41fb8",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zao-early.webp",
+      "sha256": "568cbcb50abb09c3e548e4fe65079bd6aefbd7ff31f81f28824c4a7e9f46f1cb",
+      "bytes": 185662,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:51:48.958Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "wan-evening.webp": {
+      "status": "stored",
+      "hanzi": "晚",
+      "promptHash": "b50ab49cb02230b0dc2c7ef333f67e2146acfa6b9c17266998bb65779551b7d9",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/wan-evening.webp",
+      "sha256": "dccbe9b4f1a93ed1e204da8cfc5699a8cb83693650334724c183d3498355f044",
+      "bytes": 210832,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:52:00.201Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "wu-noon.webp": {
+      "status": "stored",
+      "hanzi": "午",
+      "promptHash": "56a648f79ef64598889b6e95617816e7baf0e90f010c98b5501590b7a4341862",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/wu-noon.webp",
+      "sha256": "4b7b61e0a786f4a5ec2ca576abc52735720fc06c8f597a7d27a35768c4d46001",
+      "bytes": 186714,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:52:13.093Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "shi-time.webp": {
+      "status": "stored",
+      "hanzi": "时",
+      "promptHash": "181160f016fe6697a6816f942c719fec9aea48a0f9952175922f70e6811e4026",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shi-time.webp",
+      "sha256": "23aab43695a719abfe238dfe1c55593eb39df08d5babcd44317b5323896ae84d",
+      "bytes": 311390,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:52:23.338Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00551
+    },
+    "fen-divide.webp": {
+      "status": "stored",
+      "hanzi": "分",
+      "promptHash": "18b96d18986f65e7a2baefabb6b5c2151a31b0cf904177eb6c4abfcb84e184ae",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/fen-divide.webp",
+      "sha256": "8fa5884b51002fecde52056d04ec9430e8e10fb96aae658ad81dd0ee39d7df19",
+      "bytes": 159388,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:52:34.830Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "dian-point.webp": {
+      "status": "stored",
+      "hanzi": "点",
+      "promptHash": "6aa69cf6eefe1570de3d0ee21af59a6f84c95c06b31966ae0ee92bd2e9885978",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/dian-point.webp",
+      "sha256": "b5437caaa6c7d11f80b40696142dda7ca1c27b9f8f9f95cf6a6c1a6bed55267d",
+      "bytes": 101250,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:52:42.797Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 153,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005505
+    },
+    "mi-rice.webp": {
+      "status": "stored",
+      "hanzi": "米",
+      "promptHash": "fa4bfd50dda6357c4c9b6461d1b4cc5ff19c87e95267551a5d1a459b62ecc34c",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/mi-rice.webp",
+      "sha256": "b8cd962bb6487fcba4a8ca9c40b43fd1add02c9ad51ffb81b48a45abb0a72cf5",
+      "bytes": 171036,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:52:51.259Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "fan-meal.webp": {
+      "status": "stored",
+      "hanzi": "饭",
+      "promptHash": "98c0f2b5a2679ec6db31960a228c4c3adf985990913d83f575a12b65d2f2a3a6",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/fan-meal.webp",
+      "sha256": "3a584b5f283d90f6d41e810185516bab2956b31758e9c90b8ed9a659689a23ec",
+      "bytes": 112412,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:53:00.651Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "cha-tea.webp": {
+      "status": "stored",
+      "hanzi": "茶",
+      "promptHash": "d9eaa7d913236cf9a142a2fdeffda8bf38c264936cd1a1e371aecb92ef6a1cea",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/cha-tea.webp",
+      "sha256": "0714fb3fede631f187308e4e370acf2bcf57841c6db9f3043b627762e40dd5dd",
+      "bytes": 116430,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:53:09.388Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "cai-vegetable.webp": {
+      "status": "stored",
+      "hanzi": "菜",
+      "promptHash": "bd2008847ddb8c60a7fb5387a3df03dfde5d2c5a41abdff1adca9464c36611b1",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/cai-vegetable.webp",
+      "sha256": "db6ea37c755714360231086868651dc7547da02f9207861c6531e885e6c53efe",
+      "bytes": 259334,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:53:19.619Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00551
+    },
+    "mian-noodles.webp": {
+      "status": "stored",
+      "hanzi": "面",
+      "promptHash": "0092277cd5b44bf5b914734d956f330207581548caebb14c5d6e80bbd5663c2a",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/mian-noodles.webp",
+      "sha256": "2bd7b75b38038c677a94eb5ff8ce13f1c921548b61b58c2cd307e2f4032e0199",
+      "bytes": 114208,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:53:29.838Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "guo-fruit.webp": {
+      "status": "stored",
+      "hanzi": "果",
+      "promptHash": "84bc5c7c982560ea16253e3ed000853205c9d93a6120ca59a4285eebfd9c6c73",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/guo-fruit.webp",
+      "sha256": "3594ad93245d9482aecd8f07407c3361294f0c9acdb6f63d637f8b33d51fa79b",
+      "bytes": 135766,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:53:39.460Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "ping-apple-part.webp": {
+      "status": "stored",
+      "hanzi": "苹",
+      "promptHash": "133997a35ec7b86b021bfc69ebd76cca439e845072eb20a3b00ac5c0a21f576d",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ping-apple-part.webp",
+      "sha256": "dce7f8f3684e5ef076c88f73579995075304a81daee1d17fbc78e9ddf24f64f3",
+      "bytes": 139420,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:53:49.940Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "dan-egg.webp": {
+      "status": "stored",
+      "hanzi": "蛋",
+      "promptHash": "51e04e1604d5a9f12fea14d9b33e2fdcf810c677092c6182be7837c7a29d3dbd",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/dan-egg.webp",
+      "sha256": "b0555e9af9d6c74e87efb761e7b8bc687091e2e0492af4037f2744b5c8988978",
+      "bytes": 159730,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:53:58.346Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "guo-country.webp": {
+      "status": "stored",
+      "hanzi": "国",
+      "promptHash": "926fa2ffce824a422f9feb1825937541280ea7239603b28a63961d602b8ec0be",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/guo-country.webp",
+      "sha256": "cf58eaffd56f0626b9f1cd52c89343cdf3ace4dc719492b9cd70b64317e3fd23",
+      "bytes": 230374,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:54:08.944Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "che-vehicle.webp": {
+      "status": "stored",
+      "hanzi": "车",
+      "promptHash": "15aed8bd720b47809a12005baf0eee59ba68575f471d2d965e7025fdccadc1d1",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/che-vehicle.webp",
+      "sha256": "b06d235dd0dc3b886d8e1cca74e0335468d45f45ed4a3a4bd5c951066fccc893",
+      "bytes": 145922,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:54:20.198Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "yuan-courtyard.webp": {
+      "status": "stored",
+      "hanzi": "院",
+      "promptHash": "8e284fe63d6bc9b3bde1ce7ebe779405b89292d0a60e408c7407d3cb850d840b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/yuan-courtyard.webp",
+      "sha256": "ef7268444eef510b2d7e7a8005bf5622ccc8994e2174a6cad3792b30451fc2ac",
+      "bytes": 220988,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:54:30.988Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "xiao-school.webp": {
+      "status": "stored",
+      "hanzi": "校",
+      "promptHash": "639413c85e00d26a2c62ce363f949a9102dfee865e3f1951b83fbb1994aca9ee",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xiao-school.webp",
+      "sha256": "5e55451e9ce88260cca613566820434cfa3e6f21123c1f1779a600c8488fa864",
+      "bytes": 295890,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:54:42.210Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "ji-machine.webp": {
+      "status": "stored",
+      "hanzi": "机",
+      "promptHash": "924b8293e6505f9f9ad00b14b6666dad8c907a042d2f8ae4a80a81b5e92054c1",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ji-machine.webp",
+      "sha256": "a683bfb374bffe06334d4850b9f4973a0bb46b0f8919e7421bb7a9a4d2327567",
+      "bytes": 195530,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:54:53.437Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "shu-book.webp": {
+      "status": "stored",
+      "hanzi": "书",
+      "promptHash": "0f31a93f055539f049630945e4f56ad4b527c988db9414ac5247c6af897a730c",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shu-book.webp",
+      "sha256": "35a5991975340da69d12b8bb8a84ffbe034242e34f035d59535799c7848b0bb9",
+      "bytes": 118684,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:55:02.503Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "ben-volume.webp": {
+      "status": "stored",
+      "hanzi": "本",
+      "promptHash": "fe762ef2abe1a93f1640824bced959399948544753951173cec6d3efdb8a5c9b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ben-volume.webp",
+      "sha256": "aac56e24d53a6becbf10238674c169874e46defcec84a7c83b622d9df7a61999",
+      "bytes": 210804,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:55:13.005Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "yi-clothes.webp": {
+      "status": "stored",
+      "hanzi": "衣",
+      "promptHash": "bfc0dd390e817c7d989530ce25fbcb25224013f9b9fdb35ad33a5f56fb096950",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/yi-clothes.webp",
+      "sha256": "5d460bd86dea687f924f83f072b2499dd56537418f46da8734aa9d22908b4871",
+      "bytes": 190722,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:55:23.695Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "qian-money.webp": {
+      "status": "stored",
+      "hanzi": "钱",
+      "promptHash": "ab903dcb552d4822e8c417612b2cbe5ba4c19c8c72a72d412d0e6aec2efbd8c8",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/qian-money.webp",
+      "sha256": "6450cf223194f8c1162348e09c58df608860adc4a18a716ca7103e65523798d2",
+      "bytes": 202064,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:55:46.036Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "bei-cup.webp": {
+      "status": "stored",
+      "hanzi": "杯",
+      "promptHash": "f28f46292878f72910b071a149bff41a40b59739a64377ee6eeb102e27bdf58b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/bei-cup.webp",
+      "sha256": "aba208ede272a8eea7b808929b952103662f6a7c33cc8ac3dd7e340e32fd2735",
+      "bytes": 119374,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:55:55.150Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 155,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005515
+    },
+    "zhuo-table.webp": {
+      "status": "stored",
+      "hanzi": "桌",
+      "promptHash": "a8e28c261b17bf5f7409590be184d3862fd16436a81b35823762d083ca847ca3",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zhuo-table.webp",
+      "sha256": "d7b986f02bb47ffc6f627ba34b7aa5976cda50c5df18690026e14604678720f3",
+      "bytes": 155990,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:56:05.730Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "hua-speech.webp": {
+      "status": "stored",
+      "hanzi": "话",
+      "promptHash": "d24b8bb1fc8c579f98b32bbb7717b8a33cca40c8b3fc4f78a12202243ea91585",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/hua-speech.webp",
+      "sha256": "c48460d3a1d1c56162388e00dab87200a9598a09990d9d562c336ca8819b87de",
+      "bytes": 110170,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:56:16.864Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00551
+    },
+    "zi-character.webp": {
+      "status": "stored",
+      "hanzi": "字",
+      "promptHash": "3edb701ac9c6bec38d1802ad3ff9ba30279f91ae982bcc202917190c06fc0bb9",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zi-character.webp",
+      "sha256": "25e27a9b5b9a35f206fc091334755b7a5e5b80297fafc1c236af17418a998595",
+      "bytes": 110818,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:56:27.864Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "wen-writing.webp": {
+      "status": "stored",
+      "hanzi": "文",
+      "promptHash": "5736e947115fa73ea2efd8c716550125d0e96859a04d36552095570be2405395",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/wen-writing.webp",
+      "sha256": "f59c8186a4a1fd9c610922a8f6d1be361d640d2ecd2577af1f0b4aef342b13b2",
+      "bytes": 132192,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:56:55.988Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "han-han.webp": {
+      "status": "stored",
+      "hanzi": "汉",
+      "promptHash": "d595a5c71054c0241d0d19aee70d9da806b62ae79a2b31c87ca99b640477bbfc",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/han-han.webp",
+      "sha256": "e96941fce7d6781817b2b61b037fda5e650bd3f5f0a647414b879feb2274dcd8",
+      "bytes": 223814,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:57:06.230Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "yu-language.webp": {
+      "status": "stored",
+      "hanzi": "语",
+      "promptHash": "5b701254d200ad2da6bbc9bff278a8ff41000bba66da9621885fee93e6780328",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/yu-language.webp",
+      "sha256": "f211e1578dbfca9747eaea8c85dde0b5f4813407ff96967caa2f0f950ed118b8",
+      "bytes": 107462,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:57:19.691Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "dong-east.webp": {
+      "status": "stored",
+      "hanzi": "东",
+      "promptHash": "d3387e43db9a3c47684e32ddb5efc0e2db012b4412b6b82b5cd93e353ec71b2d",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/dong-east.webp",
+      "sha256": "2f084e11bd07790a393c73e52607198c658f13735a53c8300f42bd52088cfa80",
+      "bytes": 222396,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:57:28.342Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "xi-west.webp": {
+      "status": "stored",
+      "hanzi": "西",
+      "promptHash": "911585c59c803a6782395c8713c85628e8f35a88effae55205ad4f4fc4eac1e0",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xi-west.webp",
+      "sha256": "d818d45c983c9580a94b250383c002018da4d615e486d04bd376f533d39eb939",
+      "bytes": 173152,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:57:38.639Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "ming-name.webp": {
+      "status": "stored",
+      "hanzi": "名",
+      "promptHash": "65e3b012ae5d0782ee58c489201c257b46a94d46a76b8de98adadb1ec87b8918",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ming-name.webp",
+      "sha256": "3118629ed1d838dfdd603f07161168f4c10b693e5b0a2ae5c94efaf3443986cf",
+      "bytes": 112864,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:57:51.583Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "sui-age.webp": {
+      "status": "stored",
+      "hanzi": "岁",
+      "promptHash": "7abbb064575261ce55c046483ccbb2dc0902cac90270c4d42cc29db57f7c7cf2",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/sui-age.webp",
+      "sha256": "e68c37a07ab745362e5eb2d9481f0d99726a5f201e3fb2e7063cc2011e02979d",
+      "bytes": 96662,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:58:01.407Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "tong-same.webp": {
+      "status": "stored",
+      "hanzi": "同",
+      "promptHash": "1b98372732dfb4649299bf0e23f68ee319eaae727cd5af1f7ca340c355dbbac3",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/tong-same.webp",
+      "sha256": "4ddf0393b91bbbd6bebb1052afcd4ac8bcd335c5eae28c8ffb5d0ff593778415",
+      "bytes": 101608,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:58:12.021Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 152,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.0055
+    },
+    "ba-suggest.webp": {
+      "status": "stored",
+      "hanzi": "吧",
+      "promptHash": "842926073a22c2b7ba96bd4d111ddc7e0cff885b9560c906b113758264fdb109",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ba-suggest.webp",
+      "sha256": "178ceb15e9e18ee3d8739b639d2288d82bfcb56b74c6b9d2c53968644aa7959d",
+      "bytes": 136948,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:58:24.184Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 169,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005585
+    },
+    "ban-class.webp": {
+      "status": "stored",
+      "hanzi": "班",
+      "promptHash": "d87aefde3b5509a51f089a75863d13973c24c55fe47fc31f5e64cc3f0ebc3c1b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ban-class.webp",
+      "sha256": "78aa40104b5331a62a0686962cc9b789508479a2d2d3ab5c579ed40673cdea3b",
+      "bytes": 125502,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:58:33.589Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 164,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00556
+    },
+    "ban-half.webp": {
+      "status": "stored",
+      "hanzi": "半",
+      "promptHash": "88f703fd0edd91b8ec543a458e58b3cf212da6ba3c3ed4c1b563e91cbf3f039b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ban-half.webp",
+      "sha256": "031dd96ec3cde6cef195e99722c6df756d5866c74aa712a293c5ec7b7fb3934f",
+      "bytes": 255056,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:58:46.222Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 166,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00557
+    },
+    "bao-bag.webp": {
+      "status": "stored",
+      "hanzi": "包",
+      "promptHash": "926f558ef82935bd6b0798ae3e15293f6efffaf591ad8b4a26927646137b8e0e",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/bao-bag.webp",
+      "sha256": "d20a5d06d9f74368f763704e9c43ceeb521607f051e827aab1abea86e590b608",
+      "bytes": 161134,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:58:56.547Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 162,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00555
+    },
+    "bian-side.webp": {
+      "status": "stored",
+      "hanzi": "边",
+      "promptHash": "2c59c94a15c851843285c3f3454d08497e5f54f682773850f6292b70236998e0",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/bian-side.webp",
+      "sha256": "0a2cab7d1df7dca9b0f4474f80046942ebc88043e9de2f6dc0597b11ffa53de2",
+      "bytes": 163390,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:59:06.764Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 166,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00557
+    },
+    "bian-handy.webp": {
+      "status": "stored",
+      "hanzi": "便",
+      "promptHash": "410886aa122a45d519681cb2e06edf5988aab936fa49de15bf2550c644ccb7f1",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/bian-handy.webp",
+      "sha256": "0d8ee41d11aad76a4c173f7ce8180b65dda987163b624ede646144fd32aeb8cf",
+      "bytes": 193986,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:59:18.019Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 164,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00556
+    },
+    "bing-sick.webp": {
+      "status": "stored",
+      "hanzi": "病",
+      "promptHash": "d304959684f6526ced7746d29a956148ba60108d9b18e41bd7a42a963922ec8d",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/bing-sick.webp",
+      "sha256": "60f6699f90439065d4bca0bf251755ec8b7d9ddb8e4b4a60349f3c7a7515e3c4",
+      "bytes": 121046,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:59:29.962Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 164,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00556
+    },
+    "chang-often.webp": {
+      "status": "stored",
+      "hanzi": "常",
+      "promptHash": "668bf810ae0d7b6fb808ea2799375d697d4460227565b1e635f963e6fb29cfaa",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/chang-often.webp",
+      "sha256": "7dd3a4b63d6f40c44dcf4a72550b8f4afab12db93f813360c29f13ecfa94b637",
+      "bytes": 241432,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:59:39.416Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 163,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005555
+    },
+    "chang-sing.webp": {
+      "status": "stored",
+      "hanzi": "唱",
+      "promptHash": "c9aa60d1e26f1cc3b9793e51ee42d8c4a3a5af14182dfa49dfd4911d9002b7fd",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/chang-sing.webp",
+      "sha256": "b9d2e19eee785d14fa3d9ba66af9ac4bb80d524c13f7b6671e4a784fb32bc195",
+      "bytes": 125250,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T10:59:50.867Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 164,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00556
+    },
+    "chao-overtake.webp": {
+      "status": "stored",
+      "hanzi": "超",
+      "promptHash": "685f9fdca9de8ca8c673ff6dfc54bb91f6a158fcddad83c5d293712e8522395b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/chao-overtake.webp",
+      "sha256": "6238c292848ac402413602f1f8f5d632e52911c4c1c8cb8a17d5035b5a5aaddd",
+      "bytes": 173826,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:00:03.730Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "chu-exit.webp": {
+      "status": "stored",
+      "hanzi": "出",
+      "promptHash": "068c0d11c488cec091c36ae442c961feeddc684a545c28e12f7d7b0ae1e91955",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/chu-exit.webp",
+      "sha256": "cda873f4f043c75ee72d116091e8cf486f2eba6eaf92b54bba65b462cad1d232",
+      "bytes": 124542,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:00:13.497Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 163,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005555
+    },
+    "chuan-wear.webp": {
+      "status": "stored",
+      "hanzi": "穿",
+      "promptHash": "56e363226cddd4bd3e3be6276039629c5a3573cdd26032ff71f16410938b0c67",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/chuan-wear.webp",
+      "sha256": "23509a711ed4e7675fdc3f7f2124272fca2646021c4934f42aa7d196ec32a5cd",
+      "bytes": 95338,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:00:24.842Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 163,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005555
+    },
+    "chuang-bed.webp": {
+      "status": "stored",
+      "hanzi": "床",
+      "promptHash": "bf009f04cfdad194b0146f4c1756650e7d2d9330df075cc75a4036f05cb72e3f",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/chuang-bed.webp",
+      "sha256": "809b8b70b33b7700f0568f164e12cbed54aad052c1b1089f2406696c955dc121",
+      "bytes": 163670,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:00:34.176Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 165,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005565
+    },
+    "da-hit.webp": {
+      "status": "stored",
+      "hanzi": "打",
+      "promptHash": "e761d7dc0aaffba8ecaf0ee4447da44ae72040e43df1e7f5781f6dc7dc809136",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/da-hit.webp",
+      "sha256": "4ad7928e5783e1ad54faa568406622304c51940923b06f329af8a957cd907fad",
+      "bytes": 130796,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:00:43.752Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 163,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005555
+    },
+    "dao-arrive.webp": {
+      "status": "stored",
+      "hanzi": "到",
+      "promptHash": "23da564cd9601c5fa34ba677309e616380105902d3cb61b5484810b71be9c611",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/dao-arrive.webp",
+      "sha256": "0ac4016a5d6b35d0ae2dd2ad672210107aaabd1e6b63c502186e54598b7b80eb",
+      "bytes": 191888,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:00:55.613Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "dao-road.webp": {
+      "status": "stored",
+      "hanzi": "道",
+      "promptHash": "b839871944a4724f83d0d85fec25b5db46b6769f3ae17df2655cbe542d6f6090",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/dao-road.webp",
+      "sha256": "ac4043c00fb912af28a5f8e393786f804f22a3472664b771c30f3d3b0312a7c7",
+      "bytes": 325046,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:01:05.906Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "de-gain.webp": {
+      "status": "stored",
+      "hanzi": "得",
+      "promptHash": "e993e3200080ef843f6ccb708a76d6e974348dc87a6ba8e064107d42d4e1bb8b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/de-gain.webp",
+      "sha256": "66b0c88dadf3f5182224ad0cc5255e07424861cf718d7b0132f9c32ada92018b",
+      "bytes": 191072,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:01:17.039Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "di-ordinal.webp": {
+      "status": "stored",
+      "hanzi": "第",
+      "promptHash": "81512bae346b4f7e16c03bd9d0e1a54e8e2a6c949d64881ff1068507a1daba80",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/di-ordinal.webp",
+      "sha256": "3a43e5ca2094b5eb25206d91615c129a5d2ee4cd8f00c0dc0a74643ee9b6e3fb",
+      "bytes": 140228,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:01:26.779Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "er-child.webp": {
+      "status": "stored",
+      "hanzi": "儿",
+      "promptHash": "641a45e3c077a00607348c78d6d581b1a18c1776b7fe8455882b7be0589bbc22",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/er-child.webp",
+      "sha256": "a220c8285e07ca4a669fb360961e32e69c472a6d45c9f18804e62c6c3ca8826b",
+      "bytes": 162172,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:01:37.219Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "fang-house.webp": {
+      "status": "stored",
+      "hanzi": "房",
+      "promptHash": "0cdfb66694d34c233e8f34fcb8cc49630ab9fdf398077a8d5e5de0b580d2c25b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/fang-house.webp",
+      "sha256": "3c2cdac8509c366dd44bad8f0b1429b9736dab8f397a85a882235f94b19a6439",
+      "bytes": 183166,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:01:50.999Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 164,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00556
+    },
+    "fei-fly.webp": {
+      "status": "stored",
+      "hanzi": "飞",
+      "promptHash": "c38b957925d0726f678861811e067e7fb2261aacc97da359e14bf11b562c3065",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/fei-fly.webp",
+      "sha256": "c12592b231d07a43cb87f52ec6d5cde5b7c5d1596b36c8bd3a6a91ccbf243625",
+      "bytes": 147634,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:02:01.619Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "fei-not.webp": {
+      "status": "stored",
+      "hanzi": "非",
+      "promptHash": "e289f60042400b15c50fd379b2be68862143db4720a2db2d727be3ebfa080eb3",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/fei-not.webp",
+      "sha256": "106bb3fd57e1c116dbcedea6dc409b86d98eec0f5a087f2bf43ad7c6e7d18fd8",
+      "bytes": 115462,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:02:12.489Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "fu-clothes.webp": {
+      "status": "stored",
+      "hanzi": "服",
+      "promptHash": "4292a451ee541f7b27763bf8da699267706dc7e4df8f5cb480bf10f22dc33a30",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/fu-clothes.webp",
+      "sha256": "7764db1cb794b6a0535de29a1ad84dace093047235cee016a5e9dd7accb8c116",
+      "bytes": 141556,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:02:22.583Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "ge-song.webp": {
+      "status": "stored",
+      "hanzi": "歌",
+      "promptHash": "28887bfed609803274550c7d46d429dcb902792a2e006c0a90633dc7a222c4ce",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ge-song.webp",
+      "sha256": "c2c5c508da9ffe18a9faadb7a299068ac6706868e8cffb50cee0e4af22746ea4",
+      "bytes": 208592,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:02:34.097Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "ge-piece.webp": {
+      "status": "stored",
+      "hanzi": "个",
+      "promptHash": "9782621bdc0e67b68c1fcf167bdf51445f9b91858aa9b074a840f78f561a35c7",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ge-piece.webp",
+      "sha256": "cbacacf951bc51188258eb669e8444d9102725a6fd40ae1bf67b8fa83db982ae",
+      "bytes": 112468,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:02:42.952Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "gong-public.webp": {
+      "status": "stored",
+      "hanzi": "公",
+      "promptHash": "0983a351437de1225ca5fff6d654756a6adf2131600b66a462a62e4f8afa147b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/gong-public.webp",
+      "sha256": "c25b3d3f71eef78ebb1fdb460d4f8f957856bc4a9d83bbedeb0e64e3064e822f",
+      "bytes": 231678,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:02:53.748Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 163,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005555
+    },
+    "gui-costly.webp": {
+      "status": "stored",
+      "hanzi": "贵",
+      "promptHash": "bfb8428f2c59cb6e1eed622a2068ef4d40c2ba5b12f5028b4b9700eb503643dd",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/gui-costly.webp",
+      "sha256": "014a3dd3cb5591b3499efab275ed87c062eef2974d153738ca129cb7f980fe49",
+      "bytes": 96146,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:03:02.158Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 162,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00555
+    },
+    "hai-still.webp": {
+      "status": "stored",
+      "hanzi": "还",
+      "promptHash": "0c03c5b285d81554a5c4075e157a27e4433e0c4bd040bb2db09324da7fdb504a",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/hai-still.webp",
+      "sha256": "275dcb10d6a1e55a3ed1ca303f1a30faa19d6501ec46bd270ba1d5f13c79884c",
+      "bytes": 114420,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:03:22.123Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "hao-number.webp": {
+      "status": "stored",
+      "hanzi": "号",
+      "promptHash": "80c4c759e859e5fe05a35920e80b942d905fe61c3f0794c93b63dead19ba8079",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/hao-number.webp",
+      "sha256": "00f9253ba5c1208630c251c98ffcb00573d26509538384284613826b85aad1ba",
+      "bytes": 135940,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:03:32.834Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "hou-wait.webp": {
+      "status": "stored",
+      "hanzi": "候",
+      "promptHash": "677ca47c4d14618bb96938abb4e4bb84da5a4046175a49dcc8398628fd0e7a2c",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/hou-wait.webp",
+      "sha256": "65222e14f661d77bb517cdd57092232c26e649f27808716ca6ae8d5da250c972",
+      "bytes": 125612,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:03:43.735Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "huan-joy.webp": {
+      "status": "stored",
+      "hanzi": "欢",
+      "promptHash": "9f96097298c132fd7c5cb39e874c234da0fc3d2fdd731fe4d9d789c85edfabfd",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/huan-joy.webp",
+      "sha256": "7c13896d84457ed117f465d8a17b68d186dfa3030ceeeb7a4c9885e8b9fefac1",
+      "bytes": 191614,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:03:55.486Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "hui-return.webp": {
+      "status": "stored",
+      "hanzi": "回",
+      "promptHash": "3c11d31add139e35f26a8f4845ac78d37e0940636e875d1bf07b7d18e15d8a5f",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/hui-return.webp",
+      "sha256": "ddb9ec518513e2cc4d646d1048a64d375c5edad3fda05f59c63886e05a9dc3dc",
+      "bytes": 169186,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:04:04.908Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "jian-between.webp": {
+      "status": "stored",
+      "hanzi": "间",
+      "promptHash": "e4c4e6dcb8903da10069d2228dc50223f3b3ac7d40f66b251d740804c545f1f9",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/jian-between.webp",
+      "sha256": "dc941c24693d34de6885bf12284b496b261356450c3b05f8fb4b7a967084dfda",
+      "bytes": 73150,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:04:13.195Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 163,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005555
+    },
+    "jian-item.webp": {
+      "status": "stored",
+      "hanzi": "件",
+      "promptHash": "8f1bb6dd6bda1143ec599748a122f497e65419a9d33232119a630b46d4b6dcb6",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/jian-item.webp",
+      "sha256": "762ad2305af47beaa91feb76cb6978941f8d2ae39b504449e0e1e5eecbcebe10",
+      "bytes": 172954,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:04:23.337Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "jue-feel.webp": {
+      "status": "stored",
+      "hanzi": "觉",
+      "promptHash": "639b4e96b0f11a01581450f91483a31202c9fb8d7a1e296f38f18edf7fbac3d5",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/jue-feel.webp",
+      "sha256": "bacfba6384d159ff6ccd3c638cd14606b04dc1639fa09855d39c06ea12cca5f6",
+      "bytes": 174260,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:04:42.565Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 162,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00555
+    },
+    "ke-can.webp": {
+      "status": "stored",
+      "hanzi": "可",
+      "promptHash": "e8ff06c1c85453e9238c683775bd2e1aebc5b8be48df3af019010c19b8635375",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ke-can.webp",
+      "sha256": "8f2b942bfe014598bfd4a6eff5800ff0151a6d289c79100fe3539a0feb5e363c",
+      "bytes": 230352,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:04:52.187Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "ke-guest.webp": {
+      "status": "stored",
+      "hanzi": "客",
+      "promptHash": "93dad328167dcdd806a201ff3c193e5c15fa1693311b67d2b57bd892c5f2fcd2",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ke-guest.webp",
+      "sha256": "6e1bd4d0b35e01832732a7d127ab99c4aec4eb98cefde7f2d8c787ee53ddfcf3",
+      "bytes": 111940,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:05:03.253Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 162,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00555
+    },
+    "ke-lesson.webp": {
+      "status": "stored",
+      "hanzi": "课",
+      "promptHash": "7808cebd971cd96bff4dea324d9e420d69385cee52d668123748c5269e85c47a",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ke-lesson.webp",
+      "sha256": "090665e639f2a3cdb5b895e3fcba64e22f694e60df0d686de9adda6a4f12e410",
+      "bytes": 159552,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:05:13.141Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 162,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00555
+    },
+    "kuai-chunk.webp": {
+      "status": "stored",
+      "hanzi": "块",
+      "promptHash": "ee53e1a59a22fdfca3232976540147ddac16813da0116a9e7c492f3b9397c2d6",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/kuai-chunk.webp",
+      "sha256": "607d60de42508a6750b6362dbd560e9c1bd9ed3edd043736402acdd7989a3de6",
+      "bytes": 182446,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:05:23.340Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 162,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00555
+    },
+    "liang-bright.webp": {
+      "status": "stored",
+      "hanzi": "亮",
+      "promptHash": "536eadb130eb58a07008eb38a90494d2c022eb95d89abd650b2e37119142f047",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/liang-bright.webp",
+      "sha256": "8a0756fc37e764ffe011ab87a56dd7e3fc86b34f799f1b77aaecca310bfa4019",
+      "bytes": 125458,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:05:41.370Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "ling-zero.webp": {
+      "status": "stored",
+      "hanzi": "零",
+      "promptHash": "d09d8d4fbf82a8e0588f5e258254dfb444834e48b2f9a5e23b4ccd1984f79dea",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ling-zero.webp",
+      "sha256": "9d1959ad79d8901be65ba12ed3a7d618261feb94cb65479ee8d6ddc0e26545a6",
+      "bytes": 77762,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:05:51.760Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "mang-busy.webp": {
+      "status": "stored",
+      "hanzi": "忙",
+      "promptHash": "1dbbf7f8c44f04261c7378d5a062279597970e08547f8f1a7d6e0915d5b0a506",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/mang-busy.webp",
+      "sha256": "cfe8ac13626938a348778d04352610d620ecc1a083145d45266da6b48803487c",
+      "bytes": 149792,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:06:03.312Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "nai-milk.webp": {
+      "status": "stored",
+      "hanzi": "奶",
+      "promptHash": "b016a8d55765b04cf9cfdbc699e98e2f73e4c341838ab69557708f03ef147984",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/nai-milk.webp",
+      "sha256": "68fda4f6677a8bfd214aafe0de391e1619c8befd6eeb99a082cdac80162a39df",
+      "bytes": 116310,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:06:25.443Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 163,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005555
+    },
+    "nao-brain.webp": {
+      "status": "stored",
+      "hanzi": "脑",
+      "promptHash": "536b364508701aac2c59567c11cb73bf15289c92c7c86d9bf65aa74bfe945cc0",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/nao-brain.webp",
+      "sha256": "626b7b3e48d1c288321914f1b579843c5ae468ac7ff855c8ddbb4c15c94e1ddf",
+      "bytes": 105432,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:06:36.641Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 164,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00556
+    },
+    "nin-polite.webp": {
+      "status": "stored",
+      "hanzi": "您",
+      "promptHash": "0126e5f5fb2f3f9f21786d8361edb015776e5b550c4ef6d4c254a00209fd6052",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/nin-polite.webp",
+      "sha256": "8994bf5ec3f3d82d83e8859759247cce9d577a850cf578d3a641b0ab5f855896",
+      "bytes": 92880,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:06:48.674Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 162,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00555
+    },
+    "piao-pretty.webp": {
+      "status": "stored",
+      "hanzi": "漂",
+      "promptHash": "31c5a8219b64979cd49fac535afc909c77cd331035c54719129b4262fcfd605b",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/piao-pretty.webp",
+      "sha256": "c3bd0ebdde24483d40bad32b386e644dfccbfc0f20c9c56d8fb0defeb011d039",
+      "bytes": 179996,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:07:14.251Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "qi-period.webp": {
+      "status": "stored",
+      "hanzi": "期",
+      "promptHash": "51c90683d132585da09d21c3503f0fe581dd1bcb93f667722da0e7dec3a35ad9",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/qi-period.webp",
+      "sha256": "f28018d574d53f349a7a263f64255c290bfcd27aa06a400daaa773208002e0e5",
+      "bytes": 127952,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:17:55.112Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 162,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00555
+    },
+    "qi-rise.webp": {
+      "status": "stored",
+      "hanzi": "起",
+      "promptHash": "095ba324b21f1d4d525fbff38a42c88f52daa754f7020032ed55279855d04213",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/qi-rise.webp",
+      "sha256": "8db4ae4d34b778181492d823d2ff25e21aed21214b403f7d1f6c59699ca2ce76",
+      "bytes": 143718,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:18:05.379Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "qi-air.webp": {
+      "status": "stored",
+      "hanzi": "气",
+      "promptHash": "458e9aa2967e73d2c0e2a1fc0c54cd479f0944d5d70f0126594dcf8a5a3e5437",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/qi-air.webp",
+      "sha256": "c58c00e17a2eba8ab4ed2d197ef29f2b0d445f876b882c635cc69203cd400291",
+      "bytes": 108156,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:18:16.056Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "ren-recognise.webp": {
+      "status": "stored",
+      "hanzi": "认",
+      "promptHash": "4ebe2f1bd9c0cc86d2192cece31f5737967b3385259738bb98a60205f1702e87",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ren-recognise.webp",
+      "sha256": "148f70f8b563b9acb2700472cec6d48aea8b3442f016e341bfbbe444395469b2",
+      "bytes": 140790,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:18:28.444Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "shang-trade.webp": {
+      "status": "stored",
+      "hanzi": "商",
+      "promptHash": "c2fe23ae955ab5c1ecd4fc04663551e98035b5deaaaa811076e33f0e4cec823c",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shang-trade.webp",
+      "sha256": "94924a1104fef8f45cea3ad3644eba2341dd4077445c210e64e658e5f94903b1",
+      "bytes": 153440,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:18:38.100Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "shi-know.webp": {
+      "status": "stored",
+      "hanzi": "识",
+      "promptHash": "47df9f569bd626a5127bbd365470e5daf601080f49545754bd16d7e48558b075",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shi-know.webp",
+      "sha256": "001fe37be484673e82feb4afe6b869e35e5b6660c7a6d2513aa4f9d974651161",
+      "bytes": 161362,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:18:48.463Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 162,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00555
+    },
+    "shi-soldier.webp": {
+      "status": "stored",
+      "hanzi": "士",
+      "promptHash": "5c7d699aa9aa267009953a42cc2a23defed3738ac0a9cbe12686ed9ca46b2f3e",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shi-soldier.webp",
+      "sha256": "fbfd4fd850e199d833e2acafcb439ce647b54634b77977e4687e557da10948d8",
+      "bytes": 108832,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:19:00.608Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "shi-market.webp": {
+      "status": "stored",
+      "hanzi": "市",
+      "promptHash": "0053a6bff4d5abccd68ae07c911e8037e39c2e8626398edcda9b0ef7b41899e5",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shi-market.webp",
+      "sha256": "3c374bb81ab3027cad23a017f83220edbf6b914ef5d8bce46ecea850e5030265",
+      "bytes": 170712,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:19:10.717Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "shi-matter.webp": {
+      "status": "stored",
+      "hanzi": "事",
+      "promptHash": "553c74d9f50af062e566cd09b8b6ce7a235f4f9689734ca39df529c49fd7959e",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shi-matter.webp",
+      "sha256": "39ab9cc9fc0e5d9e76aaec87ba87d45acb127e87e10d2fcdaa0b4b25e5f2ef92",
+      "bytes": 139866,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:19:19.479Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "shi-look.webp": {
+      "status": "stored",
+      "hanzi": "视",
+      "promptHash": "c168d02c387bffd98f947b3bdf9a667df771b7d99967f6a9607082dc1f48304a",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/shi-look.webp",
+      "sha256": "06f5d5db6a9d84a36d40cc6d7e4f3dee56d33da11abcff34e2725e2d4b83a854",
+      "bytes": 156506,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:19:30.711Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "si-driver.webp": {
+      "status": "stored",
+      "hanzi": "司",
+      "promptHash": "df8cecebe11143262f79f8e3350c5a5d4fdd729f20ab3cd137cfdc05d10b505d",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/si-driver.webp",
+      "sha256": "e0c0a6c8f8c97fee4165658f1c940953d5ddacb540061308b478b79666bf045f",
+      "bytes": 124104,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:19:42.687Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "ta-it.webp": {
+      "status": "stored",
+      "hanzi": "它",
+      "promptHash": "ee171d5e618b3b152058668b8907c0699e9c87d7b9508010ade9a482f1f47523",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ta-it.webp",
+      "sha256": "65f5b54d83a881addadec80f24d4a81098e4f2b27a25a70a68892f7202b5e9f5",
+      "bytes": 189674,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:19:51.824Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "ti-question.webp": {
+      "status": "stored",
+      "hanzi": "题",
+      "promptHash": "236e65d9aa8f0a657bb91e34b167a703224657c55cfada32c869d2ffd79fcc5d",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ti-question.webp",
+      "sha256": "da0b878e16e86c87952fac7ffc1133e24c6c9e88d4d08441992257cf0e252a56",
+      "bytes": 132134,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:20:03.471Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "tiao-strip.webp": {
+      "status": "stored",
+      "hanzi": "条",
+      "promptHash": "0340fbab01b6332c2310aacf8e2f60747a3989a47a499602ed2f759374cedb29",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/tiao-strip.webp",
+      "sha256": "5cfe3ef226608f6a345d46a7a7ad533eb1041ed7470dd11f9fe63c2bc4c380bb",
+      "bytes": 145088,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:20:13.025Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "wan-play.webp": {
+      "status": "stored",
+      "hanzi": "玩",
+      "promptHash": "b3d49da0623c13f851bfa69560ec4cedcdf97edb03e0c31d22c9b7e3dbff968f",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/wan-play.webp",
+      "sha256": "ad226bf1ba8ded3e41295389967cc67451dfb52431120a6b91e66fadc53a87de",
+      "bytes": 223552,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T11:20:24.418Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00552
+    },
+    "wei-feed.webp": {
+      "status": "stored",
+      "failedAttempts": [
+        {
+          "error": "provider HTTP 500",
+          "attempts": 1,
+          "provider": "openai-images",
+          "model": "gpt-image-2",
+          "promptHash": "9cb3b5d5b01f58b422509cc2df83fdd0f4760df8e6a370935cb51fc871840f39",
+          "priceUsdEstimated": 0.0195,
+          "recoveredByRunId": "46158400581"
+        }
+      ],
+      "hanzi": "喂",
+      "promptHash": "9cb3b5d5b01f58b422509cc2df83fdd0f4760df8e6a370935cb51fc871840f39",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/wei-feed.webp",
+      "sha256": "732f445fd9b31bb13bb1328f461b6565859a551b120ad55a788687301373aef1",
+      "bytes": 214736,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:10:48.682Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "xi-rest.webp": {
+      "status": "stored",
+      "hanzi": "息",
+      "promptHash": "bb5e11bd050329d8fd781d98f790e571f1b886ec8631e711a5703822a3145d00",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xi-rest.webp",
+      "sha256": "c65730f2ab16dd7ae7f7cb1b19e3fc9eeee71124d5f87f52fd343d376207a45d",
+      "bytes": 123948,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:11:00.293Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "xi-practise.webp": {
+      "status": "stored",
+      "hanzi": "习",
+      "promptHash": "ee852c5f3b9db5906b845748e6487f350812ef61fa15508d5f9f323005e05be1",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xi-practise.webp",
+      "sha256": "1eb5fd7af1a5f4a2c0786c2958286c4a0163cd9765bb37eb6553415bd019c44f",
+      "bytes": 112438,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:11:12.407Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 163,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005555
+    },
+    "xi-happy.webp": {
+      "status": "stored",
+      "hanzi": "喜",
+      "promptHash": "a8d35b04e75a70e53f1a0ca8f78a5dd030e27d574c2ff8ae4092378fde3df409",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xi-happy.webp",
+      "sha256": "30a9faf344dde6c94558db570e12c7455c57b2eab6427fbbcb4d5555220e8b5d",
+      "bytes": 223724,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:11:25.543Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "xi-tie.webp": {
+      "status": "stored",
+      "hanzi": "系",
+      "promptHash": "32b29aae7e33852f1b08da63e777f7131b748bdad79ca1fd108825c09bd8a27d",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xi-tie.webp",
+      "sha256": "6075615402533824baaf2812dd6893dad35cbff72265590502a6e3d4365480f5",
+      "bytes": 125810,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:11:36.581Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "xian-first.webp": {
+      "status": "stored",
+      "hanzi": "先",
+      "promptHash": "3a0ce48688ccb900c10441a1dd4c15c1d24ddd0266bbef9731dfca62584cff3a",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xian-first.webp",
+      "sha256": "c5616025f59646520887a867b1ed8f7cb929981f345a406f784a0812a086321c",
+      "bytes": 117982,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:11:58.682Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "xian-now.webp": {
+      "status": "stored",
+      "hanzi": "现",
+      "promptHash": "b0ff8ae67fd88cf6f28044d75409d3c34411566cd9b359ffc001263e4666552f",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xian-now.webp",
+      "sha256": "60316f9c2f47bf9704ac5f99a9765029d4bda767ac8da2b9f5233773334137fc",
+      "bytes": 172282,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:12:21.039Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "xie-some.webp": {
+      "status": "stored",
+      "hanzi": "些",
+      "promptHash": "864743ea3df972b37fcc8a0b100b6077a319c90845e0f907b275b51d94e71b47",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xie-some.webp",
+      "sha256": "40efd063255784a88c88af94a96733fc6242e86ff10836286130bc3e3cca3217",
+      "bytes": 117058,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:12:30.498Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "xing-delight.webp": {
+      "status": "stored",
+      "hanzi": "兴",
+      "promptHash": "55964c011e883b5864a5865835d325f0d51f051f3b9d4e4322185643694f3f8f",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xing-delight.webp",
+      "sha256": "5c33fb12a48203b8db1e024109f1fde8e41fc7b0a2262c660c72301425bed54a",
+      "bytes": 184534,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:12:40.326Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    },
+    "xiu-rest.webp": {
+      "status": "stored",
+      "hanzi": "休",
+      "promptHash": "890b7d992ae241c870d8f9b2b4aa24c50e6d16fe841b168447a08e70d19b1805",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/xiu-rest.webp",
+      "sha256": "a27f613f060ad9a9cfe4add87be6123525bd32e44a7a2a3137f368d8d32d2874",
+      "bytes": 191594,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:12:52.563Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 162,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00555
+    },
+    "yang-kind.webp": {
+      "status": "stored",
+      "hanzi": "样",
+      "promptHash": "da32215805bdfe8295f57ee5ccf34cf15c06222f41043a746ed3f26b1c7ab35f",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/yang-kind.webp",
+      "sha256": "c31dab401e1772dedd4f9afc2987118bd00a022f08dbe3721929d18a1f853c19",
+      "bytes": 148802,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:13:02.015Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "yi-suitable.webp": {
+      "status": "stored",
+      "hanzi": "宜",
+      "promptHash": "0a8ef26d0e9eb44684163f35a191b25cd008210825c3a3a88290453f67ce151c",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/yi-suitable.webp",
+      "sha256": "921a772dfe32b0756ebbb07f8ad6d98e8ec0017922e7ab2b6b45d94e24dc0d58",
+      "bytes": 121744,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:13:12.277Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "yi-use.webp": {
+      "status": "stored",
+      "hanzi": "以",
+      "promptHash": "25599a96e0728f06764c83e88fef4f30988e56d5145317a2d203802d879c99a0",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/yi-use.webp",
+      "sha256": "7d8090dfd36721748b96d04c853525c95096968581fd7f4c24a560faf7421e2b",
+      "bytes": 241668,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:13:25.077Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "yi-chair.webp": {
+      "status": "stored",
+      "hanzi": "椅",
+      "promptHash": "cd54fc651ee6b841a3ff7ed03a8f1fdbbfaf50492f8a06c11ebd4dfb44957b12",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/yi-chair.webp",
+      "sha256": "c3a36abc24c99331db5029254a02bd93c244ccc605c97a4ce6399ca1fcdab08f",
+      "bytes": 163598,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:13:34.731Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "ying-shadow.webp": {
+      "status": "stored",
+      "hanzi": "影",
+      "promptHash": "d78e5ba9c1111732136b6ec15897125e466e22a0a33fecd629032eb8ee24228e",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/ying-shadow.webp",
+      "sha256": "7f07733afe979c4673b2a21a814670fefd1467ec797341bda539373085c5f1c4",
+      "bytes": 193840,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:13:45.503Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "yuan-coin.webp": {
+      "status": "stored",
+      "hanzi": "元",
+      "promptHash": "b8ac23d7ec91388ad3231fb326e87eb71e55db19375cb304c237f1189c9475c1",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/yuan-coin.webp",
+      "sha256": "0aaefc9eae61eb975d35fb7f424863b5c92f97cf205aa6639021299ba239d9dc",
+      "bytes": 142454,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:13:54.588Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "zai-again.webp": {
+      "status": "stored",
+      "hanzi": "再",
+      "promptHash": "8ac20b6ece289480aba25975e40b7d2014c49e909d5ce4e4a14a6e563b4cc004",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zai-again.webp",
+      "sha256": "a9ab020cb46cf45606e7e4f3da7e7fb029dcd9f89348624a1193818cd6f18de7",
+      "bytes": 135798,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:14:06.521Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "zen-how.webp": {
+      "status": "stored",
+      "hanzi": "怎",
+      "promptHash": "57e733bf8283bea3640bd809e8d8c1af55b93552455d6e47c4a962a5fdde821a",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zen-how.webp",
+      "sha256": "91ec358d0cdd01ddfc35aca8520ba51c705046398aed1db52140a1e3f89cb2e8",
+      "bytes": 137316,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:14:20.068Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "zhao-search.webp": {
+      "status": "stored",
+      "hanzi": "找",
+      "promptHash": "f9118c7c23c4c3abd987f0448d49254b0a093d5899c4273d4a427fbfb2778ab4",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zhao-search.webp",
+      "sha256": "014d7b887f09064d58054ba237d7dcc1444800a18df8a40a247bd2f82d420037",
+      "bytes": 120466,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:14:31.233Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "zhen-real.webp": {
+      "status": "stored",
+      "hanzi": "真",
+      "promptHash": "f95978b92e3c2e6a6bf6e82d92e2c1b6e4784efdde11f4c83ba91ae699fadd07",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zhen-real.webp",
+      "sha256": "b7c42cb5f5850917fe1acfd524611292cf8284de71a4cc01d41e10869b641113",
+      "bytes": 121360,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:14:43.222Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00553
+    },
+    "zheng-upright.webp": {
+      "status": "stored",
+      "hanzi": "正",
+      "promptHash": "4131167ecdadc1eaa6a5258124620727dba73a51298ec8265bcfa35c36e49fd2",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zheng-upright.webp",
+      "sha256": "0db24253f0fb0f23e2126c6f780ead1de4dc06b9ecf36f695d968ddb0a3a17a4",
+      "bytes": 181062,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:15:06.195Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 160,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.00554
+    },
+    "zhi-know.webp": {
+      "status": "stored",
+      "hanzi": "知",
+      "promptHash": "b6de3fb0e809b8baada664bdb1469bf6a054f08c66e4d7cf3f12f630bfaeb302",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zhi-know.webp",
+      "sha256": "a6f7a0e835feb62bffca8e292009c89ac06444c3ad54679299cc92df0d7fd6f0",
+      "bytes": 165006,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:15:21.747Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "zhi-only.webp": {
+      "status": "stored",
+      "hanzi": "只",
+      "promptHash": "d475e513fb2ec88b62399662a203d9f11a8df0d9072e86fbca59f371219a6367",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zhi-only.webp",
+      "sha256": "27926d0088317110b5b3b901284617d502a6af1a6898e01ccdab8386dc37fd3d",
+      "bytes": 109472,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:15:32.650Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 157,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005525
+    },
+    "zhong-bell.webp": {
+      "status": "stored",
+      "hanzi": "钟",
+      "promptHash": "40be9dea1d997a79a05daa038ffbf4df76358605610226741415c06d5546f5f0",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zhong-bell.webp",
+      "sha256": "f375268c32ff8f35c4c487497a3ed961ab5de20043e0783f87d24e66dd696168",
+      "bytes": 138520,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:15:43.460Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005535
+    },
+    "zu-rent.webp": {
+      "status": "stored",
+      "hanzi": "租",
+      "promptHash": "f45f21abf705dff32044dd38f3c586590a454dc9173160ccf4c3bbbe5c6d8005",
+      "attempts": 1,
+      "provider": "openai-images",
+      "model": "gpt-image-2",
+      "path": "mnemonic/zu-rent.webp",
+      "sha256": "424b1d62f0e522d692e36f1c8eb8a114f49e4684b8157042162ce17775d70a60",
+      "bytes": 219668,
+      "width": 1600,
+      "height": 1200,
+      "storedAt": "2026-11-28T15:15:55.220Z",
+      "priceUsdEstimated": 0.0195,
+      "usage": {
+        "input_tokens": 161,
+        "output_tokens": 158
+      },
+      "usageCostUsd": 0.005545
+    }
+  },
+  "runs": [
+    {
+      "runId": "46058598242",
+      "commit": "dd7e5493a80e7540a80c176faf324275e20704c4",
+      "spentUsdEstimatedAfter": 0.0195,
+      "only": "山"
+    },
+    {
+      "runId": "46059449724",
+      "commit": "dd7e5493a80e7540a80c176faf324275e20704c4",
+      "spentUsdEstimatedAfter": 0.195,
+      "only": "水,木,火,日,月,人,雨,鱼,鸟"
+    },
+    {
+      "runId": "46063520659",
+      "commit": "858657de9b77ea1b5724f3cf1841216720b3329c",
+      "spentUsdEstimatedAfter": 0.234,
+      "only": "人,雨"
+    },
+    {
+      "runId": "46125817446",
+      "commit": "f612c43607315fd45f81416f6baf3fe34bc66c44",
+      "spentUsdEstimatedAfter": 2.184,
+      "only": "all"
+    },
+    {
+      "runId": "46136785162",
+      "commit": "f612c43607315fd45f81416f6baf3fe34bc66c44",
+      "spentUsdEstimatedAfter": 4.134,
+      "only": "all"
+    },
+    {
+      "runId": "46139133768",
+      "commit": "f612c43607315fd45f81416f6baf3fe34bc66c44",
+      "spentUsdEstimatedAfter": 4.446,
+      "only": "all"
+    },
+    {
+      "runId": "46158400581",
+      "commit": "68d3473eb94762792a034219101b2e37b19d5264",
+      "spentUsdEstimatedAfter": 4.9335,
+      "only": "all"
+    }
+  ],
+  "spentUsdActualReported": 1.33876
+}

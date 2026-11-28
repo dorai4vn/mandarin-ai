@@ -9,6 +9,8 @@
 //        stops on first error, failed entries need --force, cumulative estimated sanity ceiling 6 (NOT a provider cap; owner budget = --max-spend-usd)
 //        --revise  allow regenerating ONLY the selected, already-stored characters whose prompt changed (QC revision; old image
 //        is archived under mnemonic/superseded/ and kept in entry.history; not allowed with --production)
+//        --recover-file F --recover-expect-error TEXT  (production only, both required) retry exactly ONE failed entry once; refused unless it is
+//        failed with that error text, 1 attempt, never recovered. Failed attempt is kept in entry.failedAttempts; no --force.
 //        --max-spend-usd N   --max-retries N(0-3)   --out DIR (default .mnemonic-art)
 // Env (live, and production `plan` for the non-secret pricing vars; never printed): MNEMONIC_IMAGE_API_KEY, MNEMONIC_IMAGE_MODEL,
 //        MNEMONIC_INPUT_USD_PER_M, MNEMONIC_OUTPUT_USD_PER_M, MNEMONIC_MAX_INPUT_TOKENS, MNEMONIC_MAX_OUTPUT_TOKENS,
@@ -52,11 +54,16 @@ const { values: a, positionals } = parseArgs({
     production: { type: 'boolean' },
     revise: { type: 'boolean' },
     'batch-size': { type: 'string' },
+    'recover-file': { type: 'string' },
+    'recover-expect-error': { type: 'string' },
     out: { type: 'string', default: '.mnemonic-art' },
     dataset: { type: 'string', default: 'apps/web/src/hanzi/beginner200.json' },
   },
 });
 const cmd = positionals[0] ?? 'plan';
+if (!!a['recover-file'] !== !!a['recover-expect-error'])
+  throw new Error('--recover-file and --recover-expect-error must be given together');
+if (a['recover-file'] && !a.production) throw new Error('--recover-file requires --production');
 const data = loadDataset(a.dataset);
 const manifestPath = join(a.out, 'manifest.json');
 if (a['expect-manifest'] !== undefined) {
@@ -159,6 +166,9 @@ const result = await run({
   maxRetries: Number(a['max-retries'] ?? (a.production ? 0 : 2)),
   production: !!a.production,
   revise: !!a.revise,
+  recover: a['recover-file']
+    ? { file: a['recover-file'], expectedError: a['recover-expect-error'], runId: a['run-id'] }
+    : undefined,
   maxImages: Number(a['batch-size'] ?? 25),
   rates:
     live && !a.mock
@@ -182,3 +192,6 @@ if (live && (a['run-id'] || a.commit)) {
 console.log(JSON.stringify(result.summary));
 for (const p of result.plan) console.log(`${p.action}\t${p.hanzi}\t${p.file}`);
 if (!live) console.log('DRY-RUN: no provider call, no files written.');
+// Fail-loud: a production live run that failed or stopped early must not look green (artifact is still uploaded by the workflow).
+if (live && a.production && (result.summary.failed > 0 || result.summary.stoppedEarly))
+  process.exit(2);

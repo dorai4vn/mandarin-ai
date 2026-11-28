@@ -715,6 +715,23 @@ test('production live (mock provider): only new active images are generated, car
   assert.equal(fresh.length, 3);
   for (const f of fresh) assert.ok(isActive(real.characters.find((c) => c.artwork.file === f)));
 });
+test('production batches 100/100/remaining 40 on the real dataset (mock provider): 240 new, cumulative estimate <= $6', async () => {
+  const t = setup();
+  const before = await carried(t);
+  const counts = [];
+  for (let i = 0; i < 3; i++) {
+    const r = await run(realProd(t, { maxImages: 100 }));
+    counts.push(r.summary.generated);
+  }
+  assert.deepEqual(counts, [100, 100, 40]);
+  assert.equal(t.calls(), 240);
+  const after = loadManifest(t.manifestPath);
+  assert.ok(Math.abs(after.spentUsdEstimated - (before.spentUsdEstimated + 240 * 0.0195)) < 1e-6);
+  assert.ok(after.spentUsdEstimated <= 6);
+  const again = await run(realProd(t, { maxImages: 100 })); // nothing left: no duplicate paid call
+  assert.equal(again.summary.generated, 0);
+  assert.equal(t.calls(), 240);
+});
 test('production: archive selection is rejected; fail-closed on missing/tampered ledger', async () => {
   const t = setup();
   await carried(t);
@@ -854,4 +871,110 @@ test('production projected budget fails closed without a valid per-call bound (b
       /projected budget needs a valid per-call cost bound/,
     );
   assert.equal(t.calls(), 0);
+});
+
+// ---- Owner-gated single-item recovery of a failed production entry (offline, mock provider) ----
+const failScenario = async () => {
+  const t = setup();
+  const d = big(30);
+  await seedStored(t, d, 10);
+  let n = 0;
+  t.provider.generate = async () => {
+    n++;
+    if (n === 3) throw Object.assign(new Error('provider HTTP 500'), { status: 500 });
+    return Buffer.from('raw');
+  };
+  await run(prod(t, d, { maxImages: 10 }));
+  const m = loadManifest(t.manifestPath);
+  const failedFile = Object.keys(m.entries).find((k) => m.entries[k].status === 'failed');
+  t.provider.generate = async () => Buffer.from('raw');
+  const calls0 = t.calls();
+  return { t, d, failedFile, before: m, calls0 };
+};
+const rec = (file, extra = {}) => ({
+  file,
+  expectedError: 'provider HTTP 500',
+  runId: 'R2',
+  ...extra,
+});
+
+test('recovery: failed item retried exactly once, later items continue, history/spend/stored files preserved', async () => {
+  const { t, d, failedFile, before } = await failScenario();
+  const shaBefore = Object.fromEntries(
+    Object.entries(before.entries)
+      .filter(([, e]) => e.status === 'stored')
+      .map(([k, e]) => [k, e.sha256]),
+  );
+  const storedBefore = Object.keys(shaBefore).length;
+  const r = await run(prod(t, d, { maxImages: 100, maxSpendUsd: 6, recover: rec(failedFile) }));
+  assert.equal(r.summary.recovered, 1);
+  assert.equal(r.summary.failed, 0);
+  assert.equal(r.summary.generated, 30 - storedBefore); // recovered item + all remaining
+  const m = loadManifest(t.manifestPath);
+  assert.equal(m.entries[failedFile].status, 'stored');
+  assert.equal(m.entries[failedFile].failedAttempts.length, 1);
+  assert.match(m.entries[failedFile].failedAttempts[0].error, /provider HTTP 500/);
+  assert.equal(m.entries[failedFile].failedAttempts[0].recoveredByRunId, 'R2');
+  for (const [k, h] of Object.entries(shaBefore)) assert.equal(m.entries[k].sha256, h); // untouched
+  // Failed attempt stays counted; recovery adds exactly one new call price per generated image.
+  assert.equal(
+    Math.round((m.spentUsdEstimated - before.spentUsdEstimated) * 1e6),
+    Math.round(r.summary.generated * 0.1 * 1e6),
+  );
+  assert.ok(m.spentUsdEstimated <= 6);
+  // Once only: a rerun with the same authorization makes no further paid call.
+  const calls = t.calls();
+  await assert.rejects(() => run(prod(t, d, { recover: rec(failedFile) })), /not a failed entry/);
+  assert.equal(t.calls(), calls);
+});
+
+test('recovery: first item in batch even when batch is small; 0 retries; stops on second failure; second recovery refused', async () => {
+  const { t, d, failedFile } = await failScenario();
+  let n = 0;
+  t.provider.generate = async () => {
+    n++;
+    throw Object.assign(new Error('provider HTTP 500'), { status: 500 });
+  };
+  const r = await run(prod(t, d, { maxImages: 1, recover: rec(failedFile) }));
+  assert.equal(n, 1); // exactly one paid call, no retry, nothing after
+  assert.equal(r.summary.failed, 1);
+  assert.equal(r.summary.stoppedEarly, true);
+  const m = loadManifest(t.manifestPath);
+  assert.equal(m.entries[failedFile].status, 'failed');
+  assert.equal(m.entries[failedFile].failedAttempts.length, 1);
+  await assert.rejects(() => run(prod(t, d, { recover: rec(failedFile) })), /already recovered/);
+  assert.equal(n, 1);
+});
+
+test('recovery: fail closed on wrong error, wrong file, force, non-production; other failed entries stay blocked', async () => {
+  const { t, d, failedFile } = await failScenario();
+  await assert.rejects(
+    () => run(prod(t, d, { recover: rec(failedFile, { expectedError: 'HTTP 429' }) })),
+    /different error/,
+  );
+  await assert.rejects(() => run(prod(t, d, { recover: rec('g29.webp') })), /not a failed entry/);
+  await assert.rejects(() => run(prod(t, d, { force: true, recover: rec(failedFile) })), /force/);
+  await assert.rejects(
+    () => run(base(t, d, { recover: rec(failedFile) })),
+    /only allowed in production/,
+  );
+  // Without recover the failed entry stays blocked (never silently re-paid).
+  const r0 = await run(prod(t, d, { maxImages: 0 + 1 }));
+  assert.ok(r0.summary.blocked >= 1);
+  assert.equal(loadManifest(t.manifestPath).entries[failedFile].status, 'failed');
+});
+
+test('recovery: projected budget (failed attempt already counted + 1 call per remaining) must fit, checked before any paid call', async () => {
+  const { t, d, failedFile, before } = await failScenario();
+  const calls = t.calls();
+  const remaining = 30 - Object.values(before.entries).filter((e) => e.status === 'stored').length;
+  const need = Math.round((before.spentUsdEstimated + remaining * 0.1) * 1e6) / 1e6;
+  await assert.rejects(
+    () => run(prod(t, d, { maxSpendUsd: need - 0.01, recover: rec(failedFile) })),
+    /projected budget/,
+  );
+  assert.equal(t.calls(), calls);
+  const r = await run(prod(t, d, { maxImages: 100, maxSpendUsd: need, recover: rec(failedFile) }));
+  assert.equal(r.summary.failed, 0);
+  assert.equal(loadManifest(t.manifestPath).spentUsdEstimated, need);
 });

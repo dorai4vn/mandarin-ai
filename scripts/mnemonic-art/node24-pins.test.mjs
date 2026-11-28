@@ -13,7 +13,8 @@ const NODE24 = new Set([
 
 for (const f of ['mnemonic-art-pilot.yml', 'mnemonic-art-production.yml']) {
   test(`${f}: every action pinned to a verified Node24 SHA; app Node stays 22`, () => {
-    const src = readFileSync(new URL(`../../docs/workflow-drafts/${f}`, import.meta.url), 'utf8');
+    const dir = f.includes('pilot') ? '.github/workflows' : 'docs/workflow-drafts'; // pilot is active on main
+    const src = readFileSync(new URL(`../../${dir}/${f}`, import.meta.url), 'utf8');
     const uses = [...src.matchAll(/^\s*(?:-\s*)?uses:\s*(\S+)/gm)].map((m) => m[1]);
     assert.ok(uses.length >= 4);
     for (const u of uses) assert.ok(NODE24.has(u), `unverified/non-node24 pin: ${u}`);

@@ -1,4 +1,5 @@
 import { MnemonicLab } from '@/hanzi/MnemonicLab';
+import { ArtworkQcGallery } from '@/hanzi/ArtworkQcGallery';
 import { PageHeader } from '@/components/ui';
 
 export const metadata = { title: 'Lab: Visual Mnemonic (M3.5)' };
@@ -9,9 +10,12 @@ export default function VisualMnemonicLab() {
     <>
       <PageHeader
         title="Visual Mnemonic — QC"
-        lead="10 thẻ gợi nhớ hiện đại, độc lập với dữ liệu lịch sử. Chưa có tác phẩm nào được duyệt."
+        lead="10 thẻ gợi nhớ hiện đại, độc lập với dữ liệu lịch sử. Ảnh ứng viên đã có, chưa có tác phẩm nào được duyệt."
       />
       <MnemonicLab />
+      <div className="mt-8">
+        <ArtworkQcGallery />
+      </div>
     </>
   );
 }

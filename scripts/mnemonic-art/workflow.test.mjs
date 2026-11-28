@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const wf = readFileSync(
-  new URL('../../docs/workflow-drafts/mnemonic-art-pilot.yml', import.meta.url),
+  new URL('../../.github/workflows/mnemonic-art-pilot.yml', import.meta.url),
   'utf8',
 );
 const code = wf

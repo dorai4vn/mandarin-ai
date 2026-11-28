@@ -1,0 +1,198 @@
+# DRAFT - NOT ACTIVE, NOT TO BE COPIED until the owner has QC'd the pilot (10 retained images) AND given separate final budget approval.
+# Minimal launcher like mnemonic-art-pilot.yml (owner copies ONLY this file to .github/workflows/ on main; the Claude app cannot write
+# workflows). Generates the REMAINING ACTIVE characters (246 syllabus L1 set minus the 6 retained pilot; archive records are never generated) of beginner200.json (skip-existing, serial, bounded batch) with the approved
+# style/model/quality. Shares the concurrency group and artifact name with the pilot so the spend ledger is one chain.
+# Trust note: the code at reviewed_sha runs in the job that holds the API key -> the owner must have read that exact commit.
+name: Mnemonic artwork production (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      reviewed_sha:
+        description: 'Full 40-hex commit SHA of the owner-reviewed branch tip that contains scripts/mnemonic-art'
+        required: true
+      previous_run_id:
+        description: 'Run ID of the LATEST previous pilot/production run (carries manifest + cumulative spend). Always required.'
+        required: true
+      batch_size:
+        description: 'Max NEW images this dispatch (serial). Rerun with the latest run id to continue.'
+        type: choice
+        options: ['25', '50', '100', '200']
+        default: '50'
+      confirm_budget_usd:
+        description: 'CUMULATIVE max USD across ALL runs incl. pilot (owner-approved final budget; <= 6 owner-approved cumulative estimate, not a provider cap)'
+        required: true
+      recover_failed_item:
+        description: 'Batch #3 recovery ONLY: retry the single failed item once (needs previous_run_id 46139133768). none = no recovery (failed entries stay blocked).'
+        type: choice
+        options: ['none', 'wei-feed.webp']
+        default: 'none'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: mnemonic-art-pilot # shared with the pilot launcher: never two spenders at once
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: github.ref == 'refs/heads/main' && github.actor == 'dorai4vn' && github.triggering_actor == 'dorai4vn'
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    environment: mnemonic-art-pilot # REUSED protected environment (same owner reviewer, same secret/vars scope); shows inputs before approval. See docs/MNEMONIC_ART_CLI.md
+    env:
+      IN_SHA: ${{ inputs.reviewed_sha }}
+      IN_BATCH: ${{ inputs.batch_size }}
+      IN_BUDGET: ${{ inputs.confirm_budget_usd }}
+      IN_RECOVER: ${{ inputs.recover_failed_item }}
+      PREV_RUN: ${{ inputs.previous_run_id }}
+      GH_REPO: ${{ github.repository }}
+      THIS_RUN: ${{ github.run_id }}
+    steps:
+      - name: Validate inputs (python3 stdlib; no code checked out, no secret)
+        run: |
+          set -euo pipefail
+          python3 -I - <<'PY'
+          import os, re, sys
+
+          def fail(msg):
+              print("::error::" + msg)
+              sys.exit(1)
+
+          e = os.environ.get
+          if not re.fullmatch(r"[0-9a-f]{40}", e("IN_SHA", ""), re.ASCII):
+              fail("reviewed_sha must be a full 40-hex SHA")
+          if not re.fullmatch(r"[0-9]{1,20}", e("PREV_RUN", ""), re.ASCII):
+              fail("previous_run_id required (digits)")
+          if e("IN_BATCH", "") not in ("25", "50", "100", "200"):
+              fail("batch_size must be 25, 50, 100 or 200")
+          b = e("IN_BUDGET", "")
+          if not re.fullmatch(r"[0-9]{1,2}(\.[0-9]{1,2})?", b, re.ASCII) or not 0 < float(b) <= 6:
+              fail("confirm_budget_usd must be > 0 and <= 6 (owner-approved cumulative estimate, not a provider cap)")
+          if e("IN_RECOVER", "none") not in ("none", "wei-feed.webp"):
+              fail("recover_failed_item must be none or wei-feed.webp")
+          if e("IN_RECOVER", "none") != "none" and e("PREV_RUN", "") != "46139133768":
+              fail("recovery of wei-feed.webp is only authorized against previous run 46139133768 (failed HTTP 500)")
+          print("inputs ok")
+          PY
+
+      - name: Verify ledger chain (explicit --repo, before checkout, no secret)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Latest completed non-skipped run across BOTH launchers (pilot + production), excluding this run.
+          gh run list --repo "$GH_REPO" --status completed --limit 200 \
+            --json databaseId,conclusion,workflowName,createdAt > runs.json
+          latest=$(jq -c --argjson me "$THIS_RUN" \
+            '[.[] | select(.workflowName | test("^Mnemonic artwork (pilot|production) \\(manual\\)$"))
+                  | select(.databaseId != $me and .conclusion != "skipped")] | sort_by(.createdAt) | reverse | .[0] // empty' runs.json)
+          [ -n "$latest" ] || { echo "no previous pilot run exists; production needs the carried pilot manifest"; exit 1; }
+          latest_id=$(jq -r '.databaseId' <<<"$latest")
+          [ "$latest_id" = "$PREV_RUN" ] || { echo "previous_run_id must be the LATEST run ($latest_id), not $PREV_RUN (older manifests would reset spend)"; exit 1; }
+          rm -f runs.json
+
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 (node24)
+        with:
+          ref: ${{ inputs.reviewed_sha }}
+          persist-credentials: false
+      - name: Assert exact reviewed commit
+        run: |
+          set -euo pipefail
+          [ "$(git rev-parse HEAD)" = "$IN_SHA" ] || { echo "checked-out HEAD != reviewed_sha"; exit 1; }
+          test -f scripts/mnemonic-art/cli.mjs
+          git log -1 --format='reviewing %H %s' | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5 (node24, peeled tag commit)
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5 (node24)
+        with:
+          node-version: 22
+          cache: pnpm
+      - id: install
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Restore previous manifest (spend carry-over + existing images)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download "$PREV_RUN" --repo "$GH_REPO" --name mnemonic-art-pilot --dir .mnemonic-art
+          test -f .mnemonic-art/manifest.json || { echo "previous artifact has no manifest.json"; exit 1; }
+
+      - name: Offline checks and style/model consistency (no secret)
+        env:
+          MODEL: ${{ vars.MNEMONIC_IMAGE_MODEL }}
+          # NON-SECRET owner-configured pricing inputs only (no API key in this step): the production plan computes the
+          # conservative per-call bound from them and checks spent + ALL remaining active x bound <= budget, failing closed.
+          MNEMONIC_INPUT_USD_PER_M: ${{ vars.MNEMONIC_INPUT_USD_PER_M }}
+          MNEMONIC_OUTPUT_USD_PER_M: ${{ vars.MNEMONIC_OUTPUT_USD_PER_M }}
+          MNEMONIC_MAX_INPUT_TOKENS: ${{ vars.MNEMONIC_MAX_INPUT_TOKENS }}
+          MNEMONIC_MAX_OUTPUT_TOKENS: ${{ vars.MNEMONIC_MAX_OUTPUT_TOKENS }}
+          MNEMONIC_PRICING_SOURCE_URL: ${{ vars.MNEMONIC_PRICING_SOURCE_URL }}
+          MNEMONIC_PRICING_VERIFIED_ON: ${{ vars.MNEMONIC_PRICING_VERIFIED_ON }}
+        run: |
+          set -euo pipefail
+          pnpm test:mnemonic-art
+          pnpm mnemonic-art review
+          # Approved pilot images must have been made with the same model as this run will use.
+          jq -e --arg m "$MODEL" '[.entries[] | select(.status == "stored") | .model] | length >= 10 and all(. == $m)' \
+            .mnemonic-art/manifest.json >/dev/null \
+            || { echo "carried manifest: fewer than 10 stored images or model differs from vars.MNEMONIC_IMAGE_MODEL"; exit 1; }
+          pnpm mnemonic-art verify
+          # Production-mode dry-run: exercises the carried-ledger guard (10 retained incl. superseded files, run-history prefix,
+          # spend floor, prompt hashes, archive exclusion) and the PROJECTED cumulative budget check (spent + all remaining active x
+          # conservative bound from the non-secret pricing vars, independent of batch size) BEFORE the secret-bearing step.
+          recover_args=()
+          if [ "$IN_RECOVER" != "none" ]; then recover_args=(--recover-file "$IN_RECOVER" --recover-expect-error "provider HTTP 500"); fi
+          pnpm mnemonic-art plan --all --production --expect-manifest existing \
+            --batch-size "$IN_BATCH" --max-spend-usd "$IN_BUDGET" "${recover_args[@]}"
+
+      - name: Generate (the ONLY step with the secret; serial, retries 0, stops on first error)
+        env:
+          MNEMONIC_IMAGE_API_KEY: ${{ secrets.MNEMONIC_IMAGE_API_KEY }}
+          MNEMONIC_IMAGE_MODEL: ${{ vars.MNEMONIC_IMAGE_MODEL }}
+          MNEMONIC_IMAGE_QUALITY: low # exact approved pilot quality; not an input
+          MNEMONIC_INPUT_USD_PER_M: ${{ vars.MNEMONIC_INPUT_USD_PER_M }}
+          MNEMONIC_OUTPUT_USD_PER_M: ${{ vars.MNEMONIC_OUTPUT_USD_PER_M }}
+          MNEMONIC_MAX_INPUT_TOKENS: ${{ vars.MNEMONIC_MAX_INPUT_TOKENS }}
+          MNEMONIC_MAX_OUTPUT_TOKENS: ${{ vars.MNEMONIC_MAX_OUTPUT_TOKENS }}
+          MNEMONIC_PRICING_SOURCE_URL: ${{ vars.MNEMONIC_PRICING_SOURCE_URL }}
+          MNEMONIC_PRICING_VERIFIED_ON: ${{ vars.MNEMONIC_PRICING_VERIFIED_ON }}
+        run: |
+          set -uo pipefail
+          recover_args=()
+          if [ "$IN_RECOVER" != "none" ]; then recover_args=(--recover-file "$IN_RECOVER" --recover-expect-error "provider HTTP 500"); fi
+          status=0
+          pnpm mnemonic-art generate --all --production --live --storage local --max-retries 0 \
+            --batch-size "$IN_BATCH" --max-spend-usd "$IN_BUDGET" --expect-manifest existing \
+            --run-id "$THIS_RUN" --commit "$IN_SHA" "${recover_args[@]}" | tee generate.log || status=$?
+          # Summary line only (no secrets are ever printed by the CLI).
+          summary=$(grep '^{"live"' generate.log | tail -1 || true)
+          echo "$summary" >> "$GITHUB_STEP_SUMMARY"
+          # Never false-green: failed>0 or stoppedEarly (or any CLI error / missing summary) fails this step; the artifact is still uploaded.
+          if [ -z "$summary" ] || ! jq -e '.failed == 0 and .stoppedEarly == false' <<<"$summary" >/dev/null; then
+            echo "::error::generation reported failed>0 or stoppedEarly (or no summary); failing the run. Candidate artifact is still uploaded."
+            exit 1
+          fi
+          exit "$status"
+
+      - name: Detect candidate artifacts
+        id: detect
+        if: always()
+        run: |
+          if [ -f .mnemonic-art/manifest.json ]; then echo "exists=true" >> "$GITHUB_OUTPUT"; else echo "exists=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Verify checksums
+        if: ${{ always() && steps.install.outcome == 'success' && steps.detect.outputs.exists == 'true' }}
+        run: pnpm mnemonic-art verify
+
+      - name: Upload candidate artifacts (local only, no cloud write; also on failure)
+        if: ${{ always() && steps.detect.outputs.exists == 'true' }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6 (node24; v5 is still node20)
+        with:
+          name: mnemonic-art-pilot # same name: one ledger chain across pilot and production
+          path: .mnemonic-art/
+          include-hidden-files: true
+          retention-days: 30
+          if-no-files-found: error
