@@ -19,6 +19,14 @@ export interface SyncSummary {
   error: string | null;
 }
 
+/**
+ * Whether a sync attempt may start. `navigator.onLine` can lag behind the `online` event (Firefox),
+ * so a reconnect trigger overrides a stale `false`; any other trigger still requires it.
+ */
+export function canAttemptSync(navigatorOnLine: boolean, reconnected = false): boolean {
+  return navigatorOnLine || reconnected;
+}
+
 export type PushFn = (ops: SyncOperation[]) => Promise<SyncPushResponse>;
 export type PullFn = (after: number) => Promise<SyncPullResponse>;
 

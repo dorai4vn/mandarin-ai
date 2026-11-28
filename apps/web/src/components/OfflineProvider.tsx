@@ -12,7 +12,7 @@ import {
 import { api, isProviderUnavailable } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth';
 import { deleteLocalDb, localDbName, openLocalStore, type LocalStore } from '@/offline/store';
-import { SyncEngine, type SyncSummary } from '@/offline/sync';
+import { SyncEngine, canAttemptSync, type SyncSummary } from '@/offline/sync';
 import { SyncAvailabilityProbe, type SyncAvailability } from '@/offline/sync-availability';
 
 import type { SyncResult } from '@/offline/sync-message';
@@ -37,7 +37,7 @@ interface OfflineState {
    * carries the state AFTER the run (`after`), so callers report what is true now, not only what
    * this run did (G1: another tab may hold the sync lock, the outbox may be empty, sync may be off).
    */
-  syncNow: (opts?: { force?: boolean }) => Promise<SyncResult | null>;
+  syncNow: (opts?: { force?: boolean; reconnected?: boolean }) => Promise<SyncResult | null>;
   /** Sign-out (D-042): closes and DELETES the current account's local database. */
   forgetLocalData: () => Promise<void>;
 }
@@ -146,14 +146,16 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   }, [count]);
 
   const syncNow = useCallback(
-    async (opts: { force?: boolean } = {}) => {
+    async (opts: { force?: boolean; reconnected?: boolean } = {}) => {
       if (!engine.current && engineReady.current) {
         // Store still opening (cold start): wait briefly instead of reporting a failed sync.
         await Promise.race([engineReady.current, new Promise((r) => setTimeout(r, 8000))]);
       }
       const e = engine.current;
-      if (!e || !navigator.onLine) return null;
-      const s = await e.syncNow(opts);
+      // A `online` event is itself proof of connectivity: Firefox can still report
+      // navigator.onLine === false while that event is being dispatched.
+      if (!e || !canAttemptSync(navigator.onLine, opts.reconnected)) return null;
+      const s = await e.syncNow({ force: opts.force });
       if (engine.current !== e) return null; // account changed meanwhile: report nothing
       // "Sync not enabled / status unknown" is not an attempt and not an error: no lastSync entry.
       const notAttempted = s.error === 'sync_unavailable' || s.error === 'sync_status_unknown';
@@ -183,9 +185,12 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!store) return;
     // External-system sync: open, `online`, visibility and a timer drive sync attempts.
+    // Cold start: a health probe made while offline/before the store opened may be cached as
+    // 'unknown' (60 s retry); re-check immediately instead of waiting for the TTL.
+    const cold = probe.current?.current !== 'available';
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    void refresh().then(() => syncNow());
-    const onOnline = () => void syncNow({ force: true });
+    void refresh().then(() => syncNow({ force: cold }));
+    const onOnline = () => void syncNow({ force: true, reconnected: true });
     const onVisible = () => {
       if (document.visibilityState === 'visible') void syncNow();
     };
